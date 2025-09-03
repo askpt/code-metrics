@@ -102,6 +102,7 @@ temp/
 # VS Code extension development
 out/
 *.vsix
+.vscode-test/
 
 # Editor directories and files
 !.vscode/settings.json
