@@ -13,7 +13,7 @@ updates:
       timezone: "UTC"
     open-pull-requests-limit: 5
     commit-message:
-      prefix: "deps"
+      prefix: "build"
       include: "scope"
 
   # Update GitHub Actions
