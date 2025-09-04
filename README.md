@@ -2,6 +2,23 @@
 
 This is the README for your extension "code-complexity". After writing up a brief description, we recommend including the following sections.
 
+## Development Setup
+
+### GitHub Codespaces
+
+This project is configured to work with GitHub Codespaces for easy development in the cloud. The codespace is configured with:
+
+- Node.js 24.x runtime
+- Pre-installed VSCode extensions for extension development
+- Automatic dependency installation
+
+To get started with codespaces:
+1. Click the "Code" button on the GitHub repository
+2. Select "Codespaces" tab
+3. Click "Create codespace on main"
+
+The development environment will be automatically configured with all necessary tools and dependencies.
+
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.

@@ -1,0 +1,44 @@
+{
+	"name": "VSCode Extension Development",
+	"image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:24-bullseye",
+	
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-vscode.vscode-typescript-next",
+				"ms-vscode.extension-test-runner",
+				"ms-vscode.vscode-extension-samples",
+				"ms-vscode.vscode-json"
+			],
+			
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"typescript.tsc.autoDetect": "off",
+				"files.exclude": {
+					"out": false
+				},
+				"search.exclude": {
+					"out": true
+				}
+			}
+		}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "npm install",
+
+	// Configure tool-specific properties.
+	"remoteUser": "node"
+}
