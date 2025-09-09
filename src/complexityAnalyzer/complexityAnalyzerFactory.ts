@@ -102,20 +102,80 @@ export class ComplexityAnalyzerFactory {
    * ```
    */
   public static analyzeFile(
-    fileName: string,
     sourceText: string,
     languageId: string
   ): UnifiedFunctionComplexity[] {
-    // TODO: Implement language-specific analyzers
-    // Currently returns empty array as placeholder implementation
-    // Future implementation should:
-    // 1. Map languageId to appropriate parser/analyzer
-    // 2. Parse the source code into an AST
-    // 3. Traverse the AST to find function declarations
-    // 4. Calculate cyclomatic complexity for each function
-    // 5. Return detailed complexity analysis results
-
+    // Get the analyzer function for the specified language
+    const analyzer = languageAnalyzers[languageId];
+    if (analyzer) {
+      // Call the analyzer function with the source code
+      return analyzer(sourceText);
+    }
     // Return an empty array if languageId does not match any known analyzers
     return [];
   }
+}
+
+/**
+ * A record of language-specific analyzers that compute cognitive complexity metrics for source code.
+ * Each analyzer is a function that takes source text and returns an array of complexity data for all functions found.
+ *
+ * @remarks
+ * The analyzers normalize line and column numbers to be 1-based across all languages for consistency.
+ * Each language analyzer is lazily loaded using require() to optimize initial load time.
+ *
+ * @example
+ * ```typescript
+ * const analyzer = languageAnalyzers['csharp'];
+ * const complexityData = analyzer(sourceCode);
+ * ```
+ */
+const languageAnalyzers: Record<
+  string,
+  (sourceText: string) => UnifiedFunctionComplexity[]
+> = {
+  csharp: createCSharpAnalyzer(),
+};
+
+/**
+ * Creates a C# cognitive complexity analyzer function.
+ *
+ * @returns A function that analyzes C# source code and returns an array of function complexity metrics.
+ *          The returned analyzer function:
+ *          - Takes C# source code as a string parameter
+ *          - Analyzes cognitive complexity of all functions in the code
+ *          - Returns an array of UnifiedFunctionComplexity objects containing:
+ *            - Function name
+ *            - Complexity score
+ *            - Detailed breakdown of complexity increments with line/column positions (1-based indexing)
+ *            - Function boundaries (start/end line and column)
+ *
+ * @remarks
+ * The analyzer dynamically requires the C# analyzer module and normalizes its output
+ * from 0-based to 1-based line and column indexing for consistency.
+ */
+function createCSharpAnalyzer(): (
+  sourceText: string
+) => UnifiedFunctionComplexity[] {
+  return function (sourceText: string) {
+    const {
+      CSharpCognitiveComplexityAnalyzer,
+    } = require("./languages/csharpAnalyzer");
+    const functions = CSharpCognitiveComplexityAnalyzer.analyzeFile(sourceText);
+    return functions.map((func: any) => ({
+      name: func.name,
+      complexity: func.complexity,
+      details: func.details.map((detail: any) => ({
+        increment: detail.increment,
+        reason: detail.reason,
+        line: detail.line + 1, // C# analyzer uses 0-based, normalize to 1-based
+        column: detail.column + 1, // C# analyzer uses 0-based, normalize to 1-based
+        nesting: detail.nesting,
+      })),
+      startLine: func.startLine,
+      endLine: func.endLine,
+      startColumn: func.startColumn,
+      endColumn: func.endColumn,
+    }));
+  };
 }
