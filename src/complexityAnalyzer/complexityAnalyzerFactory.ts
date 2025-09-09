@@ -71,6 +71,14 @@ export interface UnifiedFunctionComplexity {
  */
 export class ComplexityAnalyzerFactory {
   /**
+   * Returns a list of supported languages for complexity analysis.
+   * @returns An array of language identifiers (e.g., 'typescript', 'javascript', 'python')
+   */
+  static getSupportedLanguages(): string[] {
+    return Object.keys(languageAnalyzers);
+  }
+
+  /**
    * Analyzes the complexity of functions within a source code file.
    *
    * This method serves as the main entry point for complexity analysis. It determines
