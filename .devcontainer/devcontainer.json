@@ -1,6 +1,6 @@
 {
 	"name": "VSCode Extension Development",
-	"image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:24-bullseye",
+	"image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:22-bullseye",
 	
 	// Configure tool-specific properties.
 	"customizations": {
