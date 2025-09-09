@@ -8,7 +8,7 @@ This is the README for your extension "code-complexity". After writing up a brie
 
 This project is configured to work with GitHub Codespaces for easy development in the cloud. The codespace is configured with:
 
-- Node.js 24.x runtime
+- Node.js 22.x runtime
 - Pre-installed VSCode extensions for extension development
 - Automatic dependency installation
 
