@@ -6,10 +6,22 @@
   "engines": {
     "vscode": "^1.103.0"
   },
+  "keywords": [
+    "complexity",
+    "cognitive complexity",
+    "code complexity",
+    "code quality",
+    "typescript",
+    "javascript",
+    "csharp",
+    "metrics"
+  ],
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:csharp"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": []
