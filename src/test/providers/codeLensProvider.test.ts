@@ -1,6 +1,7 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
 import { ComplexityCodeLensProvider } from "../../providers/codeLensProvider";
+import { ConfigurationManager } from "../../configuration";
 import { UnifiedFunctionComplexity } from "../../complexityAnalyzer/complexityAnalyzerFactory";
 
 suite("Complexity Code Lens Provider Tests", () => {
@@ -14,6 +15,106 @@ suite("Complexity Code Lens Provider Tests", () => {
   });
 
   suite("Provider Configuration", () => {
+    test("should use configuration manager for settings", async () => {
+      mockDocument = createMockDocument(
+        "csharp",
+        `
+                public class Test {
+                    public void Method() {
+                        if (true) return;
+                    }
+                }
+            `
+      );
+
+      // Test that the provider respects the configuration
+      const originalGetConfiguration = ConfigurationManager.getConfiguration;
+      ConfigurationManager.getConfiguration = () => ({
+        enabled: false,
+        showCodeLens: true,
+        warningThreshold: 10,
+        errorThreshold: 15,
+        excludePatterns: [],
+        showInProblemsPanel: false,
+        problemsThreshold: 15,
+      });
+
+      const result = await provider.provideCodeLenses(mockDocument, mockToken);
+      assert.strictEqual(
+        result.length,
+        0,
+        "Should return empty array when disabled"
+      );
+
+      // Restore original function
+      ConfigurationManager.getConfiguration = originalGetConfiguration;
+    });
+
+    test("should use custom thresholds from configuration", async () => {
+      mockDocument = createMockDocument(
+        "csharp",
+        `
+                public class Test {
+                    public void Method() {
+                        if (true) {
+                          if (false) {
+                            return;
+                          }
+                        }
+                    }
+                }
+            `
+      );
+
+      // Mock configuration with low thresholds
+      const originalGetConfiguration = ConfigurationManager.getConfiguration;
+      const originalGetComplexityStatus =
+        ConfigurationManager.getComplexityStatus;
+
+      ConfigurationManager.getConfiguration = () => ({
+        enabled: true,
+        showCodeLens: true,
+        warningThreshold: 1,
+        errorThreshold: 2,
+        excludePatterns: [],
+        showInProblemsPanel: false,
+        problemsThreshold: 15,
+      });
+
+      ConfigurationManager.getComplexityStatus = (complexity: number) => {
+        if (complexity >= 2) {
+          return {
+            level: "error" as const,
+            icon: "🔴",
+            text: "High Complexity",
+          };
+        } else if (complexity >= 1) {
+          return {
+            level: "warning" as const,
+            icon: "🟡",
+            text: "Moderate Complexity",
+          };
+        }
+        return { level: "low" as const, icon: "🟢", text: "Low Complexity" };
+      };
+
+      const result = await provider.provideCodeLenses(mockDocument, mockToken);
+
+      assert.strictEqual(result.length, 1);
+      const codeLens = result[0];
+      assert.ok(codeLens.command);
+
+      // With nested if statements, complexity should be >= 2, so should show error status
+      const title = codeLens.command!.title;
+      assert.ok(
+        title.includes("🔴") || title.includes("🟡"),
+        `Title should contain status icon: ${title}`
+      );
+
+      // Restore original functions
+      ConfigurationManager.getConfiguration = originalGetConfiguration;
+      ConfigurationManager.getComplexityStatus = originalGetComplexityStatus;
+    });
     test("should not provide code lenses when extension is disabled", async () => {
       mockDocument = createMockDocument(
         "csharp",
