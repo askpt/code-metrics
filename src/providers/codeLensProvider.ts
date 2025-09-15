@@ -3,6 +3,10 @@ import {
   ComplexityAnalyzerFactory,
   UnifiedFunctionComplexity,
 } from "../complexityAnalyzer/complexityAnalyzerFactory";
+import {
+  ConfigurationManager,
+  CognitiveComplexityConfig,
+} from "../configuration";
 
 export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   private _onDidChangeCodeLenses: vscode.EventEmitter<void> =
@@ -14,16 +18,17 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.CodeLens[]> {
-    const config = vscode.workspace.getConfiguration("cognitiveComplexity");
-    const enabled = config.get<boolean>("enabled", true);
-    const showCodeLens = config.get<boolean>("showCodeLens", true);
+    const config = ConfigurationManager.getConfiguration(document.uri);
 
-    if (!enabled || !showCodeLens || !this.isSupported(document)) {
+    if (
+      !config.enabled ||
+      !config.showCodeLens ||
+      !this.isSupported(document)
+    ) {
       return [];
     }
 
-    const excludePatterns = config.get<string[]>("excludePatterns", []);
-    if (this.isExcluded(document.uri.fsPath, excludePatterns)) {
+    if (this.isExcluded(document.uri.fsPath, config.excludePatterns)) {
       return [];
     }
 
@@ -69,21 +74,14 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   private createCodeLenses(
     functions: UnifiedFunctionComplexity[],
     document: vscode.TextDocument,
-    config: vscode.WorkspaceConfiguration
+    config: CognitiveComplexityConfig
   ): vscode.CodeLens[] {
     const codeLenses: vscode.CodeLens[] = [];
-    const warningThreshold = config.get<number>("warningThreshold", 10);
-    const errorThreshold = config.get<number>("threshold", 15);
 
     functions.forEach((func) => {
       // Only show code lens for functions with complexity > 0
       if (func.complexity > 0) {
-        const codeLens = this.createCodeLens(
-          func,
-          document,
-          warningThreshold,
-          errorThreshold
-        );
+        const codeLens = this.createCodeLens(func, document);
         if (codeLens) {
           codeLenses.push(codeLens);
         }
@@ -95,9 +93,7 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
 
   private createCodeLens(
     func: UnifiedFunctionComplexity,
-    document: vscode.TextDocument,
-    warningThreshold: number,
-    errorThreshold: number
+    document: vscode.TextDocument
   ): vscode.CodeLens | undefined {
     const complexity = func.complexity;
 
@@ -105,22 +101,14 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
     const line = func.startLine;
     const range = new vscode.Range(line, 0, line, 0);
 
-    // Determine status and icon
-    let statusIcon = "";
-    let statusText = "";
-    if (complexity >= errorThreshold) {
-      statusIcon = "🔴";
-      statusText = "High Complexity";
-    } else if (complexity >= warningThreshold) {
-      statusIcon = "🟡";
-      statusText = "Moderate Complexity";
-    } else {
-      statusIcon = "🟢";
-      statusText = "Low Complexity";
-    }
+    // Get status information using configuration manager
+    const status = ConfigurationManager.getComplexityStatus(
+      complexity,
+      document.uri
+    );
 
     // Create the code lens title
-    const title = `${statusIcon} ${statusText} (${complexity}%)`;
+    const title = `${status.icon} ${status.text} (${complexity}%)`;
 
     // Create command to show detailed report for this function
     const command: vscode.Command = {
@@ -150,10 +138,8 @@ export function registerCodeLensProvider(): vscode.Disposable {
   });
 
   // Refresh code lenses when configuration changes
-  const configWatcher = vscode.workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration("cognitiveComplexity")) {
-      setTimeout(() => provider.refresh(), 100);
-    }
+  const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
+    setTimeout(() => provider.refresh(), 100);
   });
 
   return vscode.Disposable.from(...disposables, configWatcher);

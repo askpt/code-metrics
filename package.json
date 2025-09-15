@@ -1,53 +1,96 @@
 {
-    "name": "code-complexity",
-    "displayName": "code-complexity",
-    "description": "A comprehensive Visual Studio Code extension that calculates and displays Cognitive Complexity metrics based on SonarSource's Cognitive Complexity specification.",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.103.0"
-    },
-    "keywords": [
-        "complexity",
-        "cognitive complexity",
-        "code complexity",
-        "code quality",
-        "typescript",
-        "javascript",
-        "csharp",
-        "metrics"
-    ],
-    "categories": [
-        "Other"
-    ],
-    "activationEvents": [
-        "onLanguage:csharp"
-    ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "commands": []
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint",
-        "lint": "eslint src",
-        "test": "node ./scripts/test-runner.js",
-        "test:vscode": "vscode-test"
-    },
-    "devDependencies": {
-        "@types/mocha": "^10.0.10",
-        "@types/node": "24.x",
-        "@types/vscode": "^1.103.0",
-        "@typescript-eslint/eslint-plugin": "^8.39.0",
-        "@typescript-eslint/parser": "^8.39.0",
-        "@vscode/test-cli": "^0.0.11",
-        "@vscode/test-electron": "^2.5.2",
-        "eslint": "^9.35.0",
-        "typescript": "^5.9.2"
-    },
-    "dependencies": {
-        "tree-sitter": "^0.21.1",
-        "tree-sitter-c-sharp": "^0.23.1"
+  "name": "code-complexity",
+  "displayName": "code-complexity",
+  "description": "A comprehensive Visual Studio Code extension that calculates and displays Cognitive Complexity metrics based on SonarSource's Cognitive Complexity specification.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.103.0"
+  },
+  "keywords": [
+    "complexity",
+    "cognitive complexity",
+    "code complexity",
+    "code quality",
+    "typescript",
+    "javascript",
+    "csharp",
+    "metrics"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:csharp"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [],
+    "configuration": {
+      "title": "Cognitive Complexity",
+      "properties": {
+        "cognitiveComplexity.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the cognitive complexity extension"
+        },
+        "cognitiveComplexity.showCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show cognitive complexity information as CodeLens above functions"
+        },
+        "cognitiveComplexity.warningThreshold": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Complexity threshold for showing warning status (yellow indicator)"
+        },
+        "cognitiveComplexity.errorThreshold": {
+          "type": "number",
+          "default": 15,
+          "minimum": 1,
+          "description": "Complexity threshold for showing error status (red indicator)"
+        },
+        "cognitiveComplexity.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/out/**",
+            "**/*.min.js",
+            "**/*.spec.*",
+            "**/*.test.*"
+          ],
+          "description": "Glob patterns for files to exclude from complexity analysis"
+        }
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "node ./scripts/test-runner.js",
+    "test:vscode": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "^1.103.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.35.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-c-sharp": "^0.23.1"
+  }
 }
