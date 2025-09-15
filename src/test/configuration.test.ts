@@ -43,16 +43,6 @@ suite("ConfigurationManager Tests", () => {
       undefined,
       vscode.ConfigurationTarget.Global
     );
-    await config.update(
-      "showInProblemsPanel",
-      undefined,
-      vscode.ConfigurationTarget.Global
-    );
-    await config.update(
-      "problemsThreshold",
-      undefined,
-      vscode.ConfigurationTarget.Global
-    );
   });
 
   test("should return default configuration when no custom values are set", () => {
@@ -68,14 +58,6 @@ suite("ConfigurationManager Tests", () => {
     assert.deepStrictEqual(
       config.excludePatterns,
       DEFAULT_CONFIG.excludePatterns
-    );
-    assert.strictEqual(
-      config.showInProblemsPanel,
-      DEFAULT_CONFIG.showInProblemsPanel
-    );
-    assert.strictEqual(
-      config.problemsThreshold,
-      DEFAULT_CONFIG.problemsThreshold
     );
   });
 
@@ -207,22 +189,6 @@ suite("ConfigurationManager Tests", () => {
     assert.ok(validationResult.warnings[0].includes("Warning threshold"));
   });
 
-  test("should detect invalid problems threshold", async () => {
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
-
-    // Set invalid problems threshold
-    await vsConfig.update(
-      "problemsThreshold",
-      0,
-      vscode.ConfigurationTarget.Global
-    );
-
-    const validationResult = ConfigurationManager.validateConfiguration();
-    assert.strictEqual(validationResult.valid, false);
-    assert.strictEqual(validationResult.warnings.length, 1);
-    assert.ok(validationResult.warnings[0].includes("Problems threshold"));
-  });
-
   test("should create configuration change watcher", () => {
     let changeEventFired = false;
 
@@ -271,7 +237,5 @@ suite("ConfigurationManager Tests", () => {
     assert.ok(config.warningThreshold !== undefined);
     assert.ok(config.errorThreshold !== undefined);
     assert.ok(config.excludePatterns !== undefined);
-    assert.ok(config.showInProblemsPanel !== undefined);
-    assert.ok(config.problemsThreshold !== undefined);
   });
 });

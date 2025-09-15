@@ -23,10 +23,6 @@ export interface CognitiveComplexityConfig {
   errorThreshold: number;
   /** Glob patterns for files to exclude from analysis */
   excludePatterns: string[];
-  /** Whether to show high complexity functions in Problems panel */
-  showInProblemsPanel: boolean;
-  /** Complexity threshold for showing functions as problems */
-  problemsThreshold: number;
 }
 
 /**
@@ -46,8 +42,6 @@ export const DEFAULT_CONFIG: CognitiveComplexityConfig = {
     "**/*.spec.*",
     "**/*.test.*",
   ],
-  showInProblemsPanel: false,
-  problemsThreshold: 15,
 };
 
 /**
@@ -89,14 +83,6 @@ export class ConfigurationManager {
       excludePatterns: config.get<string[]>(
         "excludePatterns",
         DEFAULT_CONFIG.excludePatterns
-      ),
-      showInProblemsPanel: config.get<boolean>(
-        "showInProblemsPanel",
-        DEFAULT_CONFIG.showInProblemsPanel
-      ),
-      problemsThreshold: config.get<number>(
-        "problemsThreshold",
-        DEFAULT_CONFIG.problemsThreshold
       ),
     };
   }
@@ -184,13 +170,6 @@ export class ConfigurationManager {
     if (config.warningThreshold >= config.errorThreshold) {
       warnings.push(
         `Warning threshold (${config.warningThreshold}) should be less than error threshold (${config.errorThreshold})`
-      );
-    }
-
-    // Check that problems threshold is reasonable
-    if (config.problemsThreshold < 1) {
-      warnings.push(
-        `Problems threshold (${config.problemsThreshold}) should be at least 1`
       );
     }
 

@@ -35,8 +35,6 @@ suite("Complexity Code Lens Provider Tests", () => {
         warningThreshold: 10,
         errorThreshold: 15,
         excludePatterns: [],
-        showInProblemsPanel: false,
-        problemsThreshold: 15,
       });
 
       const result = await provider.provideCodeLenses(mockDocument, mockToken);
@@ -77,8 +75,6 @@ suite("Complexity Code Lens Provider Tests", () => {
         warningThreshold: 1,
         errorThreshold: 2,
         excludePatterns: [],
-        showInProblemsPanel: false,
-        problemsThreshold: 15,
       });
 
       ConfigurationManager.getComplexityStatus = (complexity: number) => {

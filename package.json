@@ -65,17 +65,6 @@
             "**/*.test.*"
           ],
           "description": "Glob patterns for files to exclude from complexity analysis"
-        },
-        "cognitiveComplexity.showInProblemsPanel": {
-          "type": "boolean",
-          "default": false,
-          "description": "Show high complexity functions as problems in the Problems panel"
-        },
-        "cognitiveComplexity.problemsThreshold": {
-          "type": "number",
-          "default": 15,
-          "minimum": 1,
-          "description": "Complexity threshold for showing functions as problems"
         }
       }
     }
