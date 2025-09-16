@@ -5,9 +5,9 @@ import {
   UnifiedComplexityDetail,
 } from "../../complexityAnalyzer/complexityAnalyzerFactory";
 
-describe("Complexity Analyzer Factory Tests", () => {
-  describe("Supported Languages", () => {
-    it("should return array of supported languages", () => {
+suite("Complexity Analyzer Factory Tests", () => {
+  suite("Supported Languages", () => {
+    test("should return array of supported languages", () => {
       const languages = ComplexityAnalyzerFactory.getSupportedLanguages();
 
       assert.ok(Array.isArray(languages));
@@ -15,7 +15,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.ok(languages.includes("csharp"));
     });
 
-    it("should return consistent language list", () => {
+    test("should return consistent language list", () => {
       const languages1 = ComplexityAnalyzerFactory.getSupportedLanguages();
       const languages2 = ComplexityAnalyzerFactory.getSupportedLanguages();
 
@@ -23,8 +23,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("C# Language Analysis", () => {
-    it("should analyze simple C# function", () => {
+  suite("C# Language Analysis", () => {
+    test("should analyze simple C# function", () => {
       const sourceCode = `
                 public class Test {
                     public int Add(int a, int b) {
@@ -44,7 +44,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results[0].details.length, 0);
     });
 
-    it("should analyze C# function with complexity", () => {
+    test("should analyze C# function with complexity", () => {
       const sourceCode = `
                 public class Test {
                     public int Max(int a, int b) {
@@ -69,7 +69,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results[0].details[0].increment, 1);
     });
 
-    it("should handle complex C# code with multiple functions", () => {
+    test("should handle complex C# code with multiple functions", () => {
       const sourceCode = `
                 public class Calculator {
                     public int Add(int a, int b) {
@@ -116,10 +116,10 @@ describe("Complexity Analyzer Factory Tests", () => {
 
       assert.strictEqual(addFunction.complexity, 0);
       assert.strictEqual(divideFunction.complexity, 1); // if statement
-      assert.strictEqual(processFunction.complexity, 3); // if + foreach + nested if
+      assert.strictEqual(processFunction.complexity, 5); // if + || operator + foreach + nested if + nested continue
     });
 
-    it("should handle C# code with logical operators", () => {
+    test("should handle C# code with logical operators", () => {
       const sourceCode = `
                 public class Test {
                     public bool ComplexCondition(bool a, bool b, bool c) {
@@ -144,7 +144,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.ok(orDetail);
     });
 
-    it("should handle C# code with try-catch blocks", () => {
+    test("should handle C# code with try-catch blocks", () => {
       const sourceCode = `
                 public class Test {
                     public void RiskyOperation() {
@@ -181,8 +181,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Unsupported Languages", () => {
-    it("should return empty array for unsupported language", () => {
+  suite("Unsupported Languages", () => {
+    test("should return empty array for unsupported language", () => {
       const sourceCode = `
                 def hello_world():
                     print("Hello, World!")
@@ -196,7 +196,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results.length, 0);
     });
 
-    it("should return empty array for unknown language", () => {
+    test("should return empty array for unknown language", () => {
       const sourceCode = "some code";
 
       const results = ComplexityAnalyzerFactory.analyzeFile(
@@ -207,7 +207,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results.length, 0);
     });
 
-    it("should handle null/undefined language gracefully", () => {
+    test("should handle null/undefined language gracefully", () => {
       const sourceCode = "some code";
 
       const resultsNull = ComplexityAnalyzerFactory.analyzeFile(
@@ -224,8 +224,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Line and Column Normalization", () => {
-    it("should normalize line numbers to 1-based indexing", () => {
+  suite("Line and Column Normalization", () => {
+    test("should normalize line numbers to 1-based indexing", () => {
       const sourceCode = `public class Test {
     public void Method() {
         if (true) {
@@ -247,7 +247,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results[0].details[0].line, 3);
     });
 
-    it("should normalize column numbers to 1-based indexing", () => {
+    test("should normalize column numbers to 1-based indexing", () => {
       const sourceCode = `public class Test {
     public void Method() {
         if (true) return;
@@ -266,7 +266,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.ok(results[0].details[0].column >= 1);
     });
 
-    it("should preserve nesting levels", () => {
+    test("should preserve nesting levels", () => {
       const sourceCode = `
                 public class Test {
                     public void Method() {
@@ -300,8 +300,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Function Boundary Information", () => {
-    it("should preserve function start and end positions", () => {
+  suite("Function Boundary Information", () => {
+    test("should preserve function start and end positions", () => {
       const sourceCode = `public class Test {
     public void FirstMethod() {
         if (true) return;
@@ -337,8 +337,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Data Structure Validation", () => {
-    it("should return valid UnifiedFunctionComplexity objects", () => {
+  suite("Data Structure Validation", () => {
+    test("should return valid UnifiedFunctionComplexity objects", () => {
       const sourceCode = `
                 public class Test {
                     public void TestMethod() {
@@ -384,8 +384,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle malformed C# code gracefully", () => {
+  suite("Error Handling", () => {
+    test("should handle malformed C# code gracefully", () => {
       const malformedCode = `
                 public class Test {
                     public void Method() {
@@ -406,13 +406,13 @@ describe("Complexity Analyzer Factory Tests", () => {
       });
     });
 
-    it("should handle empty source code", () => {
+    test("should handle empty source code", () => {
       const results = ComplexityAnalyzerFactory.analyzeFile("", "csharp");
 
       assert.strictEqual(results.length, 0);
     });
 
-    it("should handle whitespace-only source code", () => {
+    test("should handle whitespace-only source code", () => {
       const results = ComplexityAnalyzerFactory.analyzeFile(
         "   \n\t  \n  ",
         "csharp"
@@ -421,7 +421,7 @@ describe("Complexity Analyzer Factory Tests", () => {
       assert.strictEqual(results.length, 0);
     });
 
-    it("should handle source code with only comments", () => {
+    test("should handle source code with only comments", () => {
       const sourceCode = `
                 // This is a comment
                 /* This is a block comment */
@@ -437,8 +437,8 @@ describe("Complexity Analyzer Factory Tests", () => {
     });
   });
 
-  describe("Integration with Real-World C# Code", () => {
-    it("should analyze complex real-world example", () => {
+  suite("Integration with Real-World C# Code", () => {
+    test("should analyze complex real-world example", () => {
       const sourceCode = `
                 using System;
                 using System.Collections.Generic;

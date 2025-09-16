@@ -663,8 +663,18 @@ suite("Complexity Code Lens Provider Tests", () => {
       return offset + position.character;
     };
 
+    // Create appropriate URI based on the fsPath
+    let uri: vscode.Uri;
+    if (fsPath && fsPath.includes(':')) {
+      // Handle schemes like "git:/path/to/file.cs"
+      uri = vscode.Uri.parse(fsPath);
+    } else {
+      // Default to file URI
+      uri = vscode.Uri.file(fsPath || "/test/file.cs");
+    }
+
     const mockDoc = {
-      uri: vscode.Uri.file(fsPath || "/test/file.cs"),
+      uri: uri,
       fileName: fsPath || "/test/file.cs",
       isUntitled: false,
       languageId: languageId,

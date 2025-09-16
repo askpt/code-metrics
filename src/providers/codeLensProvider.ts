@@ -63,11 +63,33 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private isExcluded(filePath: string, excludePatterns: string[]): boolean {
+    // Normalize path separators to forward slashes for consistent matching
+    const normalizedPath = filePath.replace(/\\/g, "/");
+
     return excludePatterns.some((pattern) => {
-      const regex = new RegExp(
-        pattern.replace(/\*\*/g, ".*").replace(/\*/g, "[^/]*")
-      );
-      return regex.test(filePath);
+      // Normalize the pattern to use forward slashes
+      const normalizedPattern = pattern.replace(/\\/g, "/");
+
+      // Check if pattern contains path separators
+      const hasPathSeparators = normalizedPattern.includes("/");
+
+      if (hasPathSeparators) {
+        // Pattern contains path separators - match against full path
+        const regexPattern = normalizedPattern
+          .replace(/\*\*/g, "___DOUBLESTAR___") // Temporary placeholder
+          .replace(/\*/g, "[^/]*") // Single * matches within directory
+          .replace(/___DOUBLESTAR___/g, ".*"); // ** matches across directories
+
+        const regex = new RegExp(`^${regexPattern}$`);
+        return regex.test(normalizedPath);
+      } else {
+        // Pattern has no path separators - match against filename only
+        const filename = normalizedPath.split("/").pop() || "";
+        const regexPattern = normalizedPattern.replace(/\*/g, ".*"); // * matches any characters in filename
+
+        const regex = new RegExp(`^${regexPattern}$`);
+        return regex.test(filename);
+      }
     });
   }
 

@@ -1,44 +1,52 @@
 {
-	"name": "VSCode Extension Development",
-	"image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:22-bullseye",
-	
-	// Configure tool-specific properties.
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"ms-vscode.vscode-typescript-next",
-				"ms-vscode.extension-test-runner",
-				"ms-vscode.vscode-extension-samples",
-				"ms-vscode.vscode-json"
-			],
-			
-			// Set *default* container specific settings.json values on container create.
-			"settings": {
-				"typescript.tsc.autoDetect": "off",
-				"files.exclude": {
-					"out": false
-				},
-				"search.exclude": {
-					"out": true
-				}
-			}
-		}
-	},
+  "name": "VSCode Extension Development",
+  "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:22-bullseye",
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
-	},
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.extension-test-runner",
+        "ms-vscode.vscode-extension-samples",
+        "ms-vscode.vscode-json"
+      ],
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "typescript.tsc.autoDetect": "off",
+        "files.exclude": {
+          "out": false
+        },
+        "search.exclude": {
+          "out": true
+        }
+      }
+    }
+  },
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install",
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
 
-	// Configure tool-specific properties.
-	"remoteUser": "node"
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "npm install && sudo apt-get update && sudo apt-get install -y libnspr4 libnss3 libxss1 libasound2 libxrandr2 libatk1.0-0 libdrm2 libxcomposite1 libxdamage1 libxfixes3 libgbm1 libatspi2.0-0 libatk-bridge2.0-0 xvfb libgtk-3-0 libgdk-pixbuf2.0-0 libcairo-gobject2 libpango-1.0-0 libglib2.0-0 libfontconfig1 libfreetype6",
+
+  // Start Xvfb for headless testing
+  "postStartCommand": "bash .devcontainer/start-xvfb.sh",
+
+  // Set environment variables
+  "containerEnv": {
+    "DISPLAY": ":99"
+  },
+
+  // Configure tool-specific properties.
+  "remoteUser": "node"
 }
