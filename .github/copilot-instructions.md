@@ -16,6 +16,29 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 - Configurable warning/error thresholds
 - Tree-sitter based parsing for accurate analysis
 
+## ⚠️ Important: Semantic Commit Requirements
+
+This repository **requires semantic commit format** for all PR titles. PRs will **fail CI validation** without proper prefixes.
+
+**Required format**: `<type>: <description>`
+
+**Available types**:
+- `feat:` A new feature
+- `fix:` A bug fix  
+- `docs:` Documentation only changes
+- `style:` Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `refactor:` A code change that neither fixes a bug nor adds a feature
+- `perf:` A code change that improves performance
+- `test:` Adding missing tests or correcting existing tests
+- `build:` Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+- `ci:` Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+- `chore:` Other changes that don't modify src or test files
+- `revert:` Reverts a previous commit
+
+**Example**: `feat: add new complexity analysis feature` or `fix: resolve parsing error in C# analyzer`
+
+This is **automatically validated** by GitHub Actions. See `.github/workflows/validate_pr_title.yml` for details.
+
 ## Build & Development Commands
 
 **Environment Requirements:**
@@ -231,14 +254,14 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 
 ## Critical Notes for Agents
 
-1. **Always run `npm install` first** - required for TypeScript compilation
-2. **Always compile before testing** - `npm run compile` updates the `out/` directory
-3. **Tests may fail in sandboxed environments** - this is expected, not a code issue
-4. **Extension activates only on C# files** - test with `.cs` files in workspace
-5. **Build output is in `out/` directory** - this is the actual extension code
-6. **Use samples/Test.cs for complexity validation** - pre-built complex C# code
-7. **Configuration changes require extension restart** - reload VS Code window
-8. **PR titles MUST use semantic commit format** - Required prefix (feat:, fix:, docs:, etc.) or CI will fail
+1. **⚠️ PR titles MUST use semantic commit format** - Required prefix (feat:, fix:, docs:, etc.) or CI will fail
+2. **Always run `npm install` first** - required for TypeScript compilation
+3. **Always compile before testing** - `npm run compile` updates the `out/` directory
+4. **Tests may fail in sandboxed environments** - this is expected, not a code issue
+5. **Extension activates only on C# files** - test with `.cs` files in workspace
+6. **Build output is in `out/` directory** - this is the actual extension code
+7. **Use samples/Test.cs for complexity validation** - pre-built complex C# code
+8. **Configuration changes require extension restart** - reload VS Code window
 
 ## Trust These Instructions
 
