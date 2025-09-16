@@ -40,7 +40,7 @@
   "postCreateCommand": "npm install && sudo apt-get update && sudo apt-get install -y libnspr4 libnss3 libxss1 libasound2 libxrandr2 libatk1.0-0 libdrm2 libxcomposite1 libxdamage1 libxfixes3 libgbm1 libatspi2.0-0 libatk-bridge2.0-0 xvfb libgtk-3-0 libgdk-pixbuf2.0-0 libcairo-gobject2 libpango-1.0-0 libglib2.0-0 libfontconfig1 libfreetype6",
 
   // Start Xvfb for headless testing
-  "postStartCommand": "sudo -u node sh -c 'Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &'",
+  "postStartCommand": "bash .devcontainer/start-xvfb.sh",
 
   // Set environment variables
   "containerEnv": {
