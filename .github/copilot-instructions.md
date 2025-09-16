@@ -11,7 +11,7 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 
 **Key Features**:
 
-- Real-time cognitive complexity analysis for C# files
+- Real-time cognitive complexity analysis
 - CodeLens integration showing complexity above functions
 - Configurable warning/error thresholds
 - Tree-sitter based parsing for accurate analysis
@@ -23,8 +23,9 @@ This repository **requires semantic commit format** for all PR titles. PRs will 
 **Required format**: `<type>: <description>`
 
 **Available types**:
+
 - `feat:` A new feature
-- `fix:` A bug fix  
+- `fix:` A bug fix
 - `docs:` Documentation only changes
 - `style:` Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 - `refactor:` A code change that neither fixes a bug nor adds a feature
@@ -258,9 +259,9 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 2. **Always run `npm install` first** - required for TypeScript compilation
 3. **Always compile before testing** - `npm run compile` updates the `out/` directory
 4. **Tests may fail in sandboxed environments** - this is expected, not a code issue
-5. **Extension activates only on C# files** - test with `.cs` files in workspace
+5. **Extension activates only on some files** - test with the `samples/` files in workspace
 6. **Build output is in `out/` directory** - this is the actual extension code
-7. **Use samples/Test.cs for complexity validation** - pre-built complex C# code
+7. **Use samples/ for complexity validation** - pre-built complex code
 8. **Configuration changes require extension restart** - reload VS Code window
 
 ## Trust These Instructions
