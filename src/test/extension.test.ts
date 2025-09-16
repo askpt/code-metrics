@@ -4,16 +4,16 @@ import * as assert from "assert";
 import "./complexityAnalyzer/languages/csharpAnalyzer.test";
 import "./complexityAnalyzer/complexityAnalyzerFactory.test";
 
-describe("Extension Test Suite", () => {
+suite("Extension Test Suite", () => {
   console.log("Starting core logic tests for Code Complexity extension.");
 
-  it("should perform basic assertion test", () => {
+  test("should perform basic assertion test", () => {
     // Basic test to ensure the test framework is working
     assert.strictEqual(2 + 2, 4);
     assert.ok(true);
   });
 
-  it("should handle array operations", () => {
+  test("should handle array operations", () => {
     // Test basic JavaScript functionality
     assert.strictEqual(-1, [1, 2, 3].indexOf(5));
     assert.strictEqual(-1, [1, 2, 3].indexOf(0));

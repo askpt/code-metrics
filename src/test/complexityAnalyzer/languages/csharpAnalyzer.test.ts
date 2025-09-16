@@ -1,15 +1,15 @@
 import * as assert from "assert";
 import { CSharpCognitiveComplexityAnalyzer } from "../../../complexityAnalyzer/languages/csharpAnalyzer";
 
-describe("CSharp Cognitive Complexity Analyzer Tests", () => {
+suite("CSharp Cognitive Complexity Analyzer Tests", () => {
   let analyzer: CSharpCognitiveComplexityAnalyzer;
 
-  beforeEach(() => {
+  setup(() => {
     analyzer = new CSharpCognitiveComplexityAnalyzer();
   });
 
-  describe("Basic Function Analysis", () => {
-    it("should analyze simple function with no complexity", () => {
+  suite("Basic Function Analysis", () => {
+    test("should analyze simple function with no complexity", () => {
       const sourceCode = `
                 public class Test {
                     public int Add(int a, int b) {
@@ -26,7 +26,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details.length, 0);
     });
 
-    it("should analyze function with if statement", () => {
+    test("should analyze function with if statement", () => {
       const sourceCode = `
                 public class Test {
                     public int Max(int a, int b) {
@@ -48,7 +48,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].increment, 1);
     });
 
-    it("should analyze function with multiple control flow statements", () => {
+    test("should analyze function with multiple control flow statements", () => {
       const sourceCode = `
                 public class Test {
                     public string Process(int value) {
@@ -74,8 +74,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Control Flow Statements", () => {
-    it("should handle while loops", () => {
+  suite("Control Flow Statements", () => {
+    test("should handle while loops", () => {
       const sourceCode = `
                 public class Test {
                     public void WhileLoop() {
@@ -88,11 +88,12 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].complexity, 2);
       assert.strictEqual(results[0].details[0].reason, "while loop");
+      assert.strictEqual(results[0].details[1].reason, "break statement (nested)");
     });
 
-    it("should handle for loops", () => {
+    test("should handle for loops", () => {
       const sourceCode = `
                 public class Test {
                     public void ForLoop() {
@@ -109,7 +110,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "for loop");
     });
 
-    it("should handle foreach loops", () => {
+    test("should handle foreach loops", () => {
       const sourceCode = `
                 public class Test {
                     public void ForEachLoop(int[] array) {
@@ -126,7 +127,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "foreach loop");
     });
 
-    it("should handle switch statements", () => {
+    test("should handle switch statements", () => {
       const sourceCode = `
                 public class Test {
                     public string SwitchTest(int value) {
@@ -145,7 +146,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "switch statement");
     });
 
-    it("should handle switch expressions", () => {
+    test("should handle switch expressions", () => {
       const sourceCode = `
                 public class Test {
                     public string SwitchExpression(int value) {
@@ -165,8 +166,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Exception Handling", () => {
-    it("should handle try-catch blocks", () => {
+  suite("Exception Handling", () => {
+    test("should handle try-catch blocks", () => {
       const sourceCode = `
                 public class Test {
                     public void TryCatch() {
@@ -196,7 +197,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.ok(catchDetail);
     });
 
-    it("should handle multiple catch blocks", () => {
+    test("should handle multiple catch blocks", () => {
       const sourceCode = `
                 public class Test {
                     public void MultipleCatch() {
@@ -220,8 +221,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Logical Operators", () => {
-    it("should handle && operator", () => {
+  suite("Logical Operators", () => {
+    test("should handle && operator", () => {
       const sourceCode = `
                 public class Test {
                     public bool AndOperator(bool a, bool b) {
@@ -236,7 +237,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "binary && operator");
     });
 
-    it("should handle || operator", () => {
+    test("should handle || operator", () => {
       const sourceCode = `
                 public class Test {
                     public bool OrOperator(bool a, bool b) {
@@ -251,7 +252,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "binary || operator");
     });
 
-    it("should handle multiple logical operators", () => {
+    test("should handle multiple logical operators", () => {
       const sourceCode = `
                 public class Test {
                     public bool ComplexCondition(bool a, bool b, bool c) {
@@ -267,8 +268,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Conditional Expressions", () => {
-    it("should handle ternary operator", () => {
+  suite("Conditional Expressions", () => {
+    test("should handle ternary operator", () => {
       const sourceCode = `
                 public class Test {
                     public int Ternary(bool condition) {
@@ -283,7 +284,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "ternary operator");
     });
 
-    it("should handle nested ternary operators", () => {
+    test("should handle nested ternary operators", () => {
       const sourceCode = `
                 public class Test {
                     public int NestedTernary(bool a, bool b) {
@@ -298,8 +299,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Nesting and Lambda Expressions", () => {
-    it("should handle lambda expressions in nested context", () => {
+  suite("Nesting and Lambda Expressions", () => {
+    test("should handle lambda expressions in nested context", () => {
       const sourceCode = `
                 public class Test {
                     public void NestedLambda(List<int> numbers) {
@@ -316,7 +317,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 2);
     });
 
-    it("should not count lambda at top level", () => {
+    test("should not count lambda at top level", () => {
       const sourceCode = `
                 public class Test {
                     public void TopLevelLambda(List<int> numbers) {
@@ -332,8 +333,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Jump Statements", () => {
-    it("should handle goto statements", () => {
+  suite("Jump Statements", () => {
+    test("should handle goto statements", () => {
       const sourceCode = `
                 public class Test {
                     public void GotoTest() {
@@ -350,7 +351,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].reason, "goto statement");
     });
 
-    it("should handle continue in nested context", () => {
+    test("should handle continue in nested context", () => {
       const sourceCode = `
                 public class Test {
                     public void NestedContinue() {
@@ -369,7 +370,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 3);
     });
 
-    it("should handle break in nested context", () => {
+    test("should handle break in nested context", () => {
       const sourceCode = `
                 public class Test {
                     public void NestedBreak() {
@@ -389,8 +390,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Function Types", () => {
-    it("should analyze constructors", () => {
+  suite("Function Types", () => {
+    test("should analyze constructors", () => {
       const sourceCode = `
                 public class Test {
                     public Test(int value) {
@@ -408,7 +409,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1);
     });
 
-    it("should analyze destructors", () => {
+    test("should analyze destructors", () => {
       const sourceCode = `
                 public class Test {
                     ~Test() {
@@ -426,7 +427,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1);
     });
 
-    it("should analyze property accessors", () => {
+    test("should analyze property accessors", () => {
       const sourceCode = `
                 public class Test {
                     private int _value;
@@ -454,7 +455,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[1].complexity, 1); // setter with if
     });
 
-    it("should analyze operator overloads", () => {
+    test("should analyze operator overloads", () => {
       const sourceCode = `
                 public class Test {
                     public static Test operator +(Test a, Test b) {
@@ -469,10 +470,10 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 1); // if with logical OR
+      assert.strictEqual(results[0].complexity, 2); // if (+1) with logical OR (+1)
     });
 
-    it("should analyze local functions", () => {
+    test("should analyze local functions", () => {
       const sourceCode = `
                 public class Test {
                     public void OuterMethod() {
@@ -503,8 +504,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle empty class", () => {
+  suite("Edge Cases", () => {
+    test("should handle empty class", () => {
       const sourceCode = `
                 public class EmptyClass {
                 }
@@ -515,7 +516,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results.length, 0);
     });
 
-    it("should handle abstract methods", () => {
+    test("should handle abstract methods", () => {
       const sourceCode = `
                 public abstract class Test {
                     public abstract void AbstractMethod();
@@ -535,7 +536,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].name, "ConcreteMethod");
     });
 
-    it("should handle interface methods", () => {
+    test("should handle interface methods", () => {
       const sourceCode = `
                 public interface ITest {
                     void InterfaceMethod();
@@ -548,7 +549,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results.length, 0);
     });
 
-    it("should handle expression-bodied methods", () => {
+    test("should handle expression-bodied methods", () => {
       const sourceCode = `
                 public class Test {
                     public int ExpressionMethod(int x) => x > 0 ? x : -x;
@@ -561,7 +562,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1); // ternary operator
     });
 
-    it("should handle nested classes", () => {
+    test("should handle nested classes", () => {
       const sourceCode = `
                 public class Outer {
                     public void OuterMethod() {
@@ -586,12 +587,12 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.ok(outerMethod);
       assert.ok(innerMethod);
       assert.strictEqual(outerMethod.complexity, 1);
-      assert.strictEqual(innerMethod.complexity, 1);
+      assert.strictEqual(innerMethod.complexity, 2); // while loop + nested break
     });
   });
 
-  describe("Position Information", () => {
-    it("should provide correct line and column information", () => {
+  suite("Position Information", () => {
+    test("should provide correct line and column information", () => {
       const sourceCode = `public class Test {
     public void Method() {
         if (true) {
@@ -608,7 +609,7 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
       assert.strictEqual(results[0].details[0].line, 2); // if statement line (0-based)
     });
 
-    it("should provide correct nesting information", () => {
+    test("should provide correct nesting information", () => {
       const sourceCode = `
                 public class Test {
                     public void Method() {
@@ -648,8 +649,8 @@ describe("CSharp Cognitive Complexity Analyzer Tests", () => {
     });
   });
 
-  describe("Static Factory Method", () => {
-    it("should work with static analyzeFile method", () => {
+  suite("Static Factory Method", () => {
+    test("should work with static analyzeFile method", () => {
       const sourceCode = `
                 public class Test {
                     public int SimpleMethod(int x) {

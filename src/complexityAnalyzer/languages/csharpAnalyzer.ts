@@ -221,13 +221,7 @@ export class CSharpCognitiveComplexityAnalyzer {
    * @returns The function name as a string
    */
   private getFunctionName(node: Parser.SyntaxNode): string {
-    // Try to find identifier node for the function name
-    const nameNode = node.children.find((child) => child.type === "identifier");
-    if (nameNode) {
-      return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
-    }
-
-    // For constructors, use class name
+    // Handle special function types first
     if (node.type === "constructor_declaration") {
       // Find parent class
       let parent = node.parent;
@@ -253,6 +247,12 @@ export class CSharpCognitiveComplexityAnalyzer {
     // For destructors
     if (node.type === "destructor_declaration") {
       return "~<destructor>";
+    }
+
+    // Try to find identifier node for the function name (regular methods)
+    const nameNode = node.children.find((child) => child.type === "identifier");
+    if (nameNode) {
+      return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
     }
 
     return "<anonymous>";
@@ -282,28 +282,11 @@ export class CSharpCognitiveComplexityAnalyzer {
    *
    * This method traverses the AST and calls checkComplexity for each node
    * to determine if it contributes to the cognitive complexity score.
+   * It skips nested function declarations to avoid double-counting.
    *
    * @param node - The current syntax node being visited
    */
   private visit(node: Parser.SyntaxNode): void {
-    this.checkComplexity(node);
-
-    // Process child nodes with appropriate nesting
-    for (const child of node.children) {
-      this.visit(child);
-    }
-  }
-
-  /**
-   * Checks if a syntax node contributes to cognitive complexity and updates the score.
-   *
-   * This method determines the complexity increment for the given node,
-   * adds it to the total complexity score, and records the detail.
-   * It also handles nesting level changes for constructs that increase nesting.
-   *
-   * @param node - The syntax node to check for complexity contribution
-   */
-  private checkComplexity(node: Parser.SyntaxNode): void {
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
       const reason = this.getComplexityReason(node);
@@ -321,11 +304,22 @@ export class CSharpCognitiveComplexityAnalyzer {
     // Handle nesting changes
     if (this.increasesNesting(node)) {
       this.nesting++;
-      // Process children with increased nesting
+      // Process child nodes with increased nesting
       for (const child of node.children) {
-        this.visit(child);
+        // Skip nested function declarations to avoid double-counting
+        if (!this.isFunctionDeclaration(child)) {
+          this.visit(child);
+        }
       }
       this.nesting--;
+    } else {
+      // Process child nodes at same nesting level
+      for (const child of node.children) {
+        // Skip nested function declarations to avoid double-counting
+        if (!this.isFunctionDeclaration(child)) {
+          this.visit(child);
+        }
+      }
     }
   }
 
