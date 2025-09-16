@@ -183,8 +183,21 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 
 **PR Title Validation** (`.github/workflows/validate_pr_title.yml`):
 
-- Enforces conventional commit format
-- Required for merge approval
+- Enforces semantic commit format using conventional commits specification
+- Required for merge approval - PRs will fail CI without proper prefix
+- **CRITICAL**: All PR titles must include a type prefix from the list below:
+  - `feat:` A new feature
+  - `fix:` A bug fix
+  - `docs:` Documentation only changes
+  - `style:` Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+  - `refactor:` A code change that neither fixes a bug nor adds a feature
+  - `perf:` A code change that improves performance
+  - `test:` Adding missing tests or correcting existing tests
+  - `build:` Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+  - `ci:` Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+  - `chore:` Other changes that don't modify src or test files
+  - `revert:` Reverts a previous commit
+- Reference: https://www.conventionalcommits.org/
 
 ### Manual Validation Steps
 
@@ -221,10 +234,11 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 1. **Always run `npm install` first** - required for TypeScript compilation
 2. **Always compile before testing** - `npm run compile` updates the `out/` directory
 3. **Tests may fail in sandboxed environments** - this is expected, not a code issue
-4. **Extension activates only declared language type files** - test with `samples` files in workspace
+4. **Extension activates only on C# files** - test with `.cs` files in workspace
 5. **Build output is in `out/` directory** - this is the actual extension code
-6. **Use samples/\* for complexity validation** - pre-built complex code
+6. **Use samples/Test.cs for complexity validation** - pre-built complex C# code
 7. **Configuration changes require extension restart** - reload VS Code window
+8. **PR titles MUST use semantic commit format** - Required prefix (feat:, fix:, docs:, etc.) or CI will fail
 
 ## Trust These Instructions
 
