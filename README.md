@@ -7,7 +7,7 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 - **Real-time Analysis**: Analyzes cognitive complexity as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
-- **C# Support**: Currently supports C# with tree-sitter based parsing for accurate analysis
+- **Multi-language Support**: Currently supports C# with more languages planned
 - **Configurable Thresholds**: Customize warning and error complexity thresholds
 - **Smart Exclusions**: Automatically excludes test files, build artifacts, and other specified patterns
 
@@ -23,7 +23,7 @@ Cognitive Complexity is a metric that measures how difficult code is to understa
 ## Requirements
 
 - Visual Studio Code 1.103.0 or higher
-- C# files for analysis (other languages support planned)
+- Supported language files for analysis
 
 ## Extension Settings
 
@@ -41,7 +41,7 @@ Install from the [VS Code Extension Marketplace](https://marketplace.visualstudi
 
 ## Usage
 
-1. Open a C# file in VS Code
+1. Open a supported language file in VS Code
 2. The extension will automatically analyze cognitive complexity
 3. Complexity scores appear as CodeLens above each function
 4. Color coding indicates complexity level:
@@ -100,9 +100,3 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Release Notes
-
-### 0.0.1
-
-Initial release with C# cognitive complexity analysis and CodeLens integration.

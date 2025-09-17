@@ -67,7 +67,7 @@ For a quick start, you can use GitHub Codespaces:
 
 4. **Debug the Extension**
    - Press `F5` in VS Code to launch Extension Development Host
-   - Test your changes with sample C# files in the `samples/` directory
+   - Test your changes with sample files in the `samples/` directory
 
 ### Code Standards
 
@@ -115,6 +115,7 @@ npm run pretest
 ### Test Coverage
 
 Focus testing on:
+
 - Core complexity analysis logic
 - Configuration management
 - Language-specific analyzers
@@ -125,6 +126,7 @@ Focus testing on:
 ### README Updates
 
 When adding features, update:
+
 - Feature descriptions
 - Configuration options
 - Usage examples
