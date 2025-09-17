@@ -1,88 +1,108 @@
-# code-complexity README
+# Code Complexity
 
-This is the README for your extension "code-complexity". After writing up a brief description, we recommend including the following sections.
-
-## Development Setup
-
-### GitHub Codespaces
-
-This project is configured to work with GitHub Codespaces for easy development in the cloud. The codespace is configured with:
-
-- Node.js 22.x runtime
-- Pre-installed VSCode extensions for extension development
-- Automatic dependency installation
-
-To get started with codespaces:
-1. Click the "Code" button on the GitHub repository
-2. Select "Codespaces" tab
-3. Click "Create codespace on main"
-
-The development environment will be automatically configured with all necessary tools and dependencies.
+A Visual Studio Code extension that calculates and displays **Cognitive Complexity** metrics based on [SonarSource's Cognitive Complexity specification](https://www.sonarsource.com/docs/cognitiveComplexity/).
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Real-time Analysis**: Analyzes cognitive complexity as you write code
+- **CodeLens Integration**: Shows complexity scores directly above functions
+- **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
+- **C# Support**: Currently supports C# with tree-sitter based parsing for accurate analysis
+- **Configurable Thresholds**: Customize warning and error complexity thresholds
+- **Smart Exclusions**: Automatically excludes test files, build artifacts, and other specified patterns
 
-For example if there is an image subfolder under your extension project workspace:
+### What is Cognitive Complexity?
 
-\!\[feature X\]\(images/feature-x.png\)
+Cognitive Complexity is a metric that measures how difficult code is to understand. Unlike Cyclomatic Complexity, it considers the cognitive burden of code constructs:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Linear code**: No complexity increase
+- **Nested structures**: Higher complexity for deeply nested code  
+- **Breaks in control flow**: Additional complexity for jumps and returns
+- **Recursive calls**: Extra complexity penalty
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code 1.103.0 or higher
+- C# files for analysis (other languages support planned)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `cognitiveComplexity.enabled`: Enable or disable the cognitive complexity extension (default: `true`)
+- `cognitiveComplexity.showCodeLens`: Show cognitive complexity information as CodeLens above functions (default: `true`)
+- `cognitiveComplexity.warningThreshold`: Complexity threshold for showing warning status with yellow indicator (default: `10`)
+- `cognitiveComplexity.errorThreshold`: Complexity threshold for showing error status with red indicator (default: `15`)
+- `cognitiveComplexity.excludePatterns`: Glob patterns for files to exclude from complexity analysis (default: excludes node_modules, dist, build, out, minified files, and test files)
 
-## Known Issues
+## Installation
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Install from the [VS Code Extension Marketplace](https://marketplace.visualstudio.com/vscode) or search for "code-complexity" in the Extensions view.
+
+## Usage
+
+1. Open a C# file in VS Code
+2. The extension will automatically analyze cognitive complexity
+3. Complexity scores appear as CodeLens above each function
+4. Color coding indicates complexity level:
+   - **Green**: Below warning threshold (good)
+   - **Yellow**: Above warning threshold (review recommended)  
+   - **Red**: Above error threshold (refactoring recommended)
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js 22.x
+- npm 10.9.x or higher
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/askpt/code-complexity.git
+cd code-complexity
+
+# Install dependencies
+npm install
+
+# Compile TypeScript
+npm run compile
+
+# Run linter
+npm run lint
+
+# Run tests (requires VS Code)
+npm test
+```
+
+### GitHub Codespaces
+
+This project is configured to work with GitHub Codespaces:
+
+1. Click the "Code" button on the GitHub repository
+2. Select "Codespaces" tab  
+3. Click "Create codespace on main"
+
+The development environment will be automatically configured with Node.js 22.x and all necessary dependencies.
+
+### Development Commands
+
+- `npm run compile`: Compile TypeScript to JavaScript
+- `npm run watch`: Auto-compile on file changes
+- `npm run lint`: Run ESLint
+- `npm test`: Run extension tests
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release with C# cognitive complexity analysis and CodeLens integration.
