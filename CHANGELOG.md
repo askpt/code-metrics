@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/askpt/code-metrics/compare/v0.1.1...v0.1.2) (2025-09-20)
+
+
+### 🐛 Bug Fixes
+
+* Rename to Code Metrics ([#27](https://github.com/askpt/code-metrics/issues/27)) ([e415094](https://github.com/askpt/code-metrics/commit/e4150946728fc1dcf21089e6d95eefc7ca3e6d82))
+
 ## [0.1.1](https://github.com/askpt/code-complexity/compare/v0.1.0...v0.1.1) (2025-09-20)
 
 
