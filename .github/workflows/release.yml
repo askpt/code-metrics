@@ -27,6 +27,7 @@ jobs:
   release:
     needs: release-please
     runs-on: ubuntu-latest
+    environment: marketplace
     if: needs.release-please.outputs.release_created == 'true'
     permissions:
       contents: read
@@ -40,8 +41,7 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22.x
-      - run: npm install
-      - run: xvfb-run -a npm test
-        if: runner.os == 'Linux'
-      - run: npm test
-        if: runner.os != 'Linux'
+      - name: Publish
+        run: npm run deploy
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
