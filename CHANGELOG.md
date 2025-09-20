@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/askpt/code-complexity/compare/v0.1.0...v0.1.1) (2025-09-20)
+
+
+### 🐛 Bug Fixes
+
+* Update package.json with publisher and repository information ([#25](https://github.com/askpt/code-complexity/issues/25)) ([dd7df79](https://github.com/askpt/code-complexity/commit/dd7df79b913ed3e90973524e57e49c9d8dad15d8))
+* update publisher and repository information in package.json ([dd7df79](https://github.com/askpt/code-complexity/commit/dd7df79b913ed3e90973524e57e49c9d8dad15d8))
+
 ## [0.1.0](https://github.com/askpt/code-complexity/compare/v0.0.1...v0.1.0) (2025-09-20)
 
 
