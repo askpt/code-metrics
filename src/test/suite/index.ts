@@ -10,8 +10,8 @@ export function run(): Promise<void> {
             const testFiles = [
                 '../configuration.test',
                 '../extension.test', 
-                '../complexityAnalyzer/complexityAnalyzerFactory.test',
-                '../complexityAnalyzer/languages/csharpAnalyzer.test',
+                '../metricsAnalyzer/metricsAnalyzerFactory.test',
+                '../metricsAnalyzer/languages/csharpAnalyzer.test',
                 '../providers/codeLensProvider.test'
             ];
 
