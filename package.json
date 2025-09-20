@@ -1,6 +1,6 @@
 {
   "name": "code-complexity",
-  "displayName": "code-complexity",
+  "displayName": "Code Complexity",
   "description": "A comprehensive Visual Studio Code extension that calculates and displays Cognitive Complexity metrics based on SonarSource's Cognitive Complexity specification.",
   "version": "0.0.1",
   "engines": {
