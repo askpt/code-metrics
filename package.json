@@ -3,6 +3,12 @@
   "displayName": "Code Complexity",
   "description": "A comprehensive Visual Studio Code extension that calculates and displays Cognitive Complexity metrics based on SonarSource's Cognitive Complexity specification.",
   "version": "0.1.0",
+  "publisher": "dev-asilva",
+  "preview": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/askpt/code-complexity.git"
+  },
   "engines": {
     "vscode": "^1.103.0"
   },
