@@ -39,5 +39,3 @@
 * Add configuration parameters ([#14](https://github.com/askpt/code-complexity/issues/14)) ([35cffaf](https://github.com/askpt/code-complexity/commit/35cffaf6da32c237be87e86c35c16e2c5889bd61))
 * add Dependabot support for npm and GitHub Actions ([#3](https://github.com/askpt/code-complexity/issues/3)) ([0845adc](https://github.com/askpt/code-complexity/commit/0845adc7d5ae53cdab3a255408e5db0be52d8a53))
 * add initial skeleton for the project ([950765e](https://github.com/askpt/code-complexity/commit/950765e9c171b58ec7f886dfb17397cc927ed2f0))
-
-## Changelog
