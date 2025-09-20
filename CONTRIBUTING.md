@@ -1,6 +1,6 @@
-# Contributing to Code Complexity
+# Contributing to Code Metrics
 
-We welcome contributions to the Code Complexity VS Code extension! This document provides guidelines for contributing to the project.
+We welcome contributions to the Code Metrics VS Code extension! This document provides guidelines for contributing to the project.
 
 ## 🚀 Getting Started
 
@@ -16,7 +16,7 @@ We welcome contributions to the Code Complexity VS Code extension! This document
 1. **Fork and Clone**
    ```bash
    git clone https://github.com/YOUR_USERNAME/code-complexity.git
-   cd code-complexity
+   cd code-metrics
    ```
 
 2. **Install Dependencies**

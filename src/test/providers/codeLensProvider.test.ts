@@ -1,16 +1,16 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { ComplexityCodeLensProvider } from "../../providers/codeLensProvider";
+import { MetricsCodeLensProvider } from "../../providers/codeLensProvider";
 import { ConfigurationManager } from "../../configuration";
-import { UnifiedFunctionComplexity } from "../../complexityAnalyzer/complexityAnalyzerFactory";
+import { UnifiedFunctionMetrics } from "../../metricsAnalyzer/metricsAnalyzerFactory";
 
-suite("Complexity Code Lens Provider Tests", () => {
-  let provider: ComplexityCodeLensProvider;
+suite("Metrics Code Lens Provider Tests", () => {
+  let provider: MetricsCodeLensProvider;
   let mockDocument: vscode.TextDocument;
   let mockToken: vscode.CancellationToken;
 
   setup(() => {
-    provider = new ComplexityCodeLensProvider();
+    provider = new MetricsCodeLensProvider();
     mockToken = new vscode.CancellationTokenSource().token;
   });
 
@@ -665,7 +665,7 @@ suite("Complexity Code Lens Provider Tests", () => {
 
     // Create appropriate URI based on the fsPath
     let uri: vscode.Uri;
-    if (fsPath && fsPath.includes(':')) {
+    if (fsPath && fsPath.includes(":")) {
       // Handle schemes like "git:/path/to/file.cs"
       uri = vscode.Uri.parse(fsPath);
     } else {

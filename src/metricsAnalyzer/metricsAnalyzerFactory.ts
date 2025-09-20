@@ -1,13 +1,13 @@
 /**
- * @fileoverview Complexity Analyzer Factory and Interfaces
+ * @fileoverview Metrics Analyzer Factory and Interfaces
  *
  * This module provides the core abstractions and factory pattern implementation
- * for analyzing code complexity across multiple programming languages.
+ * for analyzing code metrics across multiple programming languages.
  *
  * The module defines:
- * - UnifiedComplexityDetail: Individual complexity contributors
- * - UnifiedFunctionComplexity: Complete function analysis results
- * - ComplexityAnalyzerFactory: Main entry point for complexity analysis
+ * - UnifiedMetricsDetail: Individual complexity contributors
+ * - UnifiedFunctionMetrics: Complete function analysis results
+ * - MetricsAnalyzerFactory: Main entry point for metrics analysis
  *
  * The factory pattern allows for easy extension to support additional programming
  * languages while maintaining a consistent API for consumers.
@@ -18,7 +18,7 @@
  * Represents a single complexity detail for a specific code construct.
  * Each detail contributes to the overall complexity of a function.
  */
-export interface UnifiedComplexityDetail {
+export interface UnifiedMetricsDetail {
   /** The complexity increment this detail adds to the total complexity */
   increment: number;
   /** Human-readable explanation of why this construct increases complexity */
@@ -32,16 +32,16 @@ export interface UnifiedComplexityDetail {
 }
 
 /**
- * Represents the complete complexity analysis results for a single function.
+ * Represents the complete metrics analysis results for a single function.
  * Includes the overall complexity score and detailed breakdown of contributing factors.
  */
-export interface UnifiedFunctionComplexity {
+export interface UnifiedFunctionMetrics {
   /** The name or identifier of the function */
   name: string;
   /** The total cyclomatic complexity score for this function */
   complexity: number;
   /** Array of individual complexity details that contribute to the total score */
-  details: UnifiedComplexityDetail[];
+  details: UnifiedMetricsDetail[];
   /** Line number where the function definition starts (1-based) */
   startLine: number;
   /** Line number where the function definition ends (1-based) */
@@ -53,23 +53,19 @@ export interface UnifiedFunctionComplexity {
 }
 
 /**
- * Factory class responsible for creating and managing language-specific complexity analyzers.
+ * Factory class for creating and managing complexity analyzers for different programming languages.
  *
- * This factory provides a unified interface for analyzing code complexity across different
- * programming languages. It abstracts the complexity of dealing with multiple language
- * parsers and analysis strategies behind a simple API.
+ * This class provides the main API for analyzing cognitive complexity across multiple languages.
+ * It uses a factory pattern to create language-specific analyzers dynamically, ensuring
+ * efficient memory usage and supporting easy extension for new languages.
  *
  * @example
  * ```typescript
- * const results = ComplexityAnalyzerFactory.analyzeFile(
- *   'example.ts',
- *   'function test() { if (true) return; }',
- *   'typescript'
- * );
- * console.log(results[0].complexity); // Outputs the complexity score
+ * const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, 'typescript');
+ * console.log(`Found ${results.length} functions with complexities:`, results);
  * ```
  */
-export class ComplexityAnalyzerFactory {
+export class MetricsAnalyzerFactory {
   /**
    * Returns a list of supported languages for complexity analysis.
    * @returns An array of language identifiers (e.g., 'typescript', 'javascript', 'python')
@@ -112,7 +108,7 @@ export class ComplexityAnalyzerFactory {
   public static analyzeFile(
     sourceText: string,
     languageId: string
-  ): UnifiedFunctionComplexity[] {
+  ): UnifiedFunctionMetrics[] {
     // Get the analyzer function for the specified language
     const analyzer = languageAnalyzers[languageId];
     if (analyzer) {
@@ -140,7 +136,7 @@ export class ComplexityAnalyzerFactory {
  */
 const languageAnalyzers: Record<
   string,
-  (sourceText: string) => UnifiedFunctionComplexity[]
+  (sourceText: string) => UnifiedFunctionMetrics[]
 > = {
   csharp: createCSharpAnalyzer(),
 };
@@ -152,7 +148,7 @@ const languageAnalyzers: Record<
  *          The returned analyzer function:
  *          - Takes C# source code as a string parameter
  *          - Analyzes cognitive complexity of all functions in the code
- *          - Returns an array of UnifiedFunctionComplexity objects containing:
+ *          - Returns an array of UnifiedFunctionMetrics objects containing:
  *            - Function name
  *            - Complexity score
  *            - Detailed breakdown of complexity increments with line/column positions (1-based indexing)
@@ -164,12 +160,10 @@ const languageAnalyzers: Record<
  */
 function createCSharpAnalyzer(): (
   sourceText: string
-) => UnifiedFunctionComplexity[] {
+) => UnifiedFunctionMetrics[] {
   return function (sourceText: string) {
-    const {
-      CSharpCognitiveComplexityAnalyzer,
-    } = require("./languages/csharpAnalyzer");
-    const functions = CSharpCognitiveComplexityAnalyzer.analyzeFile(sourceText);
+    const { CSharpMetricsAnalyzer } = require("./languages/csharpAnalyzer");
+    const functions = CSharpMetricsAnalyzer.analyzeFile(sourceText);
     return functions.map((func: any) => ({
       name: func.name,
       complexity: func.complexity,

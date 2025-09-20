@@ -6,7 +6,7 @@ import { registerCodeLensProvider } from "./providers/codeLensProvider";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  console.log("Code Complexity extension is now active!");
+  console.log("Code Metrics extension is now active!");
   // Register providers
   const codeLensDisposable = registerCodeLensProvider();
 
@@ -15,5 +15,5 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-  console.log("Code Complexity extension is now deactivated");
+  console.log("Code Metrics extension is now deactivated");
 }
