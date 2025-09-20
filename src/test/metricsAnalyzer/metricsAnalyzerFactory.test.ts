@@ -1,14 +1,14 @@
 import * as assert from "assert";
 import {
-  ComplexityAnalyzerFactory,
-  UnifiedFunctionComplexity,
-  UnifiedComplexityDetail,
-} from "../../complexityAnalyzer/complexityAnalyzerFactory";
+  MetricsAnalyzerFactory,
+  UnifiedFunctionMetrics,
+  UnifiedMetricsDetail,
+} from "../../metricsAnalyzer/metricsAnalyzerFactory";
 
-suite("Complexity Analyzer Factory Tests", () => {
+suite("Metrics Analyzer Factory Tests", () => {
   suite("Supported Languages", () => {
     test("should return array of supported languages", () => {
-      const languages = ComplexityAnalyzerFactory.getSupportedLanguages();
+      const languages = MetricsAnalyzerFactory.getSupportedLanguages();
 
       assert.ok(Array.isArray(languages));
       assert.ok(languages.length > 0);
@@ -16,8 +16,8 @@ suite("Complexity Analyzer Factory Tests", () => {
     });
 
     test("should return consistent language list", () => {
-      const languages1 = ComplexityAnalyzerFactory.getSupportedLanguages();
-      const languages2 = ComplexityAnalyzerFactory.getSupportedLanguages();
+      const languages1 = MetricsAnalyzerFactory.getSupportedLanguages();
+      const languages2 = MetricsAnalyzerFactory.getSupportedLanguages();
 
       assert.deepStrictEqual(languages1, languages2);
     });
@@ -33,10 +33,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Add");
@@ -56,10 +53,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Max");
@@ -99,10 +93,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 3);
 
@@ -128,10 +119,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].complexity, 2); // && and || operators
@@ -161,10 +149,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].complexity, 3); // try + 2 catch blocks
@@ -188,10 +173,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                     print("Hello, World!")
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "python"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "python");
 
       assert.strictEqual(results.length, 0);
     });
@@ -199,7 +181,7 @@ suite("Complexity Analyzer Factory Tests", () => {
     test("should return empty array for unknown language", () => {
       const sourceCode = "some code";
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
+      const results = MetricsAnalyzerFactory.analyzeFile(
         sourceCode,
         "unknown-language"
       );
@@ -210,11 +192,11 @@ suite("Complexity Analyzer Factory Tests", () => {
     test("should handle null/undefined language gracefully", () => {
       const sourceCode = "some code";
 
-      const resultsNull = ComplexityAnalyzerFactory.analyzeFile(
+      const resultsNull = MetricsAnalyzerFactory.analyzeFile(
         sourceCode,
         null as any
       );
-      const resultsUndefined = ComplexityAnalyzerFactory.analyzeFile(
+      const resultsUndefined = MetricsAnalyzerFactory.analyzeFile(
         sourceCode,
         undefined as any
       );
@@ -234,10 +216,7 @@ suite("Complexity Analyzer Factory Tests", () => {
     }
 }`;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].details.length, 1);
@@ -254,10 +233,7 @@ suite("Complexity Analyzer Factory Tests", () => {
     }
 }`;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].details.length, 1);
@@ -281,10 +257,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results[0].details.length, 4);
 
@@ -312,10 +285,7 @@ suite("Complexity Analyzer Factory Tests", () => {
     }
 }`;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 2);
 
@@ -338,7 +308,7 @@ suite("Complexity Analyzer Factory Tests", () => {
   });
 
   suite("Data Structure Validation", () => {
-    test("should return valid UnifiedFunctionComplexity objects", () => {
+    test("should return valid UnifiedFunctionMetrics objects", () => {
       const sourceCode = `
                 public class Test {
                     public void TestMethod() {
@@ -349,10 +319,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
 
@@ -368,7 +335,7 @@ suite("Complexity Analyzer Factory Tests", () => {
       assert.ok(typeof func.endColumn === "number");
 
       // Verify details structure
-      func.details.forEach((detail: UnifiedComplexityDetail) => {
+      func.details.forEach((detail: UnifiedMetricsDetail) => {
         assert.ok(typeof detail.increment === "number");
         assert.ok(typeof detail.reason === "string");
         assert.ok(typeof detail.line === "number");
@@ -398,7 +365,7 @@ suite("Complexity Analyzer Factory Tests", () => {
 
       // Should not throw an exception, but may return empty or partial results
       assert.doesNotThrow(() => {
-        const results = ComplexityAnalyzerFactory.analyzeFile(
+        const results = MetricsAnalyzerFactory.analyzeFile(
           malformedCode,
           "csharp"
         );
@@ -407,13 +374,13 @@ suite("Complexity Analyzer Factory Tests", () => {
     });
 
     test("should handle empty source code", () => {
-      const results = ComplexityAnalyzerFactory.analyzeFile("", "csharp");
+      const results = MetricsAnalyzerFactory.analyzeFile("", "csharp");
 
       assert.strictEqual(results.length, 0);
     });
 
     test("should handle whitespace-only source code", () => {
-      const results = ComplexityAnalyzerFactory.analyzeFile(
+      const results = MetricsAnalyzerFactory.analyzeFile(
         "   \n\t  \n  ",
         "csharp"
       );
@@ -428,10 +395,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 // Another comment
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 0);
     });
@@ -517,10 +481,7 @@ suite("Complexity Analyzer Factory Tests", () => {
                 }
             `;
 
-      const results = ComplexityAnalyzerFactory.analyzeFile(
-        sourceCode,
-        "csharp"
-      );
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 3);
 

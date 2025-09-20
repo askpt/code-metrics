@@ -1,11 +1,11 @@
 import * as assert from "assert";
-import { CSharpCognitiveComplexityAnalyzer } from "../../../complexityAnalyzer/languages/csharpAnalyzer";
+import { CSharpMetricsAnalyzer } from "../../../metricsAnalyzer/languages/csharpAnalyzer";
 
-suite("CSharp Cognitive Complexity Analyzer Tests", () => {
-  let analyzer: CSharpCognitiveComplexityAnalyzer;
+suite("CSharp Metrics Analyzer Tests", () => {
+  let analyzer: CSharpMetricsAnalyzer;
 
   setup(() => {
-    analyzer = new CSharpCognitiveComplexityAnalyzer();
+    analyzer = new CSharpMetricsAnalyzer();
   });
 
   suite("Basic Function Analysis", () => {
@@ -90,7 +90,10 @@ suite("CSharp Cognitive Complexity Analyzer Tests", () => {
 
       assert.strictEqual(results[0].complexity, 2);
       assert.strictEqual(results[0].details[0].reason, "while loop");
-      assert.strictEqual(results[0].details[1].reason, "break statement (nested)");
+      assert.strictEqual(
+        results[0].details[1].reason,
+        "break statement (nested)"
+      );
     });
 
     test("should handle for loops", () => {
@@ -662,7 +665,7 @@ suite("CSharp Cognitive Complexity Analyzer Tests", () => {
                 }
             `;
 
-      const results = CSharpCognitiveComplexityAnalyzer.analyzeFile(sourceCode);
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "SimpleMethod");

@@ -2,17 +2,17 @@
  * @fileoverview Configuration Management Module
  *
  * This module provides a centralized way to access VS Code configuration settings
- * for the cognitive complexity extension. It ensures type safety and provides
+ * for the code metrics extension. It ensures type safety and provides
  * default values for all configuration options.
  */
 
 import * as vscode from "vscode";
 
 /**
- * Interface defining all configuration options for the cognitive complexity extension.
+ * Interface defining all configuration options for the code metrics extension.
  * This interface ensures type safety when accessing configuration values.
  */
-export interface CognitiveComplexityConfig {
+export interface CodeMetricsConfig {
   /** Whether the extension is enabled */
   enabled: boolean;
   /** Whether to show CodeLens above functions */
@@ -28,7 +28,7 @@ export interface CognitiveComplexityConfig {
 /**
  * Default configuration values used when user hasn't specified custom values.
  */
-export const DEFAULT_CONFIG: CognitiveComplexityConfig = {
+export const DEFAULT_CONFIG: CodeMetricsConfig = {
   enabled: true,
   showCodeLens: true,
   warningThreshold: 10,
@@ -50,7 +50,7 @@ export const DEFAULT_CONFIG: CognitiveComplexityConfig = {
  * throughout the extension.
  */
 export class ConfigurationManager {
-  private static readonly CONFIG_SECTION = "cognitiveComplexity";
+  private static readonly CONFIG_SECTION = "codeMetrics";
 
   /**
    * Gets the current configuration with all values resolved to their actual or default values.
@@ -58,9 +58,7 @@ export class ConfigurationManager {
    * @param resource - Optional URI for workspace-specific configuration
    * @returns Complete configuration object with all values
    */
-  public static getConfiguration(
-    resource?: vscode.Uri
-  ): CognitiveComplexityConfig {
+  public static getConfiguration(resource?: vscode.Uri): CodeMetricsConfig {
     const config = vscode.workspace.getConfiguration(
       this.CONFIG_SECTION,
       resource
@@ -94,15 +92,15 @@ export class ConfigurationManager {
    * @param resource - Optional URI for workspace-specific configuration
    * @returns The configuration value or its default
    */
-  public static get<K extends keyof CognitiveComplexityConfig>(
+  public static get<K extends keyof CodeMetricsConfig>(
     key: K,
     resource?: vscode.Uri
-  ): CognitiveComplexityConfig[K] {
+  ): CodeMetricsConfig[K] {
     const config = vscode.workspace.getConfiguration(
       this.CONFIG_SECTION,
       resource
     );
-    return config.get<CognitiveComplexityConfig[K]>(key, DEFAULT_CONFIG[key]);
+    return config.get<CodeMetricsConfig[K]>(key, DEFAULT_CONFIG[key]);
   }
 
   /**
@@ -204,7 +202,7 @@ export class ConfigurationManager {
     const config = this.getConfiguration(resource);
     const validation = this.validateConfiguration(resource);
 
-    console.log("Current Cognitive Complexity Configuration:", {
+    console.log("Current Code Metrics Configuration:", {
       config,
       validation,
     });

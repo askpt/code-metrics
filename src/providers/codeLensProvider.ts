@@ -1,14 +1,11 @@
 import * as vscode from "vscode";
 import {
-  ComplexityAnalyzerFactory,
-  UnifiedFunctionComplexity,
-} from "../complexityAnalyzer/complexityAnalyzerFactory";
-import {
-  ConfigurationManager,
-  CognitiveComplexityConfig,
-} from "../configuration";
+  MetricsAnalyzerFactory,
+  UnifiedFunctionMetrics,
+} from "../metricsAnalyzer/metricsAnalyzerFactory";
+import { ConfigurationManager, CodeMetricsConfig } from "../configuration";
 
-export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
+export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   private _onDidChangeCodeLenses: vscode.EventEmitter<void> =
     new vscode.EventEmitter<void>();
   public readonly onDidChangeCodeLenses: vscode.Event<void> =
@@ -34,7 +31,7 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
 
     try {
       const sourceText = document.getText();
-      const functions = ComplexityAnalyzerFactory.analyzeFile(
+      const functions = MetricsAnalyzerFactory.analyzeFile(
         sourceText,
         document.languageId
       );
@@ -54,8 +51,7 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private isSupported(document: vscode.TextDocument): boolean {
-    const supportedLanguages =
-      ComplexityAnalyzerFactory.getSupportedLanguages();
+    const supportedLanguages = MetricsAnalyzerFactory.getSupportedLanguages();
     return (
       supportedLanguages.includes(document.languageId) &&
       !document.uri.scheme.startsWith("git")
@@ -94,9 +90,9 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private createCodeLenses(
-    functions: UnifiedFunctionComplexity[],
+    functions: UnifiedFunctionMetrics[],
     document: vscode.TextDocument,
-    config: CognitiveComplexityConfig
+    config: CodeMetricsConfig
   ): vscode.CodeLens[] {
     const codeLenses: vscode.CodeLens[] = [];
 
@@ -114,7 +110,7 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private createCodeLens(
-    func: UnifiedFunctionComplexity,
+    func: UnifiedFunctionMetrics,
     document: vscode.TextDocument
   ): vscode.CodeLens | undefined {
     const complexity = func.complexity;
@@ -149,9 +145,9 @@ export class ComplexityCodeLensProvider implements vscode.CodeLensProvider {
 
 // Register the code lens provider
 export function registerCodeLensProvider(): vscode.Disposable {
-  const provider = new ComplexityCodeLensProvider();
+  const provider = new MetricsCodeLensProvider();
 
-  const languages = ComplexityAnalyzerFactory.getSupportedLanguages();
+  const languages = MetricsAnalyzerFactory.getSupportedLanguages();
   const disposables: vscode.Disposable[] = [];
   languages.forEach((language) => {
     disposables.push(

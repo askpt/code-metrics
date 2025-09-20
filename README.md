@@ -1,10 +1,10 @@
-# Code Complexity
+# Code Metrics
 
 A Visual Studio Code extension that calculates and displays **Cognitive Complexity** metrics based on [SonarSource's Cognitive Complexity specification](https://www.sonarsource.com/docs/cognitiveComplexity/).
 
 ## Features
 
-- **Real-time Analysis**: Analyzes cognitive complexity as you write code
+- **Real-time Analysis**: Analyzes code metrics as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
 - **Multi-language Support**: Currently supports C# with more languages planned
@@ -29,20 +29,20 @@ Cognitive Complexity is a metric that measures how difficult code is to understa
 
 This extension contributes the following settings:
 
-- `cognitiveComplexity.enabled`: Enable or disable the cognitive complexity extension (default: `true`)
-- `cognitiveComplexity.showCodeLens`: Show cognitive complexity information as CodeLens above functions (default: `true`)
-- `cognitiveComplexity.warningThreshold`: Complexity threshold for showing warning status with yellow indicator (default: `10`)
-- `cognitiveComplexity.errorThreshold`: Complexity threshold for showing error status with red indicator (default: `15`)
-- `cognitiveComplexity.excludePatterns`: Glob patterns for files to exclude from complexity analysis (default: excludes node_modules, dist, build, out, minified files, and test files)
+- `codeMetrics.enabled`: Enable or disable the code metrics extension (default: `true`)
+- `codeMetrics.showCodeLens`: Show code metrics information as CodeLens above functions (default: `true`)
+- `codeMetrics.warningThreshold`: Metrics threshold for showing warning status with yellow indicator (default: `10`)
+- `codeMetrics.errorThreshold`: Metrics threshold for showing error status with red indicator (default: `15`)
+- `codeMetrics.excludePatterns`: Glob patterns for files to exclude from metrics analysis (default: excludes node_modules, dist, build, out, minified files, and test files)
 
 ## Installation
 
-Install from the [VS Code Extension Marketplace](https://marketplace.visualstudio.com/vscode) or search for "code-complexity" in the Extensions view.
+Install from the [VS Code Extension Marketplace](https://marketplace.visualstudio.com/vscode) or search for "code-metrics" in the Extensions view.
 
 ## Usage
 
 1. Open a supported language file in VS Code
-2. The extension will automatically analyze cognitive complexity
+2. The extension will automatically analyze code metrics
 3. Complexity scores appear as CodeLens above each function
 4. Color coding indicates complexity level:
    - **Green**: Below warning threshold (good)
@@ -60,8 +60,8 @@ Install from the [VS Code Extension Marketplace](https://marketplace.visualstudi
 
 ```bash
 # Clone the repository
-git clone https://github.com/askpt/code-complexity.git
-cd code-complexity
+git clone https://github.com/askpt/code-metrics.git
+cd code-metrics
 
 # Install dependencies
 npm install

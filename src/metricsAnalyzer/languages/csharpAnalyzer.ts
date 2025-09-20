@@ -16,7 +16,7 @@ import CSharp from "tree-sitter-c-sharp";
  * Represents a single complexity detail for a specific C# code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
  */
-interface CSharpComplexityDetail {
+interface CSharpMetricsDetail {
   /** The complexity increment this detail adds to the total complexity */
   increment: number;
   /** Human-readable explanation of why this construct increases complexity */
@@ -33,13 +33,13 @@ interface CSharpComplexityDetail {
  * Represents the complete cognitive complexity analysis results for a single C# function or method.
  * Includes the overall complexity score and detailed breakdown of contributing factors.
  */
-interface CSharpFunctionComplexity {
+interface CSharpFunctionMetrics {
   /** The name or identifier of the function/method */
   name: string;
   /** The total cognitive complexity score for this function */
   complexity: number;
   /** Array of individual complexity details that contribute to the total score */
-  details: CSharpComplexityDetail[];
+  details: CSharpMetricsDetail[];
   /** Line number where the function definition starts (0-based) */
   startLine: number;
   /** Line number where the function definition ends (0-based) */
@@ -72,13 +72,13 @@ interface CSharpFunctionComplexity {
  * console.log(`Function ${results[0].name} has complexity ${results[0].complexity}`);
  * ```
  */
-export class CSharpCognitiveComplexityAnalyzer {
+export class CSharpMetricsAnalyzer {
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
-  private details: CSharpComplexityDetail[] = [];
+  private details: CSharpMetricsDetail[] = [];
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for C# */
@@ -119,10 +119,10 @@ export class CSharpCognitiveComplexityAnalyzer {
    * // results[0].complexity would be 2 (if statement + logical OR)
    * ```
    */
-  public analyzeFunctions(sourceText: string): CSharpFunctionComplexity[] {
+  public analyzeFunctions(sourceText: string): CSharpFunctionMetrics[] {
     this.sourceText = sourceText;
     const tree = this.parser.parse(sourceText);
-    const functions: CSharpFunctionComplexity[] = [];
+    const functions: CSharpFunctionMetrics[] = [];
 
     const visit = (node: Parser.SyntaxNode) => {
       if (this.isFunctionDeclaration(node)) {
@@ -179,7 +179,7 @@ export class CSharpCognitiveComplexityAnalyzer {
    */
   private analyzeFunction(
     node: Parser.SyntaxNode
-  ): CSharpFunctionComplexity | null {
+  ): CSharpFunctionMetrics | null {
     // Reset state for new function
     this.nesting = 0;
     this.complexity = 0;
@@ -500,8 +500,8 @@ export class CSharpCognitiveComplexityAnalyzer {
    * });
    * ```
    */
-  public static analyzeFile(sourceText: string): CSharpFunctionComplexity[] {
-    const analyzer = new CSharpCognitiveComplexityAnalyzer();
+  public static analyzeFile(sourceText: string): CSharpFunctionMetrics[] {
+    const analyzer = new CSharpMetricsAnalyzer();
     return analyzer.analyzeFunctions(sourceText);
   }
 }

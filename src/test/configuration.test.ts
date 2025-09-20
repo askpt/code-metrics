@@ -10,14 +10,14 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import {
   ConfigurationManager,
-  CognitiveComplexityConfig,
+  CodeMetricsConfig,
   DEFAULT_CONFIG,
 } from "../configuration";
 
 suite("ConfigurationManager Tests", () => {
   teardown(async () => {
     // Reset configuration to defaults after each test
-    const config = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const config = vscode.workspace.getConfiguration("codeMetrics");
     await config.update(
       "enabled",
       undefined,
@@ -62,7 +62,7 @@ suite("ConfigurationManager Tests", () => {
   });
 
   test("should return custom configuration values when set", async () => {
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
 
     // Set custom values
     await vsConfig.update("enabled", false, vscode.ConfigurationTarget.Global);
@@ -91,7 +91,7 @@ suite("ConfigurationManager Tests", () => {
   });
 
   test("should return individual configuration values correctly", async () => {
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
     await vsConfig.update(
       "warningThreshold",
       8,
@@ -110,7 +110,7 @@ suite("ConfigurationManager Tests", () => {
     assert.strictEqual(ConfigurationManager.isEnabled(), true);
 
     // Test when disabled
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
     await vsConfig.update("enabled", false, vscode.ConfigurationTarget.Global);
     assert.strictEqual(ConfigurationManager.isEnabled(), false);
   });
@@ -138,7 +138,7 @@ suite("ConfigurationManager Tests", () => {
   });
 
   test("should return correct complexity status with custom thresholds", async () => {
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
     await vsConfig.update(
       "warningThreshold",
       5,
@@ -169,7 +169,7 @@ suite("ConfigurationManager Tests", () => {
   });
 
   test("should detect invalid threshold configuration", async () => {
-    const vsConfig = vscode.workspace.getConfiguration("cognitiveComplexity");
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
 
     // Set invalid thresholds (warning >= error)
     await vsConfig.update(

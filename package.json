@@ -1,13 +1,13 @@
 {
-  "name": "code-complexity",
-  "displayName": "Code Complexity",
-  "description": "A comprehensive Visual Studio Code extension that calculates and displays Cognitive Complexity metrics based on SonarSource's Cognitive Complexity specification.",
+  "name": "code-metrics",
+  "displayName": "Code Metrics",
+  "description": "A comprehensive Visual Studio Code extension that calculates and displays code metrics including Cognitive Complexity based on SonarSource's specification.",
   "version": "0.1.1",
   "publisher": "dev-asilva",
   "preview": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/askpt/code-complexity.git"
+    "url": "https://github.com/askpt/code-metrics.git"
   },
   "engines": {
     "vscode": "^1.103.0"
@@ -15,7 +15,7 @@
   "keywords": [
     "complexity",
     "cognitive complexity",
-    "code complexity",
+    "code metrics",
     "code quality",
     "typescript",
     "javascript",
@@ -32,31 +32,31 @@
   "contributes": {
     "commands": [],
     "configuration": {
-      "title": "Cognitive Complexity",
+      "title": "Code Metrics",
       "properties": {
-        "cognitiveComplexity.enabled": {
+        "codeMetrics.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable or disable the cognitive complexity extension"
+          "description": "Enable or disable the code metrics extension"
         },
-        "cognitiveComplexity.showCodeLens": {
+        "codeMetrics.showCodeLens": {
           "type": "boolean",
           "default": true,
-          "description": "Show cognitive complexity information as CodeLens above functions"
+          "description": "Show code metrics information as CodeLens above functions"
         },
-        "cognitiveComplexity.warningThreshold": {
+        "codeMetrics.warningThreshold": {
           "type": "number",
           "default": 10,
           "minimum": 1,
-          "description": "Complexity threshold for showing warning status (yellow indicator)"
+          "description": "Metrics threshold for showing warning status (yellow indicator)"
         },
-        "cognitiveComplexity.errorThreshold": {
+        "codeMetrics.errorThreshold": {
           "type": "number",
           "default": 15,
           "minimum": 1,
-          "description": "Complexity threshold for showing error status (red indicator)"
+          "description": "Metrics threshold for showing error status (red indicator)"
         },
-        "cognitiveComplexity.excludePatterns": {
+        "codeMetrics.excludePatterns": {
           "type": "array",
           "items": {
             "type": "string"
@@ -70,7 +70,7 @@
             "**/*.spec.*",
             "**/*.test.*"
           ],
-          "description": "Glob patterns for files to exclude from complexity analysis"
+          "description": "Glob patterns for files to exclude from metrics analysis"
         }
       }
     }
