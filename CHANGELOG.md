@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/askpt/code-metrics/compare/v0.1.2...v0.1.3) (2025-09-20)
+
+
+### 🐛 Bug Fixes
+
+* Update displayName to 'Code Complexity Metrics' ([#29](https://github.com/askpt/code-metrics/issues/29)) ([eb210f2](https://github.com/askpt/code-metrics/commit/eb210f28d31cf406c1e26301d56edd6122f8cc30))
+
 ## [0.1.2](https://github.com/askpt/code-metrics/compare/v0.1.1...v0.1.2) (2025-09-20)
 
 
