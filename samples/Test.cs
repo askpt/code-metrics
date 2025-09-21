@@ -111,18 +111,18 @@ namespace ComplexityTest
 
         public void Add(IEnumerable<string> strings)
         #if NET7_0_OR_GREATER
-            => this._strings.PushRange(strings as string[] ?? strings.ToArray());
+            => this._strings.AddRange(strings as string[] ?? strings.ToArray());
         #else
         {
             if (strings is string[] array)
             {
                 if (array.Length > 0)
-                    this._strings.PushRange(array);
+                    this._strings.AddRange(array);
                 return;
             }
             array = strings.ToArray();
             if (array.Length > 0)
-                this._strings.PushRange(array);
+                this._strings.AddRange(array);
         }
         #endif
     }

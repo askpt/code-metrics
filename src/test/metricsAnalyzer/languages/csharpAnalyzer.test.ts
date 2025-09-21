@@ -672,4 +672,180 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1);
     });
   });
+
+  suite("Preprocessor Directives Support", () => {
+    test("should handle method split by #if/#else/#endif", () => {
+      const sourceCode = `
+                using System;
+                using System.Collections.Generic;
+
+                public class Test {
+                    public void ProcessData(IEnumerable<string> data)
+                    #if NET7_0_OR_GREATER
+                        => ProcessFast(data);
+                    #else
+                    {
+                        if (data != null) {
+                            ProcessSlow(data);
+                        }
+                    }
+                    #endif
+
+                    private void ProcessFast(IEnumerable<string> data) { }
+                    private void ProcessSlow(IEnumerable<string> data) { }
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      // Should find 3 methods
+      assert.strictEqual(results.length, 3);
+
+      // Find the main method
+      const mainMethod = results.find((r) => r.name === "ProcessData");
+      assert.ok(mainMethod, "Should find ProcessData method");
+
+      // Should detect complexity from the #else block
+      assert.ok(
+        mainMethod.complexity > 0,
+        "Should detect complexity in preprocessor blocks"
+      );
+
+      // Should have details explaining the complexity
+      assert.ok(
+        mainMethod.details.length > 0,
+        "Should provide complexity details"
+      );
+    });
+
+    test("should handle conditional operator in preprocessor block", () => {
+      const sourceCode = `
+                public class Calculator {
+                    public string GetValue(bool flag)
+                    #if DEBUG
+                        => flag ? "debug-true" : "debug-false";
+                    #else
+                        => flag ? "release-true" : "release-false";
+                    #endif
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "GetValue");
+
+      // Should detect ternary operators in both branches
+      assert.ok(results[0].complexity > 0, "Should detect ternary operators");
+
+      const ternaryDetails = results[0].details.filter((d) =>
+        d.reason.includes("ternary")
+      );
+      assert.ok(
+        ternaryDetails.length > 0,
+        "Should have ternary operator details"
+      );
+    });
+
+    test("should handle logical operators in preprocessor blocks", () => {
+      const sourceCode = `
+                public class Validator {
+                    public bool IsValid(int x, int y)
+                    #if STRICT
+                        => x > 0 && y > 0 && x < 100 && y < 100;
+                    #else
+                        => x > 0 || y > 0;
+                    #endif
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "IsValid");
+
+      // Should detect logical operators
+      assert.ok(results[0].complexity > 0, "Should detect logical operators");
+
+      const logicalDetails = results[0].details.filter((d) =>
+        d.reason.includes("logical operator")
+      );
+      assert.ok(
+        logicalDetails.length > 0,
+        "Should have logical operator details"
+      );
+    });
+
+    test("should handle complex preprocessor case with multiple constructs", () => {
+      const sourceCode = `
+                using System.Collections.Generic;
+
+                public class DataProcessor {
+                    private List<string> _strings = new List<string>();
+
+                    public void Add(IEnumerable<string> strings)
+                    #if NET7_0_OR_GREATER
+                        => this._strings.AddRange(strings as string[] ?? strings.ToArray());
+                    #else
+                    {
+                        if (strings is string[] array)
+                        {
+                            if (array.Length > 0)
+                                this._strings.AddRange(array);
+                            return;
+                        }
+                        array = strings.ToArray();
+                        if (array.Length > 0)
+                            this._strings.AddRange(array);
+                    }
+                    #endif
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Add");
+
+      // Should detect complexity from both preprocessor branches
+      assert.ok(
+        results[0].complexity >= 3,
+        `Expected complexity >= 3, got ${results[0].complexity}`
+      );
+
+      // Should have multiple complexity details
+      assert.ok(
+        results[0].details.length >= 3,
+        `Expected >= 3 details, got ${results[0].details.length}`
+      );
+    });
+
+    test("should handle nested preprocessor directives", () => {
+      const sourceCode = `
+                public class Feature {
+                    public string GetFeature(bool enabled)
+                    #if FEATURE_A
+                        #if DEBUG
+                            => enabled ? "A-Debug" : "A-Release";
+                        #else
+                            => enabled ? "A-Release" : "A-Default";
+                        #endif
+                    #else
+                        => "Disabled";
+                    #endif
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "GetFeature");
+
+      // Should detect complexity from nested preprocessor blocks
+      assert.ok(
+        results[0].complexity > 0,
+        "Should detect complexity in nested preprocessor blocks"
+      );
+    });
+  });
 });
