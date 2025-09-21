@@ -1,0 +1,17 @@
+{
+  "all": true,
+  "include": [
+    "out/**/*.js"
+  ],
+  "exclude": [
+    "out/test/**/*",
+    "out/unit/**/*"
+  ],
+  "reporter": [
+    "text",
+    "lcov",
+    "html"
+  ],
+  "reports-dir": "./coverage",
+  "clean": true
+}
