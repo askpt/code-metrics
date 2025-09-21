@@ -13,6 +13,9 @@
     "url": "https://github.com/askpt/code-metrics/issues"
   },
   "icon": "resources/icon.png",
+  "sponsor": {
+    "url": "https://github.com/sponsors/askpt"
+  },
   "engines": {
     "vscode": "^1.103.0"
   },
