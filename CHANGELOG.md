@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4](https://github.com/askpt/code-metrics/compare/v0.1.3...v0.1.4) (2025-09-21)
+
+
+### 🐛 Bug Fixes
+
+* Enhance C# metrics analyzer for preprocessor directive complexity ([#44](https://github.com/askpt/code-metrics/issues/44)) ([7e42f01](https://github.com/askpt/code-metrics/commit/7e42f011433f978b0f7bd5dd2c590c4bbe170d1f))
+
+
+### 🧹 Chore
+
+* Add logo and fix icon path in package.json ([#34](https://github.com/askpt/code-metrics/issues/34)) ([7072d7e](https://github.com/askpt/code-metrics/commit/7072d7e28a6bc8b689c5080d74bc3448ab342d00))
+* Update CHANGELOG.md with recent changes ([#36](https://github.com/askpt/code-metrics/issues/36)) ([ae74e05](https://github.com/askpt/code-metrics/commit/ae74e053b799c5d1582d22b1279a0c3b6894f5a4))
+
 ## [0.1.3](https://github.com/askpt/code-metrics/compare/v0.1.2...v0.1.3) (2025-09-20)
 
 
