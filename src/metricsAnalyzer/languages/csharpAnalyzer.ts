@@ -262,19 +262,70 @@ export class CSharpMetricsAnalyzer {
    * Finds the function body within a function declaration node.
    *
    * Looks for either a block statement (traditional method body) or
-   * an arrow expression clause (expression-bodied method).
+   * an arrow expression clause (expression-bodied method). When preprocessor
+   * directives are present, the body might be separated from the method signature,
+   * so we also search sibling nodes for potential method bodies.
    *
    * @param node - The function declaration syntax node
    * @returns The body node or null if no body is found (abstract/interface methods)
    */
   private getFunctionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-    // Look for block or arrow expression body
-    return (
-      node.children.find(
-        (child) =>
-          child.type === "block" || child.type === "arrow_expression_clause"
-      ) || null
+    // First, try to find body in immediate children (normal case)
+    const directBody = node.children.find(
+      (child) =>
+        child.type === "block" || child.type === "arrow_expression_clause"
     );
+
+    if (directBody) {
+      return directBody;
+    }
+
+    // If no body found in children, the method might be split by preprocessor directives
+    // Check if this method ends with a semicolon (indicating it's incomplete due to preprocessing)
+    const lastChild = node.children[node.children.length - 1];
+    if (lastChild && lastChild.type === ";") {
+      // This looks like a method signature split by preprocessor - try to find body in siblings
+      const parent = node.parent;
+      if (parent) {
+        // Look for preprocessor blocks that immediately follow this method
+        const methodIndex = parent.children.indexOf(node);
+        for (let i = methodIndex + 1; i < parent.children.length; i++) {
+          const sibling = parent.children[i];
+
+          // If we find a preproc_if, look inside it for method body content
+          if (sibling.type === "preproc_if") {
+            // Create a synthetic body by analyzing the content within the preprocessor block
+            return this.createSyntheticBodyFromPreprocessor(sibling);
+          }
+
+          // Stop searching if we hit another method or major declaration
+          if (
+            this.isFunctionDeclaration(sibling) ||
+            sibling.type === "class_declaration" ||
+            sibling.type === "interface_declaration"
+          ) {
+            break;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Creates a synthetic function body node by analyzing content within preprocessor blocks.
+   * This handles cases where method bodies are fragmented by #if/#else/#endif blocks.
+   *
+   * @param preprocessorNode - The preprocessor directive node to analyze
+   * @returns A synthetic body node that can be analyzed for complexity
+   */
+  private createSyntheticBodyFromPreprocessor(
+    preprocessorNode: Parser.SyntaxNode
+  ): Parser.SyntaxNode {
+    // Return the preprocessor node itself - we'll handle the complexity analysis
+    // by looking at all nodes within it during the visit process
+    return preprocessorNode;
   }
 
   /**
@@ -379,9 +430,248 @@ export class CSharpMetricsAnalyzer {
       case "goto_statement":
         return 1;
 
+      // Handle ERROR nodes that might contain complexity patterns due to preprocessor issues
+      case "ERROR":
+        return this.getComplexityFromErrorNode(node);
+
+      // Handle malformed field declarations that might contain complexity patterns
+      // This can happen when preprocessor directives cause ternary operators to be
+      // misinterpreted as field declarations
+      case "field_declaration":
+      case "variable_declaration":
+        return this.getComplexityFromMalformedDeclaration(node);
+
       default:
         return 0;
     }
+  }
+
+  /**
+   * Analyzes ERROR nodes for complexity patterns that may have been fragmented by preprocessor directives.
+   * This is a heuristic approach to handle cases where tree-sitter cannot parse the code properly
+   * due to preprocessor directives splitting method bodies.
+   *
+   * @param errorNode - The ERROR syntax node to analyze
+   * @returns The complexity increment found within the error node
+   */
+  private getComplexityFromErrorNode(errorNode: Parser.SyntaxNode): number {
+    const text = this.sourceText.substring(
+      errorNode.startIndex,
+      errorNode.endIndex
+    );
+    let complexity = 0;
+
+    // Look for common complexity patterns in the text
+    // Note: This is a heuristic approach and may not catch all cases
+
+    // Look for if keywords that might indicate control flow
+    if (/\bif\s*\(/.test(text)) {
+      complexity += 1;
+    }
+
+    // Look for while loops
+    if (/\bwhile\s*\(/.test(text)) {
+      complexity += 1;
+    }
+
+    // Look for for loops
+    if (/\bfor\s*\(/.test(text)) {
+      complexity += 1;
+    }
+
+    // Look for foreach loops
+    if (/\bforeach\s*\(/.test(text)) {
+      complexity += 1;
+    }
+
+    // Look for logical operators - be more precise about detection
+    const logicalOpMatches = text.match(/&&|\|\|/g);
+    if (logicalOpMatches) {
+      complexity += logicalOpMatches.length;
+    }
+
+    // Look for ternary operators - check for fragments too
+    // Handle both complete ternary and fragmented ternary parts
+    if (
+      /\?[^?]*:/.test(text) ||
+      (/\?/.test(text) && this.hasMatchingColonInSiblings(errorNode))
+    ) {
+      complexity += 1;
+    }
+
+    // Look for try-catch blocks
+    if (/\btry\s*\{/.test(text)) {
+      complexity += 1;
+    }
+    if (/\bcatch\s*\(/.test(text)) {
+      complexity += 1;
+    }
+
+    return complexity;
+  }
+
+  /**
+   * Checks if there are matching colon tokens in sibling nodes to complete a ternary operator.
+   * This handles cases where the ternary operator is split across multiple ERROR nodes.
+   *
+   * @param errorNode - The ERROR node that contains a question mark
+   * @returns True if a matching colon is found in nearby nodes
+   */
+  private hasMatchingColonInSiblings(errorNode: Parser.SyntaxNode): boolean {
+    const parent = errorNode.parent;
+    if (!parent) {
+      return false;
+    }
+
+    const errorIndex = parent.children.indexOf(errorNode);
+
+    // Look in the next few sibling nodes for a colon
+    for (
+      let i = errorIndex + 1;
+      i < Math.min(errorIndex + 3, parent.children.length);
+      i++
+    ) {
+      const sibling = parent.children[i];
+      const siblingText = this.sourceText.substring(
+        sibling.startIndex,
+        sibling.endIndex
+      );
+      if (siblingText.includes(":") && !siblingText.includes("::")) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Analyzes malformed field/variable declarations for complexity patterns.
+   * This handles cases where preprocessor directives cause ternary operators or other
+   * complexity patterns to be misinterpreted as variable declarations.
+   *
+   * @param declarationNode - The field_declaration or variable_declaration node to analyze
+   * @returns The complexity increment found within the declaration
+   */
+  private getComplexityFromMalformedDeclaration(
+    declarationNode: Parser.SyntaxNode
+  ): number {
+    // Only analyze declarations that are likely misinterpreted due to preprocessor issues
+    // We check if this declaration is inside a preprocessor block and contains complexity patterns
+    if (!this.isInPreprocessorBlock(declarationNode)) {
+      return 0; // Normal field declarations don't contribute to complexity
+    }
+
+    const text = this.sourceText.substring(
+      declarationNode.startIndex,
+      declarationNode.endIndex
+    );
+    let complexity = 0;
+
+    // Look for ternary operators that got misinterpreted as declarations
+    // Pattern: identifier ? value : value
+    if (/\w+\s*\?\s*[^?]+\s*:\s*[^:;]+/.test(text)) {
+      complexity += 1;
+    }
+
+    // Look for logical operators
+    const logicalOpMatches = text.match(/&&|\|\|/g);
+    if (logicalOpMatches) {
+      complexity += logicalOpMatches.length;
+    }
+
+    return complexity;
+  }
+
+  /**
+   * Checks if a node is within a preprocessor block (preproc_if, preproc_else, etc.)
+   *
+   * @param node - The node to check
+   * @returns True if the node is within a preprocessor directive block
+   */
+  private isInPreprocessorBlock(node: Parser.SyntaxNode): boolean {
+    let parent = node.parent;
+    while (parent) {
+      if (parent.type.startsWith("preproc_")) {
+        return true;
+      }
+      parent = parent.parent;
+    }
+    return false;
+  }
+
+  /**
+   * Generates a human-readable reason for complexity found in ERROR nodes.
+   *
+   * @param errorNode - The ERROR syntax node to analyze
+   * @returns A descriptive string explaining the complexity increment
+   */
+  private getComplexityReasonFromErrorNode(
+    errorNode: Parser.SyntaxNode
+  ): string {
+    const text = this.sourceText.substring(
+      errorNode.startIndex,
+      errorNode.endIndex
+    );
+
+    // Try to identify what type of complexity pattern was found
+    if (/\bif\s*\(/.test(text)) {
+      return "if statement (in preprocessor block)";
+    }
+    if (/\bwhile\s*\(/.test(text)) {
+      return "while loop (in preprocessor block)";
+    }
+    if (/\bfor\s*\(/.test(text)) {
+      return "for loop (in preprocessor block)";
+    }
+    if (/\bforeach\s*\(/.test(text)) {
+      return "foreach loop (in preprocessor block)";
+    }
+    if (/&&|\|\|/.test(text)) {
+      return "logical operator (in preprocessor block)";
+    }
+    if (
+      /\?[^?]*:/.test(text) ||
+      (/\?/.test(text) && this.hasMatchingColonInSiblings(errorNode))
+    ) {
+      return "ternary operator (in preprocessor block)";
+    }
+    if (/\btry\s*\{/.test(text)) {
+      return "try statement (in preprocessor block)";
+    }
+    if (/\bcatch\s*\(/.test(text)) {
+      return "catch clause (in preprocessor block)";
+    }
+
+    return "complexity pattern (in preprocessor block)";
+  }
+
+  /**
+   * Generates a human-readable reason for complexity found in malformed declarations.
+   *
+   * @param declarationNode - The field_declaration or variable_declaration node to analyze
+   * @returns A descriptive string explaining the complexity increment
+   */
+  private getComplexityReasonFromMalformedDeclaration(
+    declarationNode: Parser.SyntaxNode
+  ): string {
+    if (!this.isInPreprocessorBlock(declarationNode)) {
+      return "complexity in declaration"; // Fallback
+    }
+
+    const text = this.sourceText.substring(
+      declarationNode.startIndex,
+      declarationNode.endIndex
+    );
+
+    // Try to identify what type of complexity pattern was found
+    if (/\w+\s*\?\s*[^?]+\s*:\s*[^:;]+/.test(text)) {
+      return "ternary operator (in preprocessor block)";
+    }
+    if (/&&|\|\|/.test(text)) {
+      return "logical operator (in preprocessor block)";
+    }
+
+    return "complexity pattern in declaration (preprocessor block)";
   }
 
   /**
@@ -454,6 +744,11 @@ export class CSharpMetricsAnalyzer {
         return "break statement (nested)";
       case "goto_statement":
         return "goto statement";
+      case "ERROR":
+        return this.getComplexityReasonFromErrorNode(node);
+      case "field_declaration":
+      case "variable_declaration":
+        return this.getComplexityReasonFromMalformedDeclaration(node);
       default:
         return "unknown complexity source";
     }

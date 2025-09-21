@@ -48,7 +48,7 @@ namespace ComplexityTest
         public string ProcessData(List<int> numbers, bool includeNegatives)
         {
             var result = new List<string>();
-            
+
             foreach (var number in numbers)
             {
                 if (number > 0)
@@ -103,8 +103,27 @@ namespace ComplexityTest
                     }
                 }
             }
-            
+
             return false;
         }
+
+        private List<string> _strings = [];
+
+        public void Add(IEnumerable<string> strings)
+        #if NET7_0_OR_GREATER
+            => this._strings.AddRange(strings as string[] ?? strings.ToArray());
+        #else
+        {
+            if (strings is string[] array)
+            {
+                if (array.Length > 0)
+                    this._strings.AddRange(array);
+                return;
+            }
+            array = strings.ToArray();
+            if (array.Length > 0)
+                this._strings.AddRange(array);
+        }
+        #endif
     }
 }
