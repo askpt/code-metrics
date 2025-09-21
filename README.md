@@ -1,5 +1,7 @@
 # Code Metrics
 
+[![codecov](https://codecov.io/gh/askpt/code-metrics/graph/badge.svg)](https://codecov.io/gh/askpt/code-metrics)
+
 A Visual Studio Code extension that calculates and displays **Cognitive Complexity** metrics based on [SonarSource's Cognitive Complexity specification](https://www.sonarsource.com/docs/cognitiveComplexity/).
 
 ## Features
