@@ -9,6 +9,9 @@
     "type": "git",
     "url": "https://github.com/askpt/code-metrics.git"
   },
+  "bugs": {
+    "url": "https://github.com/askpt/code-metrics/issues"
+  },
   "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.103.0"
