@@ -29,9 +29,9 @@ jobs:
         if: runner.os != 'Linux'
       - name: Upload coverage to Codecov
         if: runner.os == 'Linux'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage/lcov.info
+          directory: ./coverage
           fail_ci_if_error: false
           verbose: true
         env:
