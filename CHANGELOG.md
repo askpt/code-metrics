@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/askpt/code-metrics/compare/v0.1.5...v0.1.6) (2025-11-28)
+
+
+### 🐛 Bug Fixes
+
+* upgrade engines.vscode to ^1.106.0 to match @types/vscode version ([#99](https://github.com/askpt/code-metrics/issues/99)) ([fa6b821](https://github.com/askpt/code-metrics/commit/fa6b8219e565cc5e121fde8a84897f56531ed0f7))
+
 ## [0.1.5](https://github.com/askpt/code-metrics/compare/v0.1.4...v0.1.5) (2025-11-28)
 
 
