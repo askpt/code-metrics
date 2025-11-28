@@ -17,7 +17,7 @@
     "url": "https://github.com/sponsors/askpt"
   },
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.106.0"
   },
   "keywords": [
     "complexity",
