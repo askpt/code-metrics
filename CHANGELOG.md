@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/askpt/code-metrics/compare/v0.1.4...v0.1.5) (2025-11-28)
+
+
+### 🐛 Bug Fixes
+
+* Register CodeLens command to suppress click error ([#97](https://github.com/askpt/code-metrics/issues/97)) ([8b3e87e](https://github.com/askpt/code-metrics/commit/8b3e87e27376674b9806482574633040ac1b0676))
+
 ## [0.1.4](https://github.com/askpt/code-metrics/compare/v0.1.3...v0.1.4) (2025-09-21)
 
 
