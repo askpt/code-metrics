@@ -9,6 +9,19 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 suite("Extension Activation Tests", () => {
+  // Ensure extension is activated before running tests
+  suiteSetup(async () => {
+    // Get the extension
+    const extension = vscode.extensions.getExtension("dev-asilva.code-metrics");
+    
+    if (extension) {
+      // Activate the extension if it's not already active
+      if (!extension.isActive) {
+        await extension.activate();
+      }
+    }
+  });
+
   test("should register cognitiveComplexity.showFunctionDetails command", async () => {
     // Get all registered commands
     const commands = await vscode.commands.getCommands(true);
