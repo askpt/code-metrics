@@ -37,11 +37,14 @@ suite("Extension Activation Tests", () => {
 
   test("should execute cognitiveComplexity.showFunctionDetails command with arguments", async () => {
     // Test with function complexity data and URI (like the CodeLens provider would call it)
-    const mockFunctionData = {
+    const mockFunctionData: import("../metricsAnalyzer/metricsAnalyzerFactory").UnifiedFunctionMetrics = {
       name: "TestFunction",
       complexity: 5,
+      details: [],
       startLine: 10,
       endLine: 20,
+      startColumn: 0,
+      endColumn: 50,
     };
 
     const mockUri = vscode.Uri.file("/test/file.cs");

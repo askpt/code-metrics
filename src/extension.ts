@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
   const showFunctionDetailsCommand = vscode.commands.registerCommand(
     "cognitiveComplexity.showFunctionDetails",
     (func: UnifiedFunctionMetrics, uri: vscode.Uri) => {
-      // No-op: Suppress command not found error when CodeLens is clicked
+      // No-op implementation: Command registered to prevent 'not found' error when CodeLens is clicked
       // Future enhancement: Could show function details in a webview or output channel
       // Parameters received: func (function metrics data), uri (document URI)
     }
