@@ -37,7 +37,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "cognitiveComplexity.showFunctionDetails",
+        "title": "Show Function Complexity Details"
+      }
+    ],
     "configuration": {
       "title": "Code Metrics",
       "properties": {

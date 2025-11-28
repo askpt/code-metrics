@@ -7,10 +7,20 @@ import { registerCodeLensProvider } from "./providers/codeLensProvider";
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   console.log("Code Metrics extension is now active!");
+  
+  // Register command for CodeLens clicks (no-op to suppress errors)
+  const showFunctionDetailsCommand = vscode.commands.registerCommand(
+    "cognitiveComplexity.showFunctionDetails",
+    () => {
+      // No-op: Suppress command not found error when CodeLens is clicked
+      // Future enhancement: Could show function details in a webview or output channel
+    }
+  );
+
   // Register providers
   const codeLensDisposable = registerCodeLensProvider();
 
-  context.subscriptions.push(codeLensDisposable);
+  context.subscriptions.push(showFunctionDetailsCommand, codeLensDisposable);
 }
 
 // This method is called when your extension is deactivated
