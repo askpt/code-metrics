@@ -108,7 +108,7 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.7.1",
     "c8": "^10.1.2",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "mocha": "^11.7.5",
     "typescript": "^5.9.3"
   },
