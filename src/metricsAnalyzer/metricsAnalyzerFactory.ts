@@ -139,6 +139,7 @@ const languageAnalyzers: Record<
   (sourceText: string) => UnifiedFunctionMetrics[]
 > = {
   csharp: createCSharpAnalyzer(),
+  go: createGoAnalyzer(),
 };
 
 /**
@@ -172,6 +173,45 @@ function createCSharpAnalyzer(): (
         reason: detail.reason,
         line: detail.line + 1, // C# analyzer uses 0-based, normalize to 1-based
         column: detail.column + 1, // C# analyzer uses 0-based, normalize to 1-based
+        nesting: detail.nesting,
+      })),
+      startLine: func.startLine,
+      endLine: func.endLine,
+      startColumn: func.startColumn,
+      endColumn: func.endColumn,
+    }));
+  };
+}
+
+/**
+ * Creates a Go cognitive complexity analyzer function.
+ *
+ * @returns A function that analyzes Go source code and returns an array of function complexity metrics.
+ *          The returned analyzer function:
+ *          - Takes Go source code as a string parameter
+ *          - Analyzes cognitive complexity of all functions in the code
+ *          - Returns an array of UnifiedFunctionMetrics objects containing:
+ *            - Function name
+ *            - Complexity score
+ *            - Detailed breakdown of complexity increments with line/column positions (1-based indexing)
+ *            - Function boundaries (start/end line and column)
+ *
+ * @remarks
+ * The analyzer dynamically requires the Go analyzer module and normalizes its output
+ * from 0-based to 1-based line and column indexing for consistency.
+ */
+function createGoAnalyzer(): (sourceText: string) => UnifiedFunctionMetrics[] {
+  return function (sourceText: string) {
+    const { GoMetricsAnalyzer } = require("./languages/goAnalyzer");
+    const functions = GoMetricsAnalyzer.analyzeFile(sourceText);
+    return functions.map((func: any) => ({
+      name: func.name,
+      complexity: func.complexity,
+      details: func.details.map((detail: any) => ({
+        increment: detail.increment,
+        reason: detail.reason,
+        line: detail.line + 1, // Go analyzer uses 0-based, normalize to 1-based
+        column: detail.column + 1, // Go analyzer uses 0-based, normalize to 1-based
         nesting: detail.nesting,
       })),
       startLine: func.startLine,
