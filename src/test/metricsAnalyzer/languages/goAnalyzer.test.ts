@@ -700,7 +700,7 @@ package main
 
 func ProcessData(items []int, includeNegatives bool) []int {
     result := make([]int, 0)
-    
+
     for _, item := range items {
         if item > 0 {
             result = append(result, item)
@@ -710,13 +710,13 @@ func ProcessData(items []int, includeNegatives bool) []int {
             continue
         }
     }
-    
+
     if len(result) > 10 {
         return result[:10]
     } else if len(result) == 0 {
         return nil
     }
-    
+
     return result
 }
 `;
@@ -725,7 +725,10 @@ func ProcessData(items []int, includeNegatives bool) []int {
 
       assert.strictEqual(results.length, 1);
       // for(1) + if(1) + if(1) + &&(1) + continue(1) + if(1) + if(1) = 7
-      assert.ok(results[0].complexity >= 6, "Should have significant complexity");
+      assert.ok(
+        results[0].complexity >= 6,
+        "Should have significant complexity"
+      );
     });
   });
 
@@ -810,7 +813,10 @@ func IfElseChain(value int) string {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       // Each if statement adds complexity
-      assert.ok(results[0].complexity >= 3, "Should count multiple if statements");
+      assert.ok(
+        results[0].complexity >= 3,
+        "Should count multiple if statements"
+      );
     });
   });
 
