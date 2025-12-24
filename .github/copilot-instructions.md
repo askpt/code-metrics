@@ -7,7 +7,7 @@
 **Target Runtime**: VS Code Extension Host (Node.js 22.x)  
 **Repository Size**: Small-medium (~20 source files)
 
-This repository contains a VS Code extension called "code-complexity" that calculates and displays Cognitive Complexity metrics based on SonarSource's specification. The extension analyzes C# code files and provides CodeLens overlays showing complexity scores with color-coded indicators (green/yellow/red).
+This repository contains a VS Code extension called "code-complexity" that calculates and displays Cognitive Complexity metrics based on SonarSource's specification. The extension analyzes C# and Go code files and provides CodeLens overlays showing complexity scores with color-coded indicators (green/yellow/red).
 
 **Key Features**:
 
@@ -15,6 +15,7 @@ This repository contains a VS Code extension called "code-complexity" that calcu
 - CodeLens integration showing complexity above functions
 - Configurable warning/error thresholds
 - Tree-sitter based parsing for accurate analysis
+- Multi-language support (C# and Go)
 
 ## ⚠️ Important: Semantic Commit Requirements
 
@@ -162,11 +163,11 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 - Default thresholds: warning=10, error=15
 - Exclude patterns for test files and build outputs
 
-**Complexity Analysis** (`src/complexityAnalyzer/`):
+**Complexity Analysis** (`src/metricsAnalyzer/`):
 
 - Factory pattern for language-specific analyzers
-- Tree-sitter based parsing for C#
-- Returns `UnifiedFunctionComplexity` objects with details
+- Tree-sitter based parsing for C# and Go
+- Returns `UnifiedFunctionMetrics` objects with details
 
 **CodeLens Provider** (`src/providers/codeLensProvider.ts`):
 
@@ -180,6 +181,7 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 
 - `tree-sitter`: ^0.21.1 (code parsing)
 - `tree-sitter-c-sharp`: ^0.23.1 (C# language grammar)
+- `tree-sitter-go`: ^0.21.0 (Go language grammar)
 
 **Development Dependencies:**
 
@@ -259,9 +261,9 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 2. **Always run `npm install` first** - required for TypeScript compilation
 3. **Always compile before testing** - `npm run compile` updates the `out/` directory
 4. **Tests may fail in sandboxed environments** - this is expected, not a code issue
-5. **Extension activates only on some files** - test with the `samples/` files in workspace
+5. **Extension activates only on C# and Go files** - test with the `samples/` files in workspace
 6. **Build output is in `out/` directory** - this is the actual extension code
-7. **Use samples/ for complexity validation** - pre-built complex code
+7. **Use samples/ for complexity validation** - pre-built complex code (Test.cs for C#, Test.go for Go)
 8. **Configuration changes require extension restart** - reload VS Code window
 
 ## Trust These Instructions

@@ -11,6 +11,7 @@ export function run(): Promise<void> {
         "../configuration.test",
         "../metricsAnalyzer/metricsAnalyzerFactory.test",
         "../metricsAnalyzer/languages/csharpAnalyzer.test",
+        "../metricsAnalyzer/languages/goAnalyzer.test",
         "../providers/codeLensProvider.test",
       ];
 

@@ -9,9 +9,16 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 - **Real-time Analysis**: Analyzes code metrics as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
-- **Multi-language Support**: Currently supports C# with more languages planned
+- **Multi-language Support**: Currently supports C# and Go with more languages planned
 - **Configurable Thresholds**: Customize warning and error complexity thresholds
 - **Smart Exclusions**: Automatically excludes test files, build artifacts, and other specified patterns
+
+### Supported Languages
+
+| Language | Status | Notes |
+|----------|--------|-------|
+| C# | ✅ Supported | Full support including methods, constructors, properties, lambdas |
+| Go | ✅ Supported | Full support including functions, methods, closures, goroutines |
 
 ### What is Cognitive Complexity?
 

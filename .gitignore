@@ -132,3 +132,4 @@ obj/
 # Test results
 test-results/
 coverage/
+root/

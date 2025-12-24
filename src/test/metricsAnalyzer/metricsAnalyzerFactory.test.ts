@@ -13,6 +13,7 @@ suite("Metrics Analyzer Factory Tests", () => {
       assert.ok(Array.isArray(languages));
       assert.ok(languages.length > 0);
       assert.ok(languages.includes("csharp"));
+      assert.ok(languages.includes("go"));
     });
 
     test("should return consistent language list", () => {
@@ -506,6 +507,342 @@ suite("Metrics Analyzer Factory Tests", () => {
       assert.ok(isComplexConditionFunction.complexity > 5);
 
       // Verify that all functions have reasonable position information
+      results.forEach((func) => {
+        assert.ok(func.startLine >= 0);
+        assert.ok(func.endLine >= func.startLine);
+        assert.ok(func.startColumn >= 0);
+        assert.ok(func.endColumn >= 0);
+      });
+    });
+  });
+
+  suite("Go Language Analysis", () => {
+    test("should analyze simple Go function", () => {
+      const sourceCode = `
+package main
+
+func Add(a, b int) int {
+    return a + b
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].complexity, 0);
+      assert.strictEqual(results[0].details.length, 0);
+    });
+
+    test("should analyze Go function with complexity", () => {
+      const sourceCode = `
+package main
+
+func Max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Max");
+      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].details.length, 1);
+      assert.strictEqual(results[0].details[0].reason, "if statement");
+      assert.strictEqual(results[0].details[0].increment, 1);
+    });
+
+    test("should handle complex Go code with multiple functions", () => {
+      const sourceCode = `
+package main
+
+func Add(a, b int) int {
+    return a + b
+}
+
+func Divide(a, b int) int {
+    if b == 0 {
+        panic("division by zero")
+    }
+    return a / b
+}
+
+func ProcessNumbers(numbers []int) string {
+    if numbers == nil || len(numbers) == 0 {
+        return "Empty"
+    }
+
+    for _, number := range numbers {
+        if number < 0 {
+            continue
+        }
+    }
+
+    return "Processed"
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 3);
+
+      const addFunction = results.find((f) => f.name === "Add");
+      const divideFunction = results.find((f) => f.name === "Divide");
+      const processFunction = results.find((f) => f.name === "ProcessNumbers");
+
+      assert.ok(addFunction);
+      assert.ok(divideFunction);
+      assert.ok(processFunction);
+
+      assert.strictEqual(addFunction.complexity, 0);
+      assert.strictEqual(divideFunction.complexity, 1); // if statement
+      // if(1) + ||(2) + for(1) + nested if(2) + nested continue(3) = 9
+      assert.strictEqual(processFunction.complexity, 9);
+    });
+
+    test("should handle Go code with logical operators", () => {
+      const sourceCode = `
+package main
+
+func ComplexCondition(a, b, c bool) bool {
+    return a && b || c
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2); // && and || operators
+      assert.strictEqual(results[0].details.length, 2);
+
+      const andDetail = results[0].details.find((d) => d.reason.includes("&&"));
+      const orDetail = results[0].details.find((d) => d.reason.includes("||"));
+
+      assert.ok(andDetail);
+      assert.ok(orDetail);
+    });
+
+    test("should handle Go methods with receivers", () => {
+      const sourceCode = `
+package main
+
+type Calculator struct{}
+
+func (c Calculator) Add(a, b int) int {
+    return a + b
+}
+
+func (c *Calculator) MultiplyWithCheck(a, b int) int {
+    if a < 0 || b < 0 {
+        return 0
+    }
+    return a * b
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 2);
+
+      const addMethod = results.find((f) => f.name === "Calculator.Add");
+      const multiplyMethod = results.find(
+        (f) => f.name === "*Calculator.MultiplyWithCheck"
+      );
+
+      assert.ok(addMethod);
+      assert.ok(multiplyMethod);
+
+      assert.strictEqual(addMethod.complexity, 0);
+      assert.strictEqual(multiplyMethod.complexity, 3); // if(1) + ||(2 nested in if)
+    });
+
+    test("should handle Go switch statements", () => {
+      const sourceCode = `
+package main
+
+func SwitchTest(value int) string {
+    switch value {
+    case 1:
+        return "one"
+    case 2:
+        return "two"
+    default:
+        return "other"
+    }
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].details[0].reason, "switch statement");
+    });
+
+    test("should handle Go type switch statements", () => {
+      const sourceCode = `
+package main
+
+func TypeSwitchTest(value interface{}) string {
+    switch value.(type) {
+    case int:
+        return "integer"
+    case string:
+        return "string"
+    default:
+        return "unknown"
+    }
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].details[0].reason, "type switch statement");
+    });
+
+    test("should handle Go select statements", () => {
+      const sourceCode = `
+package main
+
+func SelectTest(ch chan int) {
+    select {
+    case v := <-ch:
+        _ = v
+    default:
+        return
+    }
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].details[0].reason, "select statement");
+    });
+
+    test("should normalize Go line numbers to 1-based indexing", () => {
+      const sourceCode = `package main
+
+func Method() {
+    if true {
+        return
+    }
+}`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].details.length, 1);
+
+      // The if statement should be on line 4 (1-based)
+      // Original analyzer returns 0-based (line 3), factory should normalize to 1-based (line 4)
+      assert.strictEqual(results[0].details[0].line, 4);
+    });
+
+    test("should handle Go recover calls", () => {
+      const sourceCode = `
+package main
+
+func SafeOperation() {
+    defer func() {
+        if r := recover(); r != nil {
+            // handle panic
+        }
+    }()
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 1);
+      // Should have complexity for recover call
+      const hasRecover = results[0].details.some(
+        (d) => d.reason === "recover call"
+      );
+      assert.ok(hasRecover, "Should detect recover call");
+    });
+  });
+
+  suite("Integration with Real-World Go Code", () => {
+    test("should analyze complex real-world Go example", () => {
+      const sourceCode = `
+package main
+
+import "fmt"
+
+func Add(a, b int) int {
+    return a + b
+}
+
+func ProcessData(numbers []int, includeNegatives bool) []string {
+    result := make([]string, 0)
+
+    for _, number := range numbers {
+        if number > 0 {
+            result = append(result, fmt.Sprintf("%d", number))
+        } else if includeNegatives && number < 0 {
+            result = append(result, fmt.Sprintf("(%d)", -number))
+        } else {
+            continue
+        }
+    }
+
+    if len(result) > 10 {
+        return result[:10]
+    } else if len(result) == 0 {
+        return nil
+    }
+
+    return result
+}
+
+func IsComplexCondition(value int, flag1, flag2 bool) bool {
+    if (value > 10 && flag1) || (value < 0 && flag2) {
+        for i := 0; i < value; i++ {
+            if i%2 == 0 && i%3 == 0 {
+                defer func() {
+                    if r := recover(); r != nil {
+                        // handle
+                    }
+                }()
+                if 100/i > 50 {
+                    return true
+                }
+            }
+        }
+    }
+
+    return false
+}
+`;
+
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "go");
+
+      assert.strictEqual(results.length, 3);
+
+      const addFunction = results.find((f) => f.name === "Add");
+      const processDataFunction = results.find((f) => f.name === "ProcessData");
+      const isComplexConditionFunction = results.find(
+        (f) => f.name === "IsComplexCondition"
+      );
+
+      assert.ok(addFunction);
+      assert.ok(processDataFunction);
+      assert.ok(isComplexConditionFunction);
+
+      // Add function should have no complexity
+      assert.strictEqual(addFunction.complexity, 0);
+
+      // ProcessData should have moderate complexity
+      assert.ok(processDataFunction.complexity > 0);
+      assert.ok(processDataFunction.complexity < 20);
       results.forEach((func) => {
         assert.ok(func.startLine >= 0);
         assert.ok(func.endLine >= func.startLine);
