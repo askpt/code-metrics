@@ -102,7 +102,7 @@ func Method(a, b, c bool) {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 4); // 2 ifs + 1 && + 1 ||
+      assert.strictEqual(results[0].complexity, 6); // 2 ifs + && (nested +2) + || (nested +2)
     });
 
     it("should handle loops correctly", () => {
@@ -124,8 +124,8 @@ func Method() {
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
 
-      const forLoop = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason.includes("for")
+      const forLoop = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("for")
       );
       const innerForLoop = results[0].details.find(
         (d: UnifiedMetricsDetail) => d.reason.includes("for") && d.nesting > 0
@@ -157,8 +157,8 @@ func Method(val int) string {
 
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
-      const switchDetail = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason.includes("switch")
+      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("switch")
       );
       assert.ok(switchDetail);
     });
@@ -182,8 +182,8 @@ func Method(ch1, ch2 chan int) {
 
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
-      const selectDetail = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason.includes("select")
+      const selectDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("select")
       );
       assert.ok(selectDetail);
     });
@@ -312,11 +312,11 @@ func Subtract(a, b int) int {
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
 
-      const forLoop = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason.includes("for")
+      const forLoop = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("for")
       );
-      const whileLoop = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason.includes("while")
+      const whileLoop = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("while")
       );
 
       assert.ok(forLoop);
