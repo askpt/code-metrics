@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/askpt/code-metrics/compare/v0.1.6...v0.2.0) (2025-12-24)
+
+
+### 🐛 Bug Fixes
+
+* Update complexity calculations in CSharpMetricsAnalyzer ([#115](https://github.com/askpt/code-metrics/issues/115)) ([0bbfbeb](https://github.com/askpt/code-metrics/commit/0bbfbebd1b1fd09dfdb200607d707c21c43d8c00))
+
+
+### ✨ New Features
+
+* Add Go language support and enhance metrics analysis ([#113](https://github.com/askpt/code-metrics/issues/113)) ([6061073](https://github.com/askpt/code-metrics/commit/60610730d09572899cfde8935dfb8978ad4831bd))
+
 ## [0.1.6](https://github.com/askpt/code-metrics/compare/v0.1.5...v0.1.6) (2025-11-28)
 
 
