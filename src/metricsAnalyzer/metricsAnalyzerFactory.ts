@@ -197,8 +197,9 @@ function createCSharpAnalyzer(): (
  *            - Function boundaries (start/end line and column)
  *
  * @remarks
- * The analyzer dynamically requires the Go analyzer module and normalizes its output
- * from 0-based to 1-based line and column indexing for consistency.
+ * The analyzer dynamically requires the Go analyzer module and normalizes the detail positions
+ * (line and column in the details array) from 0-based to 1-based indexing for consistency
+ * with the C# analyzer. Function boundary positions remain as returned by the analyzer.
  */
 function createGoAnalyzer(): (sourceText: string) => UnifiedFunctionMetrics[] {
   return function (sourceText: string) {

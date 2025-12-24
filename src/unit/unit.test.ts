@@ -11,6 +11,7 @@ import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
 import {
   MetricsAnalyzerFactory,
   UnifiedFunctionMetrics,
+  UnifiedMetricsDetail,
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { SampleCSharpCode } from "../test/testUtils";
 
@@ -123,11 +124,11 @@ func Method() {
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
 
-      const forLoop = results[0].details.find((d: any) =>
-        d.reason.includes("for")
+      const forLoop = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason.includes("for")
       );
       const innerForLoop = results[0].details.find(
-        (d: any) => d.reason.includes("for") && d.nesting > 0
+        (d: UnifiedMetricsDetail) => d.reason.includes("for") && d.nesting > 0
       );
 
       assert.ok(forLoop);
@@ -156,8 +157,8 @@ func Method(val int) string {
 
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
-      const switchDetail = results[0].details.find((d: any) =>
-        d.reason.includes("switch")
+      const switchDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason.includes("switch")
       );
       assert.ok(switchDetail);
     });
@@ -181,8 +182,8 @@ func Method(ch1, ch2 chan int) {
 
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
-      const selectDetail = results[0].details.find((d: any) =>
-        d.reason.includes("select")
+      const selectDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason.includes("select")
       );
       assert.ok(selectDetail);
     });
@@ -310,100 +311,11 @@ func Subtract(a, b int) int {
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].complexity > 0);
 
-      const forLoop = results[0].details.find((d: any) =>
-        d.reason.includes("for")
+      const forLoop = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason.includes("for")
       );
-      const whileLoop = results[0].details.find((d: any) =>
-        d.reason.includes("while")
-      );
-
-      assert.ok(forLoop);
-      assert.ok(whileLoop);
-      assert.ok(whileLoop.nesting > forLoop.nesting);
-    });
-  });
-
-  describe("CSharp Analyzer Core Logic", () => {
-    it("should analyze simple method correctly", () => {
-      const analyzer = new CSharpMetricsAnalyzer();
-      const results = analyzer.analyzeFunctions(SampleCSharpCode.SIMPLE_METHOD);
-
-      assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
-      assert.strictEqual(results[0].complexity, 0);
-      assert.strictEqual(results[0].details.length, 0);
-    });
-
-    it("should analyze if statement correctly", () => {
-      const analyzer = new CSharpMetricsAnalyzer();
-      const results = analyzer.analyzeFunctions(SampleCSharpCode.SINGLE_IF);
-
-      assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Max");
-      assert.strictEqual(results[0].complexity, 1);
-      assert.strictEqual(results[0].details.length, 1);
-      assert.strictEqual(results[0].details[0].reason, "if statement");
-    });
-
-    it("should analyze nested complexity correctly", () => {
-      const analyzer = new CSharpMetricsAnalyzer();
-      const results = analyzer.analyzeFunctions(
-        SampleCSharpCode.NESTED_COMPLEX
-      );
-
-      assert.ok(results.length > 0);
-      const mainMethod = results.find(
-        (r: UnifiedFunctionMetrics) => r.name === "ComplexMethod"
-      );
-      assert.ok(mainMethod);
-      assert.ok(mainMethod.complexity > 5); // Should have significant complexity
-    });
-
-    it("should handle logical operators", () => {
-      const sourceCode = `
-        public class Test {
-          public void Method(bool a, bool b, bool c) {
-            if (a && b) {
-              return;
-            }
-            if (b || c) {
-              return;
-            }
-          }
-        }
-      `;
-
-      const analyzer = new CSharpMetricsAnalyzer();
-      const results = analyzer.analyzeFunctions(sourceCode);
-
-      assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 4); // 2 ifs + 1 && + 1 ||
-    });
-
-    it("should handle loops correctly", () => {
-      const sourceCode = `
-        public class Test {
-          public void Method() {
-            for (int i = 0; i < 10; i++) {
-              while (true) {
-                break;
-              }
-            }
-          }
-        }
-      `;
-
-      const analyzer = new CSharpMetricsAnalyzer();
-      const results = analyzer.analyzeFunctions(sourceCode);
-
-      assert.strictEqual(results.length, 1);
-      assert.ok(results[0].complexity > 0);
-
-      const forLoop = results[0].details.find((d: any) =>
-        d.reason.includes("for")
-      );
-      const whileLoop = results[0].details.find((d: any) =>
-        d.reason.includes("while")
+      const whileLoop = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason.includes("while")
       );
 
       assert.ok(forLoop);

@@ -191,7 +191,7 @@ outer: // label
 	return false
 }
 
-// GotoExample demonstrates goto statement complexity (complexity: 1)
+// GotoExample demonstrates goto statement complexity (complexity: 3)
 func GotoExample(value int) string {
 	if value < 0 {
 		goto negative
