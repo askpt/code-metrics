@@ -68,8 +68,8 @@ func Process(value int) string {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Process");
-      // Expected complexity: if(1) + for(1) + nested if(1) + nested continue(1) = 4
-      assert.strictEqual(results[0].complexity, 4);
+      // Expected complexity: if(1) + for(2) + nested if(3) + nested continue(4) = 10
+      assert.strictEqual(results[0].complexity, 10);
       assert.strictEqual(results[0].details.length, 4);
     });
 
@@ -147,8 +147,8 @@ func InfiniteLoop() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + nested break(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // for(1) + nested break(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
 
     test("should handle while-style for loops", () => {
@@ -164,8 +164,8 @@ func WhileStyleLoop(condition bool) {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + nested break(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // for(1) + nested break(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
 
     test("should handle expression switch statements", () => {
@@ -250,8 +250,8 @@ func NestedSelect(ch chan int, done chan bool) {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + select(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // for(1) + select(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
   });
 
@@ -315,8 +315,8 @@ func ConditionalLogic(a, b int) bool {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + &&(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // if(1) + &&(2 nested in if) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
   });
 
@@ -399,8 +399,8 @@ func NestedClosure(items []int) {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + nested closure(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // if(1) + nested closure(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
 
     test("should handle deeply nested closures", () => {
@@ -421,8 +421,8 @@ func DeeplyNestedClosure() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + if(1) + nested closure(1) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // if(1) + if(2) + nested closure(3) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
   });
 
@@ -462,8 +462,8 @@ outer:
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + for(1) + if(1) + labeled break(1) = 4
-      assert.strictEqual(results[0].complexity, 4);
+      // for(1) + for(2) + if(3) + labeled break(4) = 10
+      assert.strictEqual(results[0].complexity, 10);
       const labeledBreak = results[0].details.find(
         (d) => d.reason === "labeled break statement"
       );
@@ -488,8 +488,8 @@ outer:
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + for(1) + if(1) + labeled continue(1) = 4
-      assert.strictEqual(results[0].complexity, 4);
+      // for(1) + for(2) + if(3) + labeled continue(4) = 10
+      assert.strictEqual(results[0].complexity, 10);
       const labeledContinue = results[0].details.find(
         (d) => d.reason === "labeled continue statement"
       );
@@ -511,8 +511,8 @@ func NestedBreak() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + if(1) + nested break(1) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // for(1) + if(2) + nested break(3) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
 
     test("should handle continue in nested context", () => {
@@ -530,8 +530,8 @@ func NestedContinue() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + if(1) + nested continue(1) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // for(1) + if(2) + nested continue(3) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
   });
 
@@ -637,8 +637,8 @@ func NestedGoroutine() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + nested closure(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // if(1) + nested closure(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
   });
 
@@ -724,9 +724,9 @@ func ProcessData(items []int, includeNegatives bool) []int {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      // for(1) + if(1) + if(1) + &&(1) + continue(1) + if(1) + if(1) = 7
+      // for(1) + if(2) + else if(3) + &&(4) + continue(4) + if(1) + else if(2) = 17
       assert.ok(
-        results[0].complexity >= 6,
+        results[0].complexity >= 15,
         "Should have significant complexity"
       );
     });
@@ -787,8 +787,8 @@ func Add(a, b int) int {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Add");
-      // if(1) + ||(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // if(1) + ||(2 nested in if) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
   });
 
@@ -853,8 +853,8 @@ func DeferredClosure() {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + nested func_literal(1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // if(1) + nested func_literal(2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
   });
 

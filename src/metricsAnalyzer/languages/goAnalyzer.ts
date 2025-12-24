@@ -156,8 +156,7 @@ export class GoMetricsAnalyzer {
    */
   private isFunctionDeclaration(node: Parser.SyntaxNode): boolean {
     return (
-      node.type === "function_declaration" ||
-      node.type === "method_declaration"
+      node.type === "function_declaration" || node.type === "method_declaration"
     );
   }
 
@@ -245,9 +244,7 @@ export class GoMetricsAnalyzer {
     }
 
     // For regular function declarations
-    const nameNode = node.children.find(
-      (child) => child.type === "identifier"
-    );
+    const nameNode = node.children.find((child) => child.type === "identifier");
     if (nameNode) {
       return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
     }
@@ -303,8 +300,10 @@ export class GoMetricsAnalyzer {
    * @param node - The current syntax node being visited
    */
   private visit(node: Parser.SyntaxNode): void {
-    const increment = this.getComplexityIncrement(node);
-    if (increment > 0) {
+    const baseIncrement = this.getComplexityIncrement(node);
+    if (baseIncrement > 0) {
+      // Add nesting level to the increment for cognitive complexity
+      const increment = baseIncrement + this.nesting;
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
 
@@ -408,9 +407,7 @@ export class GoMetricsAnalyzer {
    * @returns True if this is a recover() call
    */
   private isRecoverCall(node: Parser.SyntaxNode): boolean {
-    const funcNode = node.children.find(
-      (child) => child.type === "identifier"
-    );
+    const funcNode = node.children.find((child) => child.type === "identifier");
     if (funcNode) {
       const funcName = this.sourceText.substring(
         funcNode.startIndex,
@@ -471,12 +468,16 @@ export class GoMetricsAnalyzer {
         const hasBreakLabel = node.children.some(
           (child) => child.type === "label_name"
         );
-        return hasBreakLabel ? "labeled break statement" : "break statement (nested)";
+        return hasBreakLabel
+          ? "labeled break statement"
+          : "break statement (nested)";
       case "continue_statement":
         const hasContinueLabel = node.children.some(
           (child) => child.type === "label_name"
         );
-        return hasContinueLabel ? "labeled continue statement" : "continue statement (nested)";
+        return hasContinueLabel
+          ? "labeled continue statement"
+          : "continue statement (nested)";
       case "goto_statement":
         return "goto statement";
       case "call_expression":
