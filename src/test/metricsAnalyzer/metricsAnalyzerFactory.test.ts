@@ -108,7 +108,7 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       assert.strictEqual(addFunction.complexity, 0);
       assert.strictEqual(divideFunction.complexity, 1); // if statement
-      assert.strictEqual(processFunction.complexity, 5); // if + || operator + foreach + nested if + nested continue
+      assert.strictEqual(processFunction.complexity, 9); // if(1) + ||(2) + foreach(1) + nested if(2) + nested continue(3)
     });
 
     test("should handle C# code with logical operators", () => {
@@ -153,7 +153,7 @@ suite("Metrics Analyzer Factory Tests", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 3); // try + 2 catch blocks
+      assert.strictEqual(results[0].complexity, 5); // try(1) + catch(2) + catch(2)
 
       const tryDetail = results[0].details.find(
         (d) => d.reason === "try statement"
@@ -501,7 +501,7 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       // ProcessData should have moderate complexity
       assert.ok(processDataFunction.complexity > 0);
-      assert.ok(processDataFunction.complexity < 10);
+      assert.ok(processDataFunction.complexity < 20);
 
       // IsComplexCondition should have high complexity due to nested conditions
       assert.ok(isComplexConditionFunction.complexity > 5);

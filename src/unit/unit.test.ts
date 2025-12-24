@@ -289,7 +289,8 @@ func Subtract(a, b int) int {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 4); // 2 ifs + 1 && + 1 ||
+      // 2 ifs (+1 each) + '&&' (+2 at nest 1) + '||' (+2 at nest 1) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
 
     it("should handle loops correctly", () => {
