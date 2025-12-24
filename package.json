@@ -2,7 +2,7 @@
   "name": "code-metrics",
   "displayName": "Code Complexity Metrics",
   "description": "A comprehensive Visual Studio Code extension that calculates and displays code metrics including Cognitive Complexity based on SonarSource's specification.",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "publisher": "dev-asilva",
   "preview": true,
   "repository": {
