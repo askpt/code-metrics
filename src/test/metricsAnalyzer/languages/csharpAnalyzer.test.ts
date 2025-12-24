@@ -68,8 +68,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Process");
-      // Expected complexity: if(1) + for(1) + nested if(1) + nested continue(1) = 4
-      assert.strictEqual(results[0].complexity, 4);
+      // Expected complexity: if(1) + for(2) + nested if(3) + nested continue(4) = 10
+      assert.strictEqual(results[0].complexity, 10);
       assert.strictEqual(results[0].details.length, 4);
     });
   });
@@ -88,7 +88,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 2);
+      assert.strictEqual(results[0].complexity, 3);
       assert.strictEqual(results[0].details[0].reason, "while loop");
       assert.strictEqual(
         results[0].details[1].reason,
@@ -186,7 +186,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 2);
+      assert.strictEqual(results[0].complexity, 3);
       assert.strictEqual(results[0].details.length, 2);
 
       const tryDetail = results[0].details.find(
@@ -219,7 +219,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 3); // try + 2 catches
+      assert.strictEqual(results[0].complexity, 5); // try(1) + catch1(2) + catch2(2)
       assert.strictEqual(results[0].details.length, 3);
     });
   });
@@ -316,8 +316,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // Expected: if statement (1) + lambda in nested context (1) = 2
-      assert.strictEqual(results[0].complexity, 2);
+      // Expected: if statement (1) + lambda in nested context (2) = 3
+      assert.strictEqual(results[0].complexity, 3);
     });
 
     test("should not count lambda at top level", () => {
@@ -369,8 +369,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for (1) + nested if (1) + nested continue (1) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // for (1) + nested if (2) + nested continue (3) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
 
     test("should handle break in nested context", () => {
@@ -388,8 +388,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // while (1) + nested if (1) + nested break (1) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // while (1) + nested if (2) + nested break (3) = 6
+      assert.strictEqual(results[0].complexity, 6);
     });
   });
 
@@ -473,7 +473,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 2); // if (+1) with logical OR (+1)
+      assert.strictEqual(results[0].complexity, 3); // if (1) + || nested in if condition (2)
     });
 
     test("should analyze local functions", () => {
@@ -590,7 +590,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.ok(outerMethod);
       assert.ok(innerMethod);
       assert.strictEqual(outerMethod.complexity, 1);
-      assert.strictEqual(innerMethod.complexity, 2); // while loop + nested break
+      assert.strictEqual(innerMethod.complexity, 3); // while loop (1) + nested break (2)
     });
   });
 

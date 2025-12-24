@@ -338,8 +338,10 @@ export class CSharpMetricsAnalyzer {
    * @param node - The current syntax node being visited
    */
   private visit(node: Parser.SyntaxNode): void {
-    const increment = this.getComplexityIncrement(node);
-    if (increment > 0) {
+    const baseIncrement = this.getComplexityIncrement(node);
+    if (baseIncrement > 0) {
+      // Add nesting level to the increment for cognitive complexity
+      const increment = baseIncrement + this.nesting;
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
 
