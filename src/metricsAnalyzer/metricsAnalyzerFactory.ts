@@ -204,11 +204,27 @@ function createCSharpAnalyzer(): (
 function createGoAnalyzer(): (sourceText: string) => UnifiedFunctionMetrics[] {
   return function (sourceText: string) {
     const { GoMetricsAnalyzer } = require("./languages/goAnalyzer");
-    const functions = GoMetricsAnalyzer.analyzeFile(sourceText);
-    return functions.map((func: any) => ({
+    interface GoMetricsDetail {
+      increment: number;
+      reason: string;
+      line: number;
+      column: number;
+      nesting: number;
+    }
+    interface GoFunctionMetrics {
+      name: string;
+      complexity: number;
+      details: GoMetricsDetail[];
+      startLine: number;
+      endLine: number;
+      startColumn: number;
+      endColumn: number;
+    }
+    const functions = GoMetricsAnalyzer.analyzeFile(sourceText) as GoFunctionMetrics[];
+    return functions.map((func: GoFunctionMetrics) => ({
       name: func.name,
       complexity: func.complexity,
-      details: func.details.map((detail: any) => ({
+      details: func.details.map((detail: GoMetricsDetail) => ({
         increment: detail.increment,
         reason: detail.reason,
         line: detail.line + 1, // Go analyzer uses 0-based, normalize to 1-based

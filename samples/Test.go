@@ -41,7 +41,7 @@ func Abs(value int) int {
 	return value
 }
 
-// ProcessData demonstrates moderate complexity (complexity: ~7)
+// ProcessData demonstrates moderate cognitive complexity
 // Contains: for loop, multiple if statements, logical operators
 func ProcessData(numbers []int, includeNegatives bool) []string {
 	result := make([]string, 0)
@@ -178,7 +178,7 @@ func NestedLoopsExample(matrix [][]int) int {
 	return sum
 }
 
-// LabeledBreakExample demonstrates labeled break complexity (complexity: 4)
+// LabeledBreakExample demonstrates labeled break complexity (complexity: 10)
 func LabeledBreakExample(items [][]int, target int) bool {
 outer: // label
 	for i := 0; i < len(items); i++ { // +1
