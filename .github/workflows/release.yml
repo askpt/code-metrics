@@ -41,7 +41,8 @@ jobs:
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
         with:
           node-version: 22.x
-      - run: npm install
+          cache: 'npm'
+      - run: npm ci
       - name: Test
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
