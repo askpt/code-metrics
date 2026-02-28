@@ -1,0 +1,17 @@
+{
+  "last_run": "2026-02-28T19:30:00Z",
+  "last_run_id": "22527428288",
+  "tasks_run_last": ["task1_issue_comments", "task11_monthly_summary"],
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNS0wOS0yMFQyMjo1OTowMFrOzOWlMg==",
+  "issues_at_cursor_end": true,
+  "comments_made": {
+    "32": "2026-02-28T19:30:00Z"
+  },
+  "monthly_summary_issue": {
+    "month": "2026-02",
+    "title": "[Repo Assist] Monthly Activity 2026-02"
+  },
+  "fix_attempts": {},
+  "improvement_ideas_submitted": [],
+  "notes": "Issue #32 (JS/TS support) has received a Repo Assist comment with full implementation plan. PR #154 (add ci-coach workflow) is open and needs maintainer review."
+}
