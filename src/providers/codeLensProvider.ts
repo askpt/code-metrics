@@ -126,7 +126,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     );
 
     // Create the code lens title
-    const title = `${status.icon} ${status.text} (${complexity}%)`;
+    const title = `${status.icon} ${status.text} (${complexity})`;
 
     // Create command to show detailed report for this function
     const command: vscode.Command = {
