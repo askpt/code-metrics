@@ -1,17 +1,24 @@
 {
-  "last_run": "2026-02-28T19:30:00Z",
-  "last_run_id": "22527428288",
-  "tasks_run_last": ["task1_issue_comments", "task11_monthly_summary"],
-  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNS0wOS0yMFQyMjo1OTowMFrOzOWlMg==",
+  "last_run": "2026-02-28T19:33:14Z",
+  "last_run_id": "22527486737",
+  "tasks_run_last": ["task2_fix_issues", "task3_codebase_improvements", "task11_monthly_summary"],
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMi0yOFQxOTozMToyNlrO7rsC-Q==",
   "issues_at_cursor_end": true,
   "comments_made": {
     "32": "2026-02-28T19:30:00Z"
   },
   "monthly_summary_issue": {
+    "number": 155,
     "month": "2026-02",
     "title": "[Repo Assist] Monthly Activity 2026-02"
   },
-  "fix_attempts": {},
-  "improvement_ideas_submitted": [],
-  "notes": "Issue #32 (JS/TS support) has received a Repo Assist comment with full implementation plan. PR #154 (add ci-coach workflow) is open and needs maintainer review."
+  "fix_attempts": {
+    "codelens-percent-bug": {
+      "branch": "repo-assist/fix-codelens-complexity-display",
+      "date": "2026-02-28T19:33:14Z",
+      "status": "pr_created"
+    }
+  },
+  "improvement_ideas_submitted": ["codelens-display-fix"],
+  "notes": "Issue #32 (JS/TS support) has a Repo Assist comment. PR created to fix misleading % symbol in CodeLens title. Next: consider implementing JS/TS support (issue #32) once tree-sitter-javascript available."
 }
