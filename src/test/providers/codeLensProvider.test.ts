@@ -405,7 +405,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       assert.strictEqual(result.length, 1);
       assert.ok(result[0].command);
       assert.ok(result[0].command!.title.includes("🟢"));
-      assert.ok(result[0].command!.title.includes("(1%)"));
+      assert.ok(result[0].command!.title.includes("(1)"));
 
       vscode.workspace.getConfiguration = originalGetConfig;
     });
