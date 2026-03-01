@@ -1,24 +1,32 @@
 {
-  "last_run": "2026-02-28T19:33:14Z",
-  "last_run_id": "22527486737",
-  "tasks_run_last": ["task2_fix_issues", "task3_codebase_improvements", "task11_monthly_summary"],
+  "last_run": "2026-03-01T10:15:00Z",
+  "last_run_id": "22541249529",
+  "tasks_run_last": ["task10_take_forward", "task11_monthly_summary"],
   "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMi0yOFQxOTozMToyNlrO7rsC-Q==",
   "issues_at_cursor_end": true,
   "comments_made": {
-    "32": "2026-02-28T19:30:00Z"
+    "32": "2026-03-01T10:15:00Z"
   },
   "monthly_summary_issue": {
-    "number": 155,
-    "month": "2026-02",
-    "title": "[Repo Assist] Monthly Activity 2026-02"
+    "number": null,
+    "month": "2026-03",
+    "title": "[Repo Assist] Monthly Activity 2026-03",
+    "note": "PR number unknown at write time - branch push happens after workflow"
   },
   "fix_attempts": {
     "codelens-percent-bug": {
       "branch": "repo-assist/fix-codelens-complexity-display",
       "date": "2026-02-28T19:33:14Z",
-      "status": "pr_created"
+      "status": "merged"
+    },
+    "javascript-typescript-support": {
+      "branch": "repo-assist/feat-javascript-typescript-support",
+      "date": "2026-03-01T10:15:00Z",
+      "status": "pr_created",
+      "closes": 32,
+      "details": "Implements JS/TS cognitive complexity via tree-sitter-javascript@0.21.4 and tree-sitter-typescript@0.21.2. 14 unit tests, all passing. Else/else-if double-counting fix via skipSelfIncrement flag."
     }
   },
-  "improvement_ideas_submitted": ["codelens-display-fix"],
-  "notes": "Issue #32 (JS/TS support) has a Repo Assist comment. PR created to fix misleading % symbol in CodeLens title. Next: consider implementing JS/TS support (issue #32) once tree-sitter-javascript available."
+  "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support"],
+  "notes": "Issue #32 (JS/TS support) now has draft PR in review. PR #161 (release-please v0.2.1) still open for maintainer to merge. Feb monthly issue #155 closed; March one created. Next run: check if JS/TS PR has CI issues, check PR #161 status, reset backlog cursor to scan issues again."
 }
