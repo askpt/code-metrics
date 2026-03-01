@@ -43,7 +43,6 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - run: npm ci
-      - run: npm run compile
       - run: xvfb-run -a npm run test:coverage
         if: runner.os == 'Linux'
       - run: npm test
