@@ -1,17 +1,17 @@
 {
-  "last_run": "2026-03-01T10:15:00Z",
-  "last_run_id": "22541249529",
-  "tasks_run_last": ["task10_take_forward", "task11_monthly_summary"],
-  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMi0yOFQxOTozMToyNlrO7rsC-Q==",
+  "last_run": "2026-03-01T11:03:25Z",
+  "last_run_id": "22542026470",
+  "tasks_run_last": ["task1_triage", "task5_maintain_prs", "task11_monthly_summary"],
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNS0wOS0yMFQyMjo1OTowMFrOzOWlMg==",
   "issues_at_cursor_end": true,
   "comments_made": {
-    "32": "2026-03-01T10:15:00Z"
+    "32": "2026-03-01T10:15:00Z",
+    "163": "2026-03-01T11:03:25Z"
   },
   "monthly_summary_issue": {
-    "number": null,
+    "number": 165,
     "month": "2026-03",
-    "title": "[Repo Assist] Monthly Activity 2026-03",
-    "note": "PR number unknown at write time - branch push happens after workflow"
+    "title": "[Repo Assist] Monthly Activity 2026-03"
   },
   "fix_attempts": {
     "codelens-percent-bug": {
@@ -22,11 +22,12 @@
     "javascript-typescript-support": {
       "branch": "repo-assist/feat-javascript-typescript-support",
       "date": "2026-03-01T10:15:00Z",
-      "status": "pr_created",
+      "status": "pr_open",
+      "pr_number": 164,
       "closes": 32,
-      "details": "Implements JS/TS cognitive complexity via tree-sitter-javascript@0.21.4 and tree-sitter-typescript@0.21.2. 14 unit tests, all passing. Else/else-if double-counting fix via skipSelfIncrement flag."
+      "details": "Implements JS/TS cognitive complexity via tree-sitter-javascript@0.21.4 and tree-sitter-typescript@0.21.2. 14 unit tests, all passing."
     }
   },
   "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support"],
-  "notes": "Issue #32 (JS/TS support) now has draft PR in review. PR #161 (release-please v0.2.1) still open for maintainer to merge. Feb monthly issue #155 closed; March one created. Next run: check if JS/TS PR has CI issues, check PR #161 status, reset backlog cursor to scan issues again."
+  "notes": "PR #164 (JS/TS support) is open/draft - CI pending. PR #161 (release 0.2.1) still open for maintainer. PR #166 (ci-coach CI optimization) open. Issue #163 (ci-coach) now has our comment pointing to PR #166. Next run: check if PR #164 CI passes, check if any issues need further triage, look for new enhancements to implement."
 }
