@@ -30,7 +30,9 @@ concurrency:
 
 jobs:
   build:
+    timeout-minutes: 15
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
