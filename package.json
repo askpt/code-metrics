@@ -102,7 +102,7 @@
     "lint": "eslint src",
     "test": "vscode-test",
     "test:unit": "npm run compile && c8 --config .c8rc.json mocha out/unit/unit.test.js",
-    "test:coverage": "npm run test:unit && npm test",
+    "test:coverage": "npm run compile && npm run lint && c8 --config .c8rc.json mocha out/unit/unit.test.js && vscode-test",
     "deploy": "vsce publish"
   },
   "devDependencies": {
