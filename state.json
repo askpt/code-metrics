@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-03-02T16:34:03Z",
-  "last_run_id": "22585464048",
+  "last_run": "2026-03-03T16:34:01Z",
+  "last_run_id": "22632717233",
   "tasks_run_last": ["task5_maintain_prs", "task11_monthly_summary"],
-  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMy0wMVQxMDozNjoyNlrO7tQqSg==",
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNS0wOS0yMFQyMjo1OTowMFrOzOWlMg==",
   "issues_at_cursor_end": true,
   "comments_made": {
     "32": "2026-03-01T10:15:00Z",
@@ -25,15 +25,17 @@
       "status": "pr_open",
       "pr_number": 164,
       "closes": 32,
-      "last_push": "2026-03-02T16:34:03Z",
-      "details": "Updated with main merge (dep updates + CI timeout/fail-fast) and fix for TypeScript build error (samples/Test.ts outside rootDir; added samples/ to tsconfig exclude). All 33 unit tests pass."
+      "last_push": "2026-03-03T16:34:01Z",
+      "details": "Updated with main merge: synced test:coverage script with #179 (eliminate redundant compile). All 33 unit tests pass."
     }
   },
   "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support"],
   "merged_prs": {
     "158": "fix: remove incorrect % symbol from complexity score",
     "166": "ci: add concurrency control and path filtering",
-    "169": "ci: remove redundant compile step"
+    "169": "ci: remove redundant compile step",
+    "178": "ci: add timeout and fail-fast settings",
+    "179": "ci: eliminate redundant compile pass in test:coverage script"
   },
-  "notes": "PR #164 (JS/TS support) updated: merged latest main, fixed TypeScript build error (tsconfig.json now excludes samples/). PR #161 (release 0.2.1) still open for maintainer. Next run: check if PR #164 CI passes; consider investigating tree-sitter major update (0.21->0.25) if PR #164 merges."
+  "notes": "PR #164 (JS/TS support) updated: synced test:coverage with #179. PR #161 (release 0.2.1) still open for maintainer. Next run: check if PR #164 CI passes; consider investigating tree-sitter major update (0.21->0.25) if PR #164 merges."
 }
