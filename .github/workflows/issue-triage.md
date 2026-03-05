@@ -27,11 +27,10 @@ tools:
     # If in a public repo, setting `lockdown: false` allows
     # reading issues, pull requests and comments from 3rd-parties
     # If in a private repo this has no particular effect.
-    lockdown: false    
+    lockdown: false
 
 timeout-minutes: 10
-source: githubnext/agentics/workflows/issue-triage.md@442992eda2ccb11ee75a39c019ec6d38ae5a84a2
-engine: copilot
+source: githubnext/agentics/workflows/issue-triage.md@b466f28f0f65b68d6f2b10b15b44f51d787b93be
 ---
 
 # Agentic Triage

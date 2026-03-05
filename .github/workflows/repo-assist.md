@@ -71,8 +71,7 @@ tools:
   bash: true
   repo-memory: true
 
-source: githubnext/agentics/workflows/repo-assist.md@442992eda2ccb11ee75a39c019ec6d38ae5a84a2
-engine: copilot
+source: githubnext/agentics/workflows/repo-assist.md@b466f28f0f65b68d6f2b10b15b44f51d787b93be
 ---
 
 # Repo Assist
