@@ -7,6 +7,7 @@ on:
 
 jobs:
   release-please:
+    timeout-minutes: 5
     permissions:
       contents: write # for googleapis/release-please-action to create release commit
       pull-requests: write # for googleapis/release-please-action to create release PR
@@ -26,6 +27,7 @@ jobs:
 
   release:
     needs: release-please
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     environment: marketplace
     if: needs.release-please.outputs.release_created == 'true'
