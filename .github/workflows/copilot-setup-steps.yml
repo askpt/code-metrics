@@ -16,10 +16,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
     - name: Install Node.js
-      uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
       with:
         node-version: 22.x
     - name: Install gh-aw extension
-      uses: github/gh-aw/actions/setup-cli@cccf96100f50705c4291b91a6071c556f72cb3ef #v0.51.2
+      uses: github/gh-aw/actions/setup-cli@a0ed2f46906483dcf634e8694268e4fab9b21e65 # v0.53.3
       with:
-        version: v0.51.2
+        version: v0.53.3

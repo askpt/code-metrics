@@ -40,18 +40,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
         with:
           node-version: 22.x
           cache: 'npm'
       - run: npm ci
       - run: xvfb-run -a npm run test:coverage
         if: runner.os == 'Linux'
-      - run: npm test
+      # On non-Linux, compile and run tests directly to skip the redundant lint
+      # (lint is OS-agnostic and already runs on Linux via test:coverage)
+      - run: npm run compile
+        if: runner.os != 'Linux'
+      - run: npm run test:vscode
         if: runner.os != 'Linux'
       - name: Upload coverage to Codecov
         if: runner.os == 'Linux'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           directory: ./coverage
           fail_ci_if_error: false

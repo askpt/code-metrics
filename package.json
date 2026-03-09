@@ -101,6 +101,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
+    "test:vscode": "vscode-test",
     "test:unit": "npm run compile && c8 --config .c8rc.json mocha out/unit/unit.test.js",
     "test:coverage": "npm run compile && npm run lint && c8 --config .c8rc.json mocha out/unit/unit.test.js && vscode-test",
     "deploy": "vsce publish"
@@ -115,7 +116,7 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.7.1",
     "c8": "^11.0.0",
-    "eslint": "^10.0.2",
+    "eslint": "^10.0.3",
     "mocha": "^11.7.5",
     "typescript": "^5.9.3"
   },

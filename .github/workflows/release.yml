@@ -7,6 +7,7 @@ on:
 
 jobs:
   release-please:
+    timeout-minutes: 5
     permissions:
       contents: write # for googleapis/release-please-action to create release commit
       pull-requests: write # for googleapis/release-please-action to create release PR
@@ -26,6 +27,7 @@ jobs:
 
   release:
     needs: release-please
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     environment: marketplace
     if: needs.release-please.outputs.release_created == 'true'
@@ -38,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
         with:
           node-version: 22.x
           cache: 'npm'
