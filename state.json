@@ -1,12 +1,13 @@
 {
-  "last_run": "2026-03-09T16:41:16Z",
-  "last_run_id": "22863999554",
-  "tasks_run_last": ["task5_maintain_prs", "task11_monthly_summary"],
-  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMy0wOFQxNjozNjo1MFrO8OblcA==",
+  "last_run": "2026-03-10T16:39:53Z",
+  "last_run_id": "22913396431",
+  "tasks_run_last": ["task3_improvements", "task7_labels", "task1_triage_comment", "task11_monthly_summary"],
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMy0xMFQxMzoxNTo0MVrO8YC7ow==",
   "issues_at_cursor_end": true,
   "comments_made": {
     "32": "2026-03-01T10:15:00Z",
-    "163": "2026-03-01T11:03:25Z"
+    "163": "2026-03-01T11:03:25Z",
+    "195": "2026-03-10T16:39:53Z"
   },
   "monthly_summary_issue": {
     "number": 165,
@@ -35,6 +36,13 @@
       "pr_number": 189,
       "closes": 187,
       "details": "Merged as PR #189 by askpt on 2026-03-08."
+    },
+    "fix-release-dead-code-195": {
+      "branch": "repo-assist/fix-release-dead-code-195",
+      "date": "2026-03-10T16:39:53Z",
+      "status": "pr_open",
+      "closes": 195,
+      "details": "Removes dead OS conditional in release.yml. Compile+lint pass. PR pending creation."
     }
   },
   "deps_update_attempts": {
@@ -46,7 +54,7 @@
       "notes": "PR #181 was closed (likely superseded by dependabot or manual update)."
     }
   },
-  "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support", "ci-harden-codecov-timeout"],
+  "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support", "ci-harden-codecov-timeout", "fix-release-dead-code-195"],
   "merged_prs": {
     "158": "fix: remove incorrect % symbol from complexity score",
     "166": "ci: add concurrency control and path filtering",
@@ -56,10 +64,12 @@
     "182": "ci: Update GitHub Actions workflows and refine guidelines",
     "185": "ci: Optimize CI workflows for linting and release jobs",
     "189": "ci: pin codecov action to SHA and add timeout to PR title validation",
-    "191": "build(deps-dev): bump eslint from 10.0.2 to 10.0.3"
+    "191": "build(deps-dev): bump eslint from 10.0.2 to 10.0.3",
+    "194": "ci(deps): bump actions/setup-node from 6.2.0 to 6.3.0"
   },
   "labels_applied": {
-    "187": ["enhancement", "security"]
+    "187": ["enhancement", "security"],
+    "195": ["refactor"]
   },
-  "notes": "PR #164 (JS/TS support): synced with main on 2026-03-09 (eslint 10.0.3, pinned action SHAs, test:vscode script). PR #161 (release 0.2.1) still open. tree-sitter 0.21->0.25 major update still pending investigation. Deps PR #181 closed."
+  "notes": "PR #164 (JS/TS support): synced with main on 2026-03-09 (eslint 10.0.3, pinned action SHAs, test:vscode script). PR #161 (release 0.2.1) still open. tree-sitter 0.21->0.25 major update still pending investigation. Deps PR #181 closed. Issue #195 ci-coach: created fix PR (branch repo-assist/fix-release-dead-code-195) removing dead RUNNER_OS conditional in release.yml."
 }
