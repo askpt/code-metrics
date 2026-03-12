@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-03-11T16:36:57Z",
-  "last_run_id": "22963422559",
-  "tasks_run_last": ["task2_fix_pr", "task5_maintain_prs", "task11_monthly_summary"],
-  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMy0xMFQxNjo0NjoxNlrO8ZNdGQ==",
+  "last_run": "2026-03-12T16:41:29Z",
+  "last_run_id": "23013018443",
+  "tasks_run_last": ["task5_maintain_prs", "task11_monthly_summary"],
+  "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNi0wMy0wNFQxMzoxNDo0MFrO77omCQ==",
   "issues_at_cursor_end": true,
   "comments_made": {
     "32": "2026-03-01T10:15:00Z",
@@ -26,8 +26,8 @@
       "status": "pr_open",
       "pr_number": 164,
       "closes": 32,
-      "last_push": "2026-03-09T16:41:16Z",
-      "details": "PR #164 open, synced with main on 2026-03-09. Compile and lint pass, 33 unit tests passing. PR is 'behind' main - may need sync."
+      "last_push": "2026-03-12T16:41:29Z",
+      "details": "PR #164 open, synced with main on 2026-03-12 (merged #198 dead-code fix). Compile + lint pass, 33 unit tests passing."
     },
     "ci-harden-codecov-timeout": {
       "branch": "repo-assist/ci-harden-codecov-timeout",
@@ -40,9 +40,9 @@
     "fix-release-dead-code-195": {
       "branch": "repo-assist/fix-release-dead-code-195",
       "date": "2026-03-11T16:36:57Z",
-      "status": "push_failed_twice",
+      "status": "merged",
       "closes": 195,
-      "details": "Two attempts to push PR failed (firewall blocked). Fallback issue #196 has patch from run 22913396431. Current run (22963422559) attempted again. Patch available in issue #196 for manual application."
+      "details": "Merged as PR #198 by askpt on 2026-03-12. Issues #195, #196, #197 all closed."
     }
   },
   "deps_update_attempts": {
@@ -65,11 +65,12 @@
     "185": "ci: Optimize CI workflows for linting and release jobs",
     "189": "ci: pin codecov action to SHA and add timeout to PR title validation",
     "191": "build(deps-dev): bump eslint from 10.0.2 to 10.0.3",
-    "194": "ci(deps): bump actions/setup-node from 6.2.0 to 6.3.0"
+    "194": "ci(deps): bump actions/setup-node from 6.2.0 to 6.3.0",
+    "198": "ci: remove dead OS conditional in release workflow"
   },
   "labels_applied": {
     "187": ["enhancement", "security"],
     "195": ["refactor"]
   },
-  "notes": "PR #164 (JS/TS support) still open - behind main. PR #161 (release 0.2.1) still open. Issue #195 (ci-coach) and issue #196 (Repo Assist fallback) both open with dead-code fix patches. Fix push has failed twice due to firewall. tree-sitter 0.21->0.25 major update still pending investigation."
+  "notes": "PR #164 (JS/TS support) open and synced with main (2026-03-12). PR #161 (release 0.2.1) still open. Issues #195, #196, #197 all closed (PR #198 merged by askpt). tree-sitter 0.21->0.25 major update still pending investigation. Only open issues: #32 (JS/TS feature, linked to PR #164), #165 (monthly summary), #180 (no-op runs)."
 }
