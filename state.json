@@ -1,14 +1,15 @@
 {
-  "last_run": "2026-03-13T16:32:44Z",
-  "last_run_id": "23060521714",
-  "tasks_run_last": ["task2_fix_issues", "task5_maintain_prs", "task7_labels", "task11_monthly_summary"],
+  "last_run": "2026-03-14T16:32:06Z",
+  "last_run_id": "23091840887",
+  "tasks_run_last": ["task1_triage", "task4_deps", "task5_maintain_prs", "task7_labels", "task11_monthly_summary"],
   "backlog_cursor": "Y3Vyc29yOnYyOpK0MjAyNS0wOS0yMFQyMjo1OTowMFrOzOWlMg==",
   "issues_at_cursor_end": true,
   "comments_made": {
     "32": "2026-03-01T10:15:00Z",
     "163": "2026-03-01T11:03:25Z",
     "195": "2026-03-10T16:39:53Z",
-    "200": "2026-03-13T16:32:44Z"
+    "200": "2026-03-13T16:32:44Z",
+    "203": "2026-03-14T16:32:06Z"
   },
   "monthly_summary_issue": {
     "number": 165,
@@ -47,10 +48,16 @@
     },
     "ci-release-concurrency-200": {
       "branch": "repo-assist/ci-release-concurrency-200",
-      "date": "2026-03-13T16:32:44Z",
+      "date": "2026-03-14T16:32:06Z",
       "status": "pr_pending",
-      "closes": 200,
-      "details": "Draft PR created: ci: add concurrency group to release workflow. Compile + lint pass. PR number TBD (created via safeoutputs)."
+      "closes": [200, 203],
+      "details": "Branch committed locally. PR creation attempted via safeoutputs (may be fallback issue if push blocked by firewall). Compile + lint pass."
+    },
+    "deps-update-2026-03-14": {
+      "branch": "repo-assist/deps-update-2026-03-14",
+      "date": "2026-03-14T16:32:06Z",
+      "status": "pr_pending",
+      "details": "Minor/patch updates: @types/node ^22.19.15, @types/vscode ^1.110.0, @typescript-eslint/* ^8.57.0. Compile + lint pass. PR creation attempted via safeoutputs."
     }
   },
   "deps_update_attempts": {
@@ -60,9 +67,15 @@
       "status": "closed",
       "pr_number": 181,
       "notes": "PR #181 was closed (likely superseded by dependabot or manual update)."
+    },
+    "2026-03-14": {
+      "branch": "repo-assist/deps-update-2026-03-14",
+      "updates": ["@types/node: ^22.18.0->^22.19.15", "@types/vscode: ^1.106.1->^1.110.0", "@typescript-eslint/eslint-plugin: ^8.56.1->^8.57.0", "@typescript-eslint/parser: ^8.56.0->^8.57.0"],
+      "status": "pr_pending",
+      "notes": "PR creation attempted this run. tree-sitter 0.21->0.25 and tree-sitter-go 0.21->0.25 are major updates, excluded pending API compatibility investigation."
     }
   },
-  "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support", "ci-harden-codecov-timeout", "fix-release-dead-code-195", "ci-release-concurrency-200"],
+  "improvement_ideas_submitted": ["codelens-display-fix", "javascript-typescript-support", "ci-harden-codecov-timeout", "fix-release-dead-code-195", "ci-release-concurrency-200", "deps-update-2026-03-14"],
   "merged_prs": {
     "158": "fix: remove incorrect % symbol from complexity score",
     "166": "ci: add concurrency control and path filtering",
@@ -74,12 +87,14 @@
     "189": "ci: pin codecov action to SHA and add timeout to PR title validation",
     "191": "build(deps-dev): bump eslint from 10.0.2 to 10.0.3",
     "194": "ci(deps): bump actions/setup-node from 6.2.0 to 6.3.0",
-    "198": "ci: remove dead OS conditional in release workflow"
+    "198": "ci: remove dead OS conditional in release workflow",
+    "202": "build(deps-dev): bump undici from 7.16.0 to 7.24.1"
   },
   "labels_applied": {
     "187": ["enhancement", "security"],
     "195": ["refactor"],
-    "200": ["enhancement"]
+    "200": ["enhancement"],
+    "203": ["enhancement"]
   },
-  "notes": "PR #164 (JS/TS support) open but behind main (grafted repo prevents sync - historical issue). PR #161 (release 0.2.1) still open. New PR created this run: ci: add concurrency group to release workflow (Closes #200). Open issues: #32 (JS/TS, linked PR #164), #165 (monthly summary), #180 (no-op runs), #200 (ci-coach concurrency). tree-sitter 0.21->0.25 major update still pending investigation."
+  "notes": "PR #164 (JS/TS support) open but behind main (grafted repo prevents sync - historical issue). PR #161 (release 0.2.1) still open. This run: concurrency fix for release.yml (Closes #200, #203) and deps update for 4 minor/patch packages. tree-sitter 0.21->0.25 major update still pending investigation. Issue #201 is a fallback issue from last run's failed push (same concurrency fix). Open issues to watch: #32 (JS/TS, linked PR #164), #200 (ci concurrency, now addressed), #203 (ci-coach same issue, now commented + labelled)."
 }
