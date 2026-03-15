@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+# Serialize release runs so rapid pushes to main don't create parallel
+# release-please executions that could conflict over manifest state.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release-please:
     timeout-minutes: 5
