@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/askpt/code-metrics/compare/v0.2.0...v0.2.1) (2026-03-15)
+
+
+### 🐛 Bug Fixes
+
+* remove incorrect % symbol from complexity score in CodeLens title ([#158](https://github.com/askpt/code-metrics/issues/158)) ([d90d8bf](https://github.com/askpt/code-metrics/commit/d90d8bfc1db3380ba922fd47ee4fc9eaf10b9828))
+
 ## [0.2.0](https://github.com/askpt/code-metrics/compare/v0.1.6...v0.2.0) (2025-12-24)
 
 
