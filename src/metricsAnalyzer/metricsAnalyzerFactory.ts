@@ -61,7 +61,7 @@ export interface UnifiedFunctionMetrics {
  *
  * @example
  * ```typescript
- * const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, 'typescript');
+ * const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, 'csharp');
  * console.log(`Found ${results.length} functions with complexities:`, results);
  * ```
  */
@@ -81,28 +81,28 @@ export class MetricsAnalyzerFactory {
    * the appropriate analyzer based on the language ID and processes the source code
    * to extract complexity metrics for all functions found.
    *
-   * @param fileName - The name of the file being analyzed (used for context and error reporting)
    * @param sourceText - The complete source code content to analyze
-   * @param languageId - VS Code language identifier (e.g., 'typescript', 'javascript', 'python')
+   * @param languageId - VS Code language identifier (e.g., 'csharp', 'go')
    *
    * @returns An array of complexity analysis results, one for each function found in the source code.
    *          Returns an empty array if no functions are found or if the language is not supported.
    *
    * @example
    * ```typescript
-   * const results = ComplexityAnalyzerFactory.analyzeFile(
-   *   'utils.ts',
+   * const results = MetricsAnalyzerFactory.analyzeFile(
    *   `
-   *   function calculateSum(a: number, b: number): number {
-   *     if (a < 0 || b < 0) {
-   *       throw new Error('Negative numbers not allowed');
+   *   public class Test {
+   *     public int Add(int a, int b) {
+   *       if (a < 0 || b < 0) {
+   *         throw new Error('Negative numbers not allowed');
+   *       }
+   *       return a + b;
    *     }
-   *     return a + b;
    *   }
    *   `,
-   *   'typescript'
+   *   'csharp'
    * );
-   * // results[0].complexity would be 2 (base complexity 1 + if statement 1)
+   * // results[0].complexity would be 3 (if +1, || +1, nesting +1)
    * ```
    */
   public static analyzeFile(
