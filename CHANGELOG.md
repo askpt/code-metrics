@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/askpt/code-metrics/compare/v0.2.0...v0.3.0) (2026-03-19)
+
+
+### 🐛 Bug Fixes
+
+* remove incorrect % symbol from complexity score in CodeLens title ([#158](https://github.com/askpt/code-metrics/issues/158)) ([d90d8bf](https://github.com/askpt/code-metrics/commit/d90d8bfc1db3380ba922fd47ee4fc9eaf10b9828))
+
+
+### ✨ New Features
+
+* add JavaScript and TypeScript cognitive complexity support ([#164](https://github.com/askpt/code-metrics/issues/164)) ([4ce549c](https://github.com/askpt/code-metrics/commit/4ce549cc11feaa3010eaf85d9c02f3c180c0316d))
+
 ## [0.2.0](https://github.com/askpt/code-metrics/compare/v0.1.6...v0.2.0) (2025-12-24)
 
 
