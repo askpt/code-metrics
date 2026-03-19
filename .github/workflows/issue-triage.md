@@ -30,7 +30,7 @@ tools:
     lockdown: false
 
 timeout-minutes: 10
-source: githubnext/agentics/workflows/issue-triage.md@b466f28f0f65b68d6f2b10b15b44f51d787b93be
+source: githubnext/agentics/workflows/issue-triage.md@b897c2f3e43bde9ff7923c8fa9211055b26e27cc
 ---
 
 # Agentic Triage

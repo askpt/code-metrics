@@ -334,13 +334,11 @@ func Subtract(a, b int) int {
       assert.ok(languages.includes("csharp"));
     });
 
-    it.skip("should analyze C# code via factory", () => {
-      // Note: Factory may have tree-sitter initialization issues in pure Node.js
+    it("should analyze C# code via factory", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(
-        "csharp",
-        SampleCSharpCode.SIMPLE_METHOD
+        SampleCSharpCode.SIMPLE_METHOD,
+        "csharp"
       );
-      console.log("Factory results:", results, results.length); // Debug output
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Add");
       assert.strictEqual(results[0].complexity, 0);
@@ -348,17 +346,16 @@ func Subtract(a, b int) int {
 
     it("should return empty for unsupported language", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(
-        "python",
-        "def hello(): pass"
+        "def hello(): pass",
+        "python"
       );
       assert.strictEqual(results.length, 0);
     });
 
-    it.skip("should normalize line numbers to 1-based", () => {
-      // Note: Factory may have tree-sitter initialization issues in pure Node.js
+    it("should normalize line numbers to 1-based", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(
-        "csharp",
-        SampleCSharpCode.SINGLE_IF
+        SampleCSharpCode.SINGLE_IF,
+        "csharp"
       );
       assert.strictEqual(results.length, 1);
       assert.ok(results[0].startLine >= 1);
@@ -373,7 +370,7 @@ func Subtract(a, b int) int {
 
   describe("Edge Cases", () => {
     it("should handle empty source", () => {
-      const results = MetricsAnalyzerFactory.analyzeFile("csharp", "");
+      const results = MetricsAnalyzerFactory.analyzeFile("", "csharp");
       assert.strictEqual(results.length, 0);
     });
 
@@ -388,7 +385,7 @@ func Subtract(a, b int) int {
       `;
 
       // Should not throw
-      const results = MetricsAnalyzerFactory.analyzeFile("csharp", malformed);
+      const results = MetricsAnalyzerFactory.analyzeFile(malformed, "csharp");
       assert.ok(Array.isArray(results));
     });
 
@@ -399,8 +396,8 @@ func Subtract(a, b int) int {
       `;
 
       const results = MetricsAnalyzerFactory.analyzeFile(
-        "csharp",
-        commentsOnly
+        commentsOnly,
+        "csharp"
       );
       assert.strictEqual(results.length, 0);
     });
