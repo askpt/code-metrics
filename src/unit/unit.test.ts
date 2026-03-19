@@ -8,6 +8,8 @@
 import * as assert from "assert";
 import { CSharpMetricsAnalyzer } from "../metricsAnalyzer/languages/csharpAnalyzer";
 import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
+import { JavaScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/javascriptAnalyzer";
+import { TypeScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/typescriptAnalyzer";
 import {
   MetricsAnalyzerFactory,
   UnifiedFunctionMetrics,
@@ -398,6 +400,195 @@ func Subtract(a, b int) int {
         "csharp"
       );
       assert.strictEqual(results.length, 0);
+    });
+  });
+
+  describe("JavaScript Analyzer Core Logic", () => {
+    it("should analyze simple function correctly", () => {
+      const sourceCode = `
+function add(a, b) {
+  return a + b;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should analyze if statement correctly", () => {
+      const sourceCode = `
+function max(a, b) {
+  if (a > b) {
+    return a;
+  }
+  return b;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "max");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count if/else correctly", () => {
+      const sourceCode = `
+function greet(name) {
+  if (name) {
+    return 'Hello ' + name;
+  } else {
+    return 'Hello World';
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results[0].complexity, 2);
+    });
+
+    it("should count else-if chains correctly", () => {
+      const sourceCode = `
+function classify(x) {
+  if (x > 10) {
+    return 'big';
+  } else if (x > 5) {
+    return 'medium';
+  } else {
+    return 'small';
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should count logical operators", () => {
+      const sourceCode = `
+function check(a, b, c) {
+  if (a && b || c) {
+    return true;
+  }
+  return false;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      // if=1, &&=1, ||=1 → 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should count nested complexity", () => {
+      const sourceCode = `
+function process(items) {
+  for (let i = 0; i < items.length; i++) {
+    if (items[i] > 0) {
+      console.log(items[i]);
+    }
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      // for=1, if=2 (nesting=1) → 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should analyze arrow functions", () => {
+      const sourceCode = `
+const double = (x) => x * 2;
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "double");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should analyze class methods", () => {
+      const sourceCode = `
+class Calculator {
+  add(a, b) {
+    return a + b;
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "add");
+    });
+
+    it("should handle factory analyzeFile with javascript language id", () => {
+      const sourceCode = `
+function hello() {
+  return 'world';
+}
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "javascript");
+      assert.ok(Array.isArray(results));
+      assert.strictEqual(results.length, 1);
+    });
+  });
+
+  describe("TypeScript Analyzer Core Logic", () => {
+    it("should analyze typed function correctly", () => {
+      const sourceCode = `
+function add(a: number, b: number): number {
+  return a + b;
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should analyze if with logical operators", () => {
+      const sourceCode = `
+function validate(a: number, b: number): boolean {
+  if (a < 0 || b < 0) {
+    return false;
+  }
+  return true;
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results[0].complexity, 2); // if=1, ||=1
+    });
+
+    it("should analyze class methods with control flow", () => {
+      const sourceCode = `
+class Service {
+  process(items: number[]): number {
+    let total = 0;
+    for (const item of items) {
+      if (item > 0) {
+        total += item;
+      }
+    }
+    return total;
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "process");
+      // for=1, if=2 (nesting=1) → 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should handle factory analyzeFile with typescript language id", () => {
+      const sourceCode = `
+function hello(): string {
+  return 'world';
+}
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "typescript");
+      assert.ok(Array.isArray(results));
+      assert.strictEqual(results.length, 1);
+    });
+
+    it("should include javascript and typescript in supported languages", () => {
+      const languages = MetricsAnalyzerFactory.getSupportedLanguages();
+      assert.ok(languages.includes("javascript"));
+      assert.ok(languages.includes("typescript"));
+      assert.ok(languages.includes("javascriptreact"));
+      assert.ok(languages.includes("typescriptreact"));
     });
   });
 });

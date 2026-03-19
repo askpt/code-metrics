@@ -140,6 +140,10 @@ const languageAnalyzers: Record<
 > = {
   csharp: createCSharpAnalyzer(),
   go: createGoAnalyzer(),
+  javascript: createJavaScriptAnalyzer(),
+  javascriptreact: createJavaScriptAnalyzer(),
+  typescript: createTypeScriptAnalyzer(),
+  typescriptreact: createTypeScriptAnalyzer(),
 };
 
 /**
@@ -229,6 +233,96 @@ function createGoAnalyzer(): (sourceText: string) => UnifiedFunctionMetrics[] {
         reason: detail.reason,
         line: detail.line + 1, // Go analyzer uses 0-based, normalize to 1-based
         column: detail.column + 1, // Go analyzer uses 0-based, normalize to 1-based
+        nesting: detail.nesting,
+      })),
+      startLine: func.startLine,
+      endLine: func.endLine,
+      startColumn: func.startColumn,
+      endColumn: func.endColumn,
+    }));
+  };
+}
+
+/**
+ * Creates a JavaScript cognitive complexity analyzer function.
+ *
+ * @returns A function that analyzes JavaScript source code and returns an array of function complexity metrics.
+ */
+function createJavaScriptAnalyzer(): (
+  sourceText: string
+) => UnifiedFunctionMetrics[] {
+  return function (sourceText: string) {
+    const { JavaScriptMetricsAnalyzer } = require("./languages/javascriptAnalyzer");
+    interface JSDetail {
+      increment: number;
+      reason: string;
+      line: number;
+      column: number;
+      nesting: number;
+    }
+    interface JSFunctionMetrics {
+      name: string;
+      complexity: number;
+      details: JSDetail[];
+      startLine: number;
+      endLine: number;
+      startColumn: number;
+      endColumn: number;
+    }
+    const functions = JavaScriptMetricsAnalyzer.analyzeFile(sourceText) as JSFunctionMetrics[];
+    return functions.map((func: JSFunctionMetrics) => ({
+      name: func.name,
+      complexity: func.complexity,
+      details: func.details.map((detail: JSDetail) => ({
+        increment: detail.increment,
+        reason: detail.reason,
+        line: detail.line + 1, // JS analyzer uses 0-based, normalize to 1-based
+        column: detail.column + 1, // JS analyzer uses 0-based, normalize to 1-based
+        nesting: detail.nesting,
+      })),
+      startLine: func.startLine,
+      endLine: func.endLine,
+      startColumn: func.startColumn,
+      endColumn: func.endColumn,
+    }));
+  };
+}
+
+/**
+ * Creates a TypeScript cognitive complexity analyzer function.
+ *
+ * @returns A function that analyzes TypeScript source code and returns an array of function complexity metrics.
+ */
+function createTypeScriptAnalyzer(): (
+  sourceText: string
+) => UnifiedFunctionMetrics[] {
+  return function (sourceText: string) {
+    const { TypeScriptMetricsAnalyzer } = require("./languages/typescriptAnalyzer");
+    interface TSDetail {
+      increment: number;
+      reason: string;
+      line: number;
+      column: number;
+      nesting: number;
+    }
+    interface TSFunctionMetrics {
+      name: string;
+      complexity: number;
+      details: TSDetail[];
+      startLine: number;
+      endLine: number;
+      startColumn: number;
+      endColumn: number;
+    }
+    const functions = TypeScriptMetricsAnalyzer.analyzeFile(sourceText) as TSFunctionMetrics[];
+    return functions.map((func: TSFunctionMetrics) => ({
+      name: func.name,
+      complexity: func.complexity,
+      details: func.details.map((detail: TSDetail) => ({
+        increment: detail.increment,
+        reason: detail.reason,
+        line: detail.line + 1, // TS analyzer uses 0-based, normalize to 1-based
+        column: detail.column + 1, // TS analyzer uses 0-based, normalize to 1-based
         nesting: detail.nesting,
       })),
       startLine: func.startLine,
