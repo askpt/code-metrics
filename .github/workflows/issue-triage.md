@@ -24,13 +24,11 @@ tools:
   web-fetch:
   github:
     toolsets: [issues]
-    # If in a public repo, setting `lockdown: false` allows
-    # reading issues, pull requests and comments from 3rd-parties
-    # If in a private repo this has no particular effect.
-    lockdown: false
+    min-integrity: none # This workflow is allowed to examine and comment on any issues
+    repos: all
 
 timeout-minutes: 10
-source: githubnext/agentics/workflows/issue-triage.md@b897c2f3e43bde9ff7923c8fa9211055b26e27cc
+source: githubnext/agentics/workflows/issue-triage.md@d1d884596e62351dd652ae78465885dd32f0dd7d
 ---
 
 # Agentic Triage
