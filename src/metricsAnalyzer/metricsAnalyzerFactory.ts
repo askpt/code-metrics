@@ -112,12 +112,37 @@ export class MetricsAnalyzerFactory {
     // Get the analyzer function for the specified language
     const analyzer = languageAnalyzers[languageId];
     if (analyzer) {
-      // Call the analyzer function with the source code
-      return analyzer(sourceText);
+      // Use cache to avoid re-analyzing identical source text
+      const cacheKey = `${languageId}:${sourceText.length}:${hashString(sourceText)}`;
+      const cached = analysisCache.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+      const results = analyzer(sourceText);
+      if (analysisCache.size >= CACHE_MAX_SIZE) {
+        analysisCache.delete(analysisCache.keys().next().value!);
+      }
+      analysisCache.set(cacheKey, results);
+      return results;
     }
     // Return an empty array if languageId does not match any known analyzers
     return [];
   }
+}
+
+/** Maximum number of analysis results to keep in cache (one entry per unique file content). */
+const CACHE_MAX_SIZE = 20;
+
+/** Cache of analysis results keyed by language + content hash. Evicts oldest entry when full. */
+const analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
+
+/** Fast non-cryptographic hash for cache key generation (djb2 variant). */
+function hashString(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return hash >>> 0; // Convert to unsigned 32-bit integer
 }
 
 /**
