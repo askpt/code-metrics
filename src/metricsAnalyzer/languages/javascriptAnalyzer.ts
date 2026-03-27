@@ -12,6 +12,10 @@
 import Parser from "tree-sitter";
 const JavaScript = require("tree-sitter-javascript"); // noqa
 
+// Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
+const _parser = new Parser();
+_parser.setLanguage(JavaScript);
+
 /**
  * Represents a single complexity detail for a specific JavaScript code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
@@ -89,8 +93,7 @@ export class JavaScriptMetricsAnalyzer {
    * Initializes the Tree-sitter parser with the JavaScript language grammar.
    */
   constructor() {
-    this.parser = new Parser();
-    this.parser.setLanguage(JavaScript);
+    this.parser = _parser;
     this.sourceText = "";
   }
 
