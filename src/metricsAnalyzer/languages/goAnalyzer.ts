@@ -12,6 +12,10 @@
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
 
+// Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
+const _parser = new Parser();
+_parser.setLanguage(Go);
+
 /**
  * Represents a single complexity detail for a specific Go code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
@@ -89,8 +93,7 @@ export class GoMetricsAnalyzer {
    * Initializes the Tree-sitter parser with the Go language grammar.
    */
   constructor() {
-    this.parser = new Parser();
-    this.parser.setLanguage(Go);
+    this.parser = _parser;
     this.sourceText = "";
   }
 

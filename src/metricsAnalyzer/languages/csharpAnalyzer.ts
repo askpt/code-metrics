@@ -12,6 +12,10 @@
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
 
+// Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
+const _parser = new Parser();
+_parser.setLanguage(CSharp);
+
 /**
  * Represents a single complexity detail for a specific C# code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
@@ -89,8 +93,7 @@ export class CSharpMetricsAnalyzer {
    * Initializes the Tree-sitter parser with the C# language grammar.
    */
   constructor() {
-    this.parser = new Parser();
-    this.parser.setLanguage(CSharp);
+    this.parser = _parser;
     this.sourceText = "";
   }
 

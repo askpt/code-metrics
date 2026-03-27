@@ -13,6 +13,10 @@
 import Parser from "tree-sitter";
 const { typescript: TypeScriptLanguage } = require("tree-sitter-typescript"); // noqa
 
+// Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
+const _parser = new Parser();
+_parser.setLanguage(TypeScriptLanguage);
+
 /**
  * Represents a single complexity detail for a specific TypeScript code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
@@ -90,8 +94,7 @@ export class TypeScriptMetricsAnalyzer {
    * Initializes the Tree-sitter parser with the TypeScript language grammar.
    */
   constructor() {
-    this.parser = new Parser();
-    this.parser.setLanguage(TypeScriptLanguage);
+    this.parser = _parser;
     this.sourceText = "";
   }
 
