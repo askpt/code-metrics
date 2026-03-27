@@ -45,6 +45,13 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - run: npm ci
+      - name: Cache VS Code test binary
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .vscode-test
+          key: vscode-test-${{ runner.os }}-${{ hashFiles('.vscode-test.mjs') }}
+          restore-keys: |
+            vscode-test-${{ runner.os }}-
       - run: xvfb-run -a npm run test:coverage
         if: runner.os == 'Linux'
       # On non-Linux, compile and run tests directly to skip the redundant lint
