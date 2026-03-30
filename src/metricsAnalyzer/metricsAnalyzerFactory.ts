@@ -146,62 +146,31 @@ function hashString(str: string): number {
 }
 
 /**
- * A record of language-specific analyzers that compute cognitive complexity metrics for source code.
- * Each analyzer is a function that takes source text and returns an array of complexity data for all functions found.
+ * Creates a language-specific cognitive complexity analyzer function.
  *
- * @remarks
- * The analyzers normalize line and column numbers to be 1-based across all languages for consistency.
- * Each language analyzer is lazily loaded using require() to optimize initial load time.
+ * All language analyzers share the same output shape and the same normalization
+ * step (0-based → 1-based line/column in detail positions). This helper
+ * centralises that logic so individual language registrations stay concise.
  *
- * @example
- * ```typescript
- * const analyzer = languageAnalyzers['csharp'];
- * const complexityData = analyzer(sourceCode);
- * ```
+ * @param modulePath - require()-style path to the language analyzer module (relative to this file)
+ * @param className  - Name of the exported analyzer class that exposes a static `analyzeFile` method
+ * @returns A function that takes source text and returns an array of UnifiedFunctionMetrics
  */
-const languageAnalyzers: Record<
-  string,
-  (sourceText: string) => UnifiedFunctionMetrics[]
-> = {
-  csharp: createCSharpAnalyzer(),
-  go: createGoAnalyzer(),
-  javascript: createJavaScriptAnalyzer(),
-  javascriptreact: createJavaScriptAnalyzer(),
-  typescript: createTypeScriptAnalyzer(),
-  typescriptreact: createTypeScriptAnalyzer(),
-};
-
-/**
- * Creates a C# cognitive complexity analyzer function.
- *
- * @returns A function that analyzes C# source code and returns an array of function complexity metrics.
- *          The returned analyzer function:
- *          - Takes C# source code as a string parameter
- *          - Analyzes cognitive complexity of all functions in the code
- *          - Returns an array of UnifiedFunctionMetrics objects containing:
- *            - Function name
- *            - Complexity score
- *            - Detailed breakdown of complexity increments with line/column positions (1-based indexing)
- *            - Function boundaries (start/end line and column)
- *
- * @remarks
- * The analyzer dynamically requires the C# analyzer module and normalizes its output
- * from 0-based to 1-based line and column indexing for consistency.
- */
-function createCSharpAnalyzer(): (
-  sourceText: string
-) => UnifiedFunctionMetrics[] {
-  return function (sourceText: string) {
-    const { CSharpMetricsAnalyzer } = require("./languages/csharpAnalyzer");
-    const functions = CSharpMetricsAnalyzer.analyzeFile(sourceText);
+function createAnalyzer(
+  modulePath: string,
+  className: string
+): (sourceText: string) => UnifiedFunctionMetrics[] {
+  return function (sourceText: string): UnifiedFunctionMetrics[] {
+    const mod = require(modulePath);
+    const functions: any[] = mod[className].analyzeFile(sourceText);
     return functions.map((func: any) => ({
       name: func.name,
       complexity: func.complexity,
       details: func.details.map((detail: any) => ({
         increment: detail.increment,
         reason: detail.reason,
-        line: detail.line + 1, // C# analyzer uses 0-based, normalize to 1-based
-        column: detail.column + 1, // C# analyzer uses 0-based, normalize to 1-based
+        line: detail.line + 1,     // analyzers use 0-based; normalize to 1-based
+        column: detail.column + 1, // analyzers use 0-based; normalize to 1-based
         nesting: detail.nesting,
       })),
       startLine: func.startLine,
@@ -213,147 +182,21 @@ function createCSharpAnalyzer(): (
 }
 
 /**
- * Creates a Go cognitive complexity analyzer function.
- *
- * @returns A function that analyzes Go source code and returns an array of function complexity metrics.
- *          The returned analyzer function:
- *          - Takes Go source code as a string parameter
- *          - Analyzes cognitive complexity of all functions in the code
- *          - Returns an array of UnifiedFunctionMetrics objects containing:
- *            - Function name
- *            - Complexity score
- *            - Detailed breakdown of complexity increments with line/column positions (1-based indexing)
- *            - Function boundaries (start/end line and column)
+ * A record of language-specific analyzers that compute cognitive complexity metrics for source code.
  *
  * @remarks
- * The analyzer dynamically requires the Go analyzer module and normalizes the detail positions
- * (line and column in the details array) from 0-based to 1-based indexing for consistency
- * with the C# analyzer. Function boundary positions remain as returned by the analyzer.
+ * Line and column numbers in detail positions are normalized to 1-based across all languages.
+ * Each analyzer module is lazily loaded via require() on first invocation (Node.js caches the module
+ * afterwards), so startup time is not affected by the number of supported languages.
  */
-function createGoAnalyzer(): (sourceText: string) => UnifiedFunctionMetrics[] {
-  return function (sourceText: string) {
-    const { GoMetricsAnalyzer } = require("./languages/goAnalyzer");
-    interface GoMetricsDetail {
-      increment: number;
-      reason: string;
-      line: number;
-      column: number;
-      nesting: number;
-    }
-    interface GoFunctionMetrics {
-      name: string;
-      complexity: number;
-      details: GoMetricsDetail[];
-      startLine: number;
-      endLine: number;
-      startColumn: number;
-      endColumn: number;
-    }
-    const functions = GoMetricsAnalyzer.analyzeFile(sourceText) as GoFunctionMetrics[];
-    return functions.map((func: GoFunctionMetrics) => ({
-      name: func.name,
-      complexity: func.complexity,
-      details: func.details.map((detail: GoMetricsDetail) => ({
-        increment: detail.increment,
-        reason: detail.reason,
-        line: detail.line + 1, // Go analyzer uses 0-based, normalize to 1-based
-        column: detail.column + 1, // Go analyzer uses 0-based, normalize to 1-based
-        nesting: detail.nesting,
-      })),
-      startLine: func.startLine,
-      endLine: func.endLine,
-      startColumn: func.startColumn,
-      endColumn: func.endColumn,
-    }));
-  };
-}
-
-/**
- * Creates a JavaScript cognitive complexity analyzer function.
- *
- * @returns A function that analyzes JavaScript source code and returns an array of function complexity metrics.
- */
-function createJavaScriptAnalyzer(): (
-  sourceText: string
-) => UnifiedFunctionMetrics[] {
-  return function (sourceText: string) {
-    const { JavaScriptMetricsAnalyzer } = require("./languages/javascriptAnalyzer");
-    interface JSDetail {
-      increment: number;
-      reason: string;
-      line: number;
-      column: number;
-      nesting: number;
-    }
-    interface JSFunctionMetrics {
-      name: string;
-      complexity: number;
-      details: JSDetail[];
-      startLine: number;
-      endLine: number;
-      startColumn: number;
-      endColumn: number;
-    }
-    const functions = JavaScriptMetricsAnalyzer.analyzeFile(sourceText) as JSFunctionMetrics[];
-    return functions.map((func: JSFunctionMetrics) => ({
-      name: func.name,
-      complexity: func.complexity,
-      details: func.details.map((detail: JSDetail) => ({
-        increment: detail.increment,
-        reason: detail.reason,
-        line: detail.line + 1, // JS analyzer uses 0-based, normalize to 1-based
-        column: detail.column + 1, // JS analyzer uses 0-based, normalize to 1-based
-        nesting: detail.nesting,
-      })),
-      startLine: func.startLine,
-      endLine: func.endLine,
-      startColumn: func.startColumn,
-      endColumn: func.endColumn,
-    }));
-  };
-}
-
-/**
- * Creates a TypeScript cognitive complexity analyzer function.
- *
- * @returns A function that analyzes TypeScript source code and returns an array of function complexity metrics.
- */
-function createTypeScriptAnalyzer(): (
-  sourceText: string
-) => UnifiedFunctionMetrics[] {
-  return function (sourceText: string) {
-    const { TypeScriptMetricsAnalyzer } = require("./languages/typescriptAnalyzer");
-    interface TSDetail {
-      increment: number;
-      reason: string;
-      line: number;
-      column: number;
-      nesting: number;
-    }
-    interface TSFunctionMetrics {
-      name: string;
-      complexity: number;
-      details: TSDetail[];
-      startLine: number;
-      endLine: number;
-      startColumn: number;
-      endColumn: number;
-    }
-    const functions = TypeScriptMetricsAnalyzer.analyzeFile(sourceText) as TSFunctionMetrics[];
-    return functions.map((func: TSFunctionMetrics) => ({
-      name: func.name,
-      complexity: func.complexity,
-      details: func.details.map((detail: TSDetail) => ({
-        increment: detail.increment,
-        reason: detail.reason,
-        line: detail.line + 1, // TS analyzer uses 0-based, normalize to 1-based
-        column: detail.column + 1, // TS analyzer uses 0-based, normalize to 1-based
-        nesting: detail.nesting,
-      })),
-      startLine: func.startLine,
-      endLine: func.endLine,
-      startColumn: func.startColumn,
-      endColumn: func.endColumn,
-    }));
-  };
-}
+const languageAnalyzers: Record<
+  string,
+  (sourceText: string) => UnifiedFunctionMetrics[]
+> = {
+  csharp:          createAnalyzer("./languages/csharpAnalyzer",     "CSharpMetricsAnalyzer"),
+  go:              createAnalyzer("./languages/goAnalyzer",          "GoMetricsAnalyzer"),
+  javascript:      createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
+  javascriptreact: createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
+  typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
+  typescriptreact: createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
+};
