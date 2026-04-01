@@ -3,6 +3,7 @@ import {
   MetricsAnalyzerFactory,
   UnifiedFunctionMetrics,
   UnifiedMetricsDetail,
+  createAnalyzer,
 } from "../../metricsAnalyzer/metricsAnalyzerFactory";
 
 suite("Metrics Analyzer Factory Tests", () => {
@@ -849,6 +850,32 @@ func IsComplexCondition(value int, flag1, flag2 bool) bool {
         assert.ok(func.startColumn >= 0);
         assert.ok(func.endColumn >= 0);
       });
+    });
+  });
+
+  suite("createAnalyzer Runtime Guard", () => {
+    test("should throw a descriptive error when module does not export the expected class", () => {
+      // Use a valid module path but a class name that does not exist in it
+      const analyzer = createAnalyzer(
+        "./languages/csharpAnalyzer",
+        "NonExistentClass"
+      );
+
+      assert.throws(
+        () => analyzer("public class T {}"),
+        (err: unknown) => {
+          assert.ok(err instanceof Error);
+          assert.ok(
+            err.message.includes("NonExistentClass"),
+            `Expected error message to mention 'NonExistentClass', got: ${err.message}`
+          );
+          assert.ok(
+            err.message.includes("analyzeFile"),
+            `Expected error message to mention 'analyzeFile', got: ${err.message}`
+          );
+          return true;
+        }
+      );
     });
   });
 });

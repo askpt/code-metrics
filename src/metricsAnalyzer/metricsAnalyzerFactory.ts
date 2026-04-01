@@ -189,7 +189,7 @@ interface AnalyzerClass {
  * @returns A function that takes source text and returns an array of UnifiedFunctionMetrics
  * @throws {Error} If the module does not export the expected class with an `analyzeFile` method
  */
-function createAnalyzer(
+export function createAnalyzer(
   modulePath: string,
   className: string
 ): (sourceText: string) => UnifiedFunctionMetrics[] {
