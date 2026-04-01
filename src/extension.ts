@@ -12,9 +12,13 @@ let detailsChannel: vscode.OutputChannel | undefined;
  * shared output channel, then reveals the channel to the user.
  */
 function showFunctionDetails(
-  func: UnifiedFunctionMetrics,
+  func?: UnifiedFunctionMetrics,
   _uri?: vscode.Uri
 ): void {
+  if (!func) {
+    return;
+  }
+
   if (!detailsChannel) {
     detailsChannel = vscode.window.createOutputChannel("Code Metrics Details");
   }
