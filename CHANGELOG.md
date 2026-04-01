@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/askpt/code-metrics/compare/v0.3.0...v0.3.1) (2026-04-01)
+
+
+### 🚀 Performance
+
+* cache parsers and analysis results to reduce per-keystroke overhead ([#222](https://github.com/askpt/code-metrics/issues/222)) ([1f2f4d3](https://github.com/askpt/code-metrics/commit/1f2f4d3b8e8be4069e81e5fb81c4cf39a53c68d6))
+
+
+### 🔄 Refactoring
+
+* extract generic createAnalyzer helper and implement showFunctionDetails command ([#230](https://github.com/askpt/code-metrics/issues/230)) ([6f507ae](https://github.com/askpt/code-metrics/commit/6f507ae835331b4fe74fe81332dd17aed25ff403))
+
 ## [0.3.0](https://github.com/askpt/code-metrics/compare/v0.2.0...v0.3.0) (2026-03-19)
 
 
