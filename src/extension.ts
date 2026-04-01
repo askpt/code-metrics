@@ -27,7 +27,7 @@ function showFunctionDetails(
   );
 
   if (func.details.length === 0) {
-    detailsChannel.appendLine("\nNo complexity contributors — complexity is 0.");
+    detailsChannel.appendLine("\nNo complexity contributors were reported.");
   } else {
     detailsChannel.appendLine("\nComplexity contributors:");
     detailsChannel.appendLine(

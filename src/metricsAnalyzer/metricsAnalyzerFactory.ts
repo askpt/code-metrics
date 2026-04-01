@@ -146,6 +146,38 @@ function hashString(str: string): number {
 }
 
 /**
+ * Raw detail shape returned by all language-specific analyzers.
+ * `line` and `column` are 0-based and are normalized to 1-based by createAnalyzer.
+ */
+interface RawMetricsDetail {
+  increment: number;
+  reason: string;
+  line: number;
+  column: number;
+  nesting: number;
+}
+
+/**
+ * Raw function-level shape returned by all language-specific analyzers.
+ * All position fields (`startLine`, `endLine`, `startColumn`, `endColumn`) are 0-based
+ * and are passed through as-is to `UnifiedFunctionMetrics` without normalization.
+ */
+interface RawFunctionMetrics {
+  name: string;
+  complexity: number;
+  details: RawMetricsDetail[];
+  startLine: number;
+  endLine: number;
+  startColumn: number;
+  endColumn: number;
+}
+
+/** Shape of a language analyzer class that must expose a static `analyzeFile` method. */
+interface AnalyzerClass {
+  analyzeFile(sourceText: string): RawFunctionMetrics[];
+}
+
+/**
  * Creates a language-specific cognitive complexity analyzer function.
  *
  * All language analyzers share the same output shape and the same normalization
@@ -155,18 +187,26 @@ function hashString(str: string): number {
  * @param modulePath - require()-style path to the language analyzer module (relative to this file)
  * @param className  - Name of the exported analyzer class that exposes a static `analyzeFile` method
  * @returns A function that takes source text and returns an array of UnifiedFunctionMetrics
+ * @throws {Error} If the module does not export the expected class with an `analyzeFile` method
  */
 function createAnalyzer(
   modulePath: string,
   className: string
 ): (sourceText: string) => UnifiedFunctionMetrics[] {
   return function (sourceText: string): UnifiedFunctionMetrics[] {
-    const mod = require(modulePath);
-    const functions: any[] = mod[className].analyzeFile(sourceText);
-    return functions.map((func: any) => ({
+    const mod = require(modulePath) as Record<string, AnalyzerClass | undefined>;
+    const analyzerClass = mod[className];
+    if (!analyzerClass || typeof analyzerClass.analyzeFile !== "function") {
+      throw new Error(
+        `Analyzer module "${modulePath}" does not export a class named "${className}" ` +
+        `with a static analyzeFile method.`
+      );
+    }
+    const functions: RawFunctionMetrics[] = analyzerClass.analyzeFile(sourceText);
+    return functions.map((func: RawFunctionMetrics) => ({
       name: func.name,
       complexity: func.complexity,
-      details: func.details.map((detail: any) => ({
+      details: func.details.map((detail: RawMetricsDetail) => ({
         increment: detail.increment,
         reason: detail.reason,
         line: detail.line + 1,     // analyzers use 0-based; normalize to 1-based
