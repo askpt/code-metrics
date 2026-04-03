@@ -51,6 +51,13 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - run: npm ci
+      - name: Cache VS Code test binary
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: .vscode-test
+          key: vscode-test-${{ runner.os }}-${{ hashFiles('.vscode-test.mjs') }}
+          restore-keys: |
+            vscode-test-${{ runner.os }}-
       - name: Test
         run: xvfb-run -a npm test
       - name: Publish
