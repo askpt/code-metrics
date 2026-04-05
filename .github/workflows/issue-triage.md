@@ -25,10 +25,9 @@ tools:
   github:
     toolsets: [issues]
     min-integrity: none # This workflow is allowed to examine and comment on any issues
-    repos: all
 
 timeout-minutes: 10
-source: githubnext/agentics/workflows/issue-triage.md@d1d884596e62351dd652ae78465885dd32f0dd7d
+source: githubnext/agentics/workflows/issue-triage.md@7c7feb61a52b662eb2089aa2945588b7a200d404
 ---
 
 # Agentic Triage
