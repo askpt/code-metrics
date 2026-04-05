@@ -1,1 +1,10 @@
-{"last_run":"2026-03-30","run_id":"23756015162","open_prs":{"226":"release 0.3.1"},"perf_pr":"merged-222","refactor_pr":"repo-assist/improve-factory-and-details-2026-03-30","monthly_issue":165,"notes":"PR #226 (release 0.3.1) still open and awaiting merge. This run: createAnalyzer helper + showFunctionDetails command impl. PR #222 merged 2026-03-27."}
+{
+  "last_run": "2026-04-05",
+  "run_id": "23998860944",
+  "open_prs": {
+    "aw_pr01": "fix: escape regex metacharacters in glob exclude patterns (branch: repo-assist/improve-glob-escape-2026-04-05)"
+  },
+  "monthly_issue": "aw_apr01",
+  "monthly_issue_month": "2026-04",
+  "notes": "PR created this run: fix isExcluded() regex escaping bug + fix startLine/endLine JSDoc. March monthly issue #165 closed; April issue created as aw_apr01."
+}
