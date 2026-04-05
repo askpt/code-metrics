@@ -70,18 +70,26 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
       const hasPathSeparators = normalizedPattern.includes("/");
 
       if (hasPathSeparators) {
-        // Pattern contains path separators - match against full path
+        // Pattern contains path separators - match against full path.
+        // Step 1: preserve wildcards as null-byte placeholders so they survive
+        //         regex escaping; Step 2: escape regex metacharacters in the
+        //         literal portions; Step 3: restore wildcards as regex tokens.
         const regexPattern = normalizedPattern
-          .replace(/\*\*/g, "___DOUBLESTAR___") // Temporary placeholder
-          .replace(/\*/g, "[^/]*") // Single * matches within directory
-          .replace(/___DOUBLESTAR___/g, ".*"); // ** matches across directories
+          .replace(/\*\*/g, "\x00DS\x00") // placeholder for **
+          .replace(/\*/g, "\x00S\x00") // placeholder for *
+          .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
+          .replace(/\x00DS\x00/g, ".*") // ** matches across directories
+          .replace(/\x00S\x00/g, "[^/]*"); // single * matches within directory
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(normalizedPath);
       } else {
-        // Pattern has no path separators - match against filename only
+        // Pattern has no path separators - match against filename only.
         const filename = normalizedPath.split("/").pop() || "";
-        const regexPattern = normalizedPattern.replace(/\*/g, ".*"); // * matches any characters in filename
+        const regexPattern = normalizedPattern
+          .replace(/\*/g, "\x00S\x00") // placeholder for *
+          .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
+          .replace(/\x00S\x00/g, ".*"); // * matches any characters in filename
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(filename);

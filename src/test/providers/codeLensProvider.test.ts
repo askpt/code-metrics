@@ -320,6 +320,44 @@ suite("Metrics Code Lens Provider Tests", () => {
         },
         { pattern: "test*", path: "/path/test.cs", shouldExclude: true },
         { pattern: "test*", path: "/path/src.cs", shouldExclude: false },
+        // Regex metacharacter escaping: literal dots must not act as wildcards
+        // Full-path branch (pattern contains a path separator)
+        {
+          pattern: "**/*.min.js",
+          path: "/path/to/foo.min.js",
+          shouldExclude: true,
+        },
+        {
+          pattern: "**/*.min.js",
+          path: "/path/to/fooXminXjs",
+          shouldExclude: false,
+        },
+        {
+          pattern: "**/*.spec.*",
+          path: "/path/to/app.spec.ts",
+          shouldExclude: true,
+        },
+        {
+          pattern: "**/*.spec.*",
+          path: "/path/to/appXspecXts",
+          shouldExclude: false,
+        },
+        // Filename-only branch (pattern has no path separator)
+        {
+          pattern: "*.generated.*",
+          path: "/path/fooXgeneratedXcs",
+          shouldExclude: false,
+        },
+        {
+          pattern: "*.min.js",
+          path: "/path/foo.min.js",
+          shouldExclude: true,
+        },
+        {
+          pattern: "*.min.js",
+          path: "/path/fooXminXjs",
+          shouldExclude: false,
+        },
       ];
 
       for (const testCase of testCases) {
