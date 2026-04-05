@@ -42,9 +42,9 @@ export interface UnifiedFunctionMetrics {
   complexity: number;
   /** Array of individual complexity details that contribute to the total score */
   details: UnifiedMetricsDetail[];
-  /** Line number where the function definition starts (1-based) */
+  /** Line number where the function definition starts (0-based) */
   startLine: number;
-  /** Line number where the function definition ends (1-based) */
+  /** Line number where the function definition ends (0-based) */
   endLine: number;
   /** Column number where the function definition starts (0-based) */
   startColumn: number;
