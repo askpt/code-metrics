@@ -320,6 +320,27 @@ suite("Metrics Code Lens Provider Tests", () => {
         },
         { pattern: "test*", path: "/path/test.cs", shouldExclude: true },
         { pattern: "test*", path: "/path/src.cs", shouldExclude: false },
+        // Regex metacharacter escaping: literal dots must not act as wildcards
+        {
+          pattern: "**/*.min.js",
+          path: "/path/to/foo.min.js",
+          shouldExclude: true,
+        },
+        {
+          pattern: "**/*.min.js",
+          path: "/path/to/fooXminXjs",
+          shouldExclude: false,
+        },
+        {
+          pattern: "**/*.spec.*",
+          path: "/path/to/app.spec.ts",
+          shouldExclude: true,
+        },
+        {
+          pattern: "**/*.spec.*",
+          path: "/path/to/appXspecXts",
+          shouldExclude: false,
+        },
       ];
 
       for (const testCase of testCases) {
