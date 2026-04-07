@@ -116,6 +116,9 @@ export class MetricsAnalyzerFactory {
       const cacheKey = `${languageId}:${sourceText.length}:${hashString(sourceText)}`;
       const cached = analysisCache.get(cacheKey);
       if (cached) {
+        // Move to end to maintain LRU order (most recently used stays at back)
+        analysisCache.delete(cacheKey);
+        analysisCache.set(cacheKey, cached);
         return cached;
       }
       const results = analyzer(sourceText);
@@ -133,7 +136,7 @@ export class MetricsAnalyzerFactory {
 /** Maximum number of analysis results to keep in cache (one entry per unique file content). */
 const CACHE_MAX_SIZE = 20;
 
-/** Cache of analysis results keyed by language + content hash. Evicts oldest entry when full. */
+/** Cache of analysis results keyed by language + content hash. Evicts least-recently-used entry when full. */
 const analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
 
 /** Fast non-cryptographic hash for cache key generation (djb2 variant). */
