@@ -590,5 +590,192 @@ function hello(): string {
       assert.ok(languages.includes("javascriptreact"));
       assert.ok(languages.includes("typescriptreact"));
     });
+
+    it("should count ternary expressions", () => {
+      const sourceCode = `
+function abs(x: number): number {
+  return x >= 0 ? x : -x;
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const ternaryDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "ternary expression"
+      );
+      assert.ok(ternaryDetail);
+    });
+
+    it("should count try/catch clauses", () => {
+      const sourceCode = `
+function parse(s: string): number {
+  try {
+    return parseInt(s, 10);
+  } catch (e) {
+    return 0;
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const catchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "catch clause"
+      );
+      assert.ok(catchDetail);
+    });
+
+    it("should count nullish coalescing operator", () => {
+      const sourceCode = `
+function greet(name: string | null): string {
+  return name ?? "World";
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const nullishDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("??")
+      );
+      assert.ok(nullishDetail);
+    });
+
+    it("should count labeled break statements", () => {
+      const sourceCode = `
+function search(matrix: number[][]): boolean {
+  outer: for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] === 0) {
+        break outer;
+      }
+    }
+  }
+  return true;
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const labeledBreak = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "labeled break statement"
+      );
+      assert.ok(labeledBreak);
+    });
+  });
+
+  describe("JavaScript Analyzer Additional Coverage", () => {
+    it("should count ternary expressions", () => {
+      const sourceCode = `
+function abs(x) {
+  return x >= 0 ? x : -x;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const ternaryDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "ternary expression"
+      );
+      assert.ok(ternaryDetail);
+    });
+
+    it("should count try/catch clauses", () => {
+      const sourceCode = `
+function parse(s) {
+  try {
+    return parseInt(s, 10);
+  } catch (e) {
+    return 0;
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const catchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "catch clause"
+      );
+      assert.ok(catchDetail);
+    });
+
+    it("should count nullish coalescing operator", () => {
+      const sourceCode = `
+function greet(name) {
+  return name ?? "World";
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const nullishDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.includes("??")
+      );
+      assert.ok(nullishDetail);
+    });
+
+    it("should count labeled continue statements", () => {
+      const sourceCode = `
+function process(matrix) {
+  outer: for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] < 0) {
+        continue outer;
+      }
+    }
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const labeledContinue = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "labeled continue statement"
+      );
+      assert.ok(labeledContinue);
+    });
+  });
+
+  describe("Analysis Cache Behavior", () => {
+    it("should return same results on cache hit", () => {
+      const sourceCode = `
+function cached(x: number): number {
+  return x * 2;
+}
+`;
+      const first = MetricsAnalyzerFactory.analyzeFile(sourceCode, "typescript");
+      const second = MetricsAnalyzerFactory.analyzeFile(sourceCode, "typescript");
+      assert.deepStrictEqual(first, second);
+      assert.strictEqual(first.length, 1);
+    });
+
+    it("should handle cache eviction without errors (fill beyond CACHE_MAX_SIZE)", () => {
+      // Each iteration uses a unique source so all entries are distinct cache keys.
+      // After CACHE_MAX_SIZE+1 entries the LRU eviction fires; this should not throw.
+      for (let i = 0; i <= 20; i++) {
+        const src = `function f${i}(): number { return ${i}; }`;
+        const results = MetricsAnalyzerFactory.analyzeFile(src, "typescript");
+        assert.ok(Array.isArray(results));
+      }
+    });
+
+    it("should return empty array for unsupported language even when cache has entries", () => {
+      MetricsAnalyzerFactory.analyzeFile("function x() {}", "typescript");
+      const results = MetricsAnalyzerFactory.analyzeFile("def x(): pass", "python");
+      assert.strictEqual(results.length, 0);
+    });
+  });
+
+  describe("createAnalyzer Error Handling", () => {
+    it("should throw when module does not export the expected class", () => {
+      const { createAnalyzer } = require("../metricsAnalyzer/metricsAnalyzerFactory");
+      const badAnalyzer = createAnalyzer(
+        "../metricsAnalyzer/metricsAnalyzerFactory",
+        "NonExistentClass"
+      );
+      assert.throws(
+        () => badAnalyzer("some source"),
+        /does not export a class named "NonExistentClass"/
+      );
+    });
   });
 });
