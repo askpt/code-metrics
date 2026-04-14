@@ -240,6 +240,7 @@ const languageAnalyzers: Record<
   go:              createAnalyzer("./languages/goAnalyzer",          "GoMetricsAnalyzer"),
   javascript:      createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
   javascriptreact: createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
+  python:          createAnalyzer("./languages/pythonAnalyzer",      "PythonMetricsAnalyzer"),
   typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
   typescriptreact: createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
 };

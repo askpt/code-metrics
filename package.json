@@ -29,7 +29,8 @@
     "csharp",
     "go",
     "golang",
-    "metrics"
+    "metrics",
+    "python"
   ],
   "categories": [
     "Other"
@@ -39,6 +40,7 @@
     "onLanguage:go",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
+    "onLanguage:python",
     "onLanguage:typescript",
     "onLanguage:typescriptreact"
   ],
@@ -125,6 +127,7 @@
     "tree-sitter-c-sharp": "0.23.1",
     "tree-sitter-go": "0.21.2",
     "tree-sitter-javascript": "0.21.4",
+    "tree-sitter-python": "0.21.0",
     "tree-sitter-typescript": "0.21.2"
   }
 }
