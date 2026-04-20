@@ -118,7 +118,7 @@
     "c8": "11.0.0",
     "eslint": "10.2.1",
     "mocha": "11.7.5",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "tree-sitter": "0.21.1",
