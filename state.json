@@ -1,8 +1,10 @@
 {
-  "last_run": "2026-04-14",
-  "run_id": "24425325924",
+  "last_run": "2026-04-21",
+  "run_id": "24748859336",
   "open_prs": {
-    "python_support": "feat: add cognitive complexity analysis for Python (branch: repo-assist/feat-python-support-issue-237, closes #237)"
+    "python_support": "issue #256 (protected files): feat: add cognitive complexity analysis for Python — branch repo-assist/feat-python-support-issue-237-c3177593d8cf115a, closes #237",
+    "js_ts_base_class": "feat: refactor JS/TS analyzers to use shared base class — branch repo-assist/improve-js-ts-base-class",
+    "js_ts_tests": "test: add comprehensive tests for JavaScript and TypeScript analyzers — branch repo-assist/improve-js-ts-tests"
   },
   "monthly_issue": 236,
   "monthly_issue_month": "2026-04",
@@ -10,5 +12,5 @@
     "237": "2026-04-14 - Repo Assist commented linking to Python PR",
     "238": "2026-04-14 - Repo Assist commented with Java implementation tips"
   },
-  "notes": "Previous LRU cache PR and test coverage PR both merged (appeared in release #239 body as #246). Release PR #239 still open. This run: implemented full Python support (#237) - new PythonMetricsAnalyzer, 24 tests, samples/Test.py. Also commented on #238 with Java implementation guidance. Issue #238 (Java) is a good candidate for next Task 10 run - use the Python PR as template."
+  "notes": "Task 5 (2026-04-21): Extracted JsLikeMetricsAnalyzer base class — JS/TS analyzers now extend it, removing ~380 lines of duplication. Task 10 (2026-04-21): Added 38 tests for JS and TS analyzers (none existed before). Python PR still blocked on protected files (issue #256). Java (#238) is next candidate for future Task 10 run. PR #239 merged as v0.3.2."
 }
