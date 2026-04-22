@@ -298,7 +298,6 @@ export class JsLikeMetricsAnalyzer {
       case "if_statement":
       case "for_statement":
       case "for_in_statement":
-      case "for_of_statement":
       case "while_statement":
       case "do_statement":
       case "switch_statement":
@@ -369,10 +368,11 @@ export class JsLikeMetricsAnalyzer {
       }
       case "for_statement":
         return "for loop";
-      case "for_in_statement":
-        return "for...in loop";
-      case "for_of_statement":
-        return "for...of loop";
+      case "for_in_statement": {
+        // tree-sitter uses for_in_statement for both for...in and for...of
+        const hasOf = node.children.some((c) => !c.isNamed && c.type === "of");
+        return hasOf ? "for...of loop" : "for...in loop";
+      }
       case "while_statement":
         return "while loop";
       case "do_statement":
@@ -408,7 +408,6 @@ export class JsLikeMetricsAnalyzer {
       node.type === "if_statement" ||
       node.type === "for_statement" ||
       node.type === "for_in_statement" ||
-      node.type === "for_of_statement" ||
       node.type === "while_statement" ||
       node.type === "do_statement" ||
       node.type === "switch_statement" ||
