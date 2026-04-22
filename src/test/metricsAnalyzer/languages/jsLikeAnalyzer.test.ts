@@ -26,7 +26,7 @@ function outer() {
       assert.ok(methodReason, "Expected 'method (nested)' reason for nested class method");
     });
 
-    test("should report 'function (nested)' for nested function declaration", () => {
+    test("should treat nested function_declaration as part of outer function", () => {
       const sourceCode = `
 function outer() {
   function inner() {
@@ -35,15 +35,11 @@ function outer() {
 }
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
-      // inner is a function_declaration nested inside outer, should get "function (nested)" as default
-      // But function_declaration is not treated as isNestedFunction (only function_expression, arrow_function, method_definition)
-      // So inner is collected as a separate top-level function
-      assert.strictEqual(results.length, 2);
-      const outerFunc = results.find((r) => r.name === "outer");
-      const innerFunc = results.find((r) => r.name === "inner");
-      assert.ok(outerFunc);
-      assert.ok(innerFunc);
-      assert.strictEqual(innerFunc!.complexity, 0);
+      // function_declaration is not in isNestedFunction, so inner is analyzed
+      // as part of outer's body rather than collected separately
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "outer");
+      assert.strictEqual(results[0].complexity, 0);
     });
   });
 
