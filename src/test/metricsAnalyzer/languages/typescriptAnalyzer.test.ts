@@ -311,6 +311,113 @@ function abs(n: number): number {
     });
   });
 
+  suite("Labeled Statements", () => {
+    test("should count labeled break statement", () => {
+      const sourceCode = `
+function search(matrix: number[][]): void {
+  outer:
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] === 0) {
+        break outer;
+      }
+    }
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      const reasons = results[0].details.map((d) => d.reason);
+      assert.ok(reasons.includes("labeled break statement"));
+    });
+
+    test("should count labeled continue statement", () => {
+      const sourceCode = `
+function skipNegatives(matrix: number[][]): void {
+  outer:
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] < 0) {
+        continue outer;
+      }
+    }
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      const reasons = results[0].details.map((d) => d.reason);
+      assert.ok(reasons.includes("labeled continue statement"));
+    });
+
+    test("should not count unlabeled break or continue", () => {
+      const sourceCode = `
+function find(arr: number[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === 0) {
+      break;
+    }
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      const reasons = results[0].details.map((d) => d.reason);
+      assert.ok(!reasons.includes("labeled break statement"));
+    });
+  });
+
+  suite("Function Types", () => {
+    test("should analyze function expression", () => {
+      const sourceCode = `
+const greet = function hello(name: string): string {
+  if (name) {
+    return "Hello " + name;
+  }
+  return "Hello";
+};
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "hello");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    test("should name anonymous arrow function as (arrow function)", () => {
+      const sourceCode = `
+[1, 2, 3].forEach((x: number) => {
+  if (x > 1) {
+    console.log(x);
+  }
+});
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "(arrow function)");
+    });
+
+    test("should report nested function expression reason", () => {
+      const sourceCode = `
+function outer(): void {
+  const inner = function nested(): number {
+    if (true) { return 1; }
+    return 0;
+  };
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+
+      const outerFunc = results.find((r) => r.name === "outer");
+      assert.ok(outerFunc);
+      const nestedReason = outerFunc!.details.find((d) =>
+        d.reason.includes("function expression (nested)")
+      );
+      assert.ok(nestedReason);
+    });
+  });
+
   suite("Nested Functions and Arrow Functions", () => {
     test("should count nesting penalty for nested arrow function on outer", () => {
       const sourceCode = `
