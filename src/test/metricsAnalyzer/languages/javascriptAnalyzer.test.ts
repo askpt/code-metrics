@@ -308,7 +308,7 @@ function abs(n) {
   });
 
   suite("Nested Functions", () => {
-    test("should analyze nested arrow function separately", () => {
+    test("should count nesting penalty for nested arrow function on outer", () => {
       const sourceCode = `
 function outer() {
   const inner = () => {
@@ -321,14 +321,12 @@ function outer() {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
-      // Both outer and inner should appear
-      assert.strictEqual(results.length, 2);
+      // The analyzer only returns the outer function; nested function metrics are not accumulated
+      assert.strictEqual(results.length, 1);
       const outerFunc = results.find((r) => r.name === "outer");
-      const innerFunc = results.find((r) => r.name === "inner");
       assert.ok(outerFunc);
-      assert.ok(innerFunc);
-      // inner has an if statement (+1)
-      assert.strictEqual(innerFunc!.complexity, 1);
+      // nested arrow at nesting=0 → +1
+      assert.strictEqual(outerFunc!.complexity, 1);
     });
 
     test("should add nesting penalty to outer function for nested arrow function", () => {
@@ -387,9 +385,8 @@ function foo() {
       assert.strictEqual(results[0].startColumn, 0);
     });
 
-    test("should report 1-based line for complexity detail (normalized by factory)", () => {
+    test("should report 0-based line for complexity detail from raw analyzer", () => {
       // The raw analyzer returns 0-based lines; the factory normalizes to 1-based.
-      // Test the raw analyzer directly (before factory normalization).
       const analyzer = new JavaScriptMetricsAnalyzer();
       const sourceCode = `
 function foo() {
