@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/askpt/code-metrics/compare/v0.3.2...v0.3.3) (2026-04-26)
+
+
+### 🔄 Refactoring
+
+* extract shared base class for JavaScript and TypeScript analyzers ([#266](https://github.com/askpt/code-metrics/issues/266)) ([9d73035](https://github.com/askpt/code-metrics/commit/9d7303555d67db065e63f5df2261d29892e777f8))
+
 ## [0.3.2](https://github.com/askpt/code-metrics/compare/v0.3.1...v0.3.2) (2026-04-20)
 
 
