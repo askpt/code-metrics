@@ -358,6 +358,33 @@ suite("Metrics Code Lens Provider Tests", () => {
           path: "/path/fooXminXjs",
           shouldExclude: false,
         },
+        // ? wildcard: matches exactly one character
+        // Filename-only branch
+        { pattern: "fo?.ts", path: "/path/foo.ts", shouldExclude: true },
+        { pattern: "fo?.ts", path: "/path/fo.ts", shouldExclude: false },
+        { pattern: "fo?.ts", path: "/path/fooo.ts", shouldExclude: false },
+        // Full-path branch
+        {
+          pattern: "**/fo?.ts",
+          path: "/path/to/foo.ts",
+          shouldExclude: true,
+        },
+        {
+          pattern: "**/fo?.ts",
+          path: "/path/to/fo.ts",
+          shouldExclude: false,
+        },
+        // ? should not match a path separator
+        {
+          pattern: "src/?oo.ts",
+          path: "src/foo.ts",
+          shouldExclude: true,
+        },
+        {
+          pattern: "src/?oo.ts",
+          path: "src/sub/foo.ts",
+          shouldExclude: false,
+        },
       ];
 
       for (const testCase of testCases) {
