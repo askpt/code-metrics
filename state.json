@@ -1,10 +1,8 @@
 {
-  "last_run": "2026-04-21",
-  "run_id": "24748859336",
+  "last_run": "2026-04-27",
+  "run_id": "24987382754",
   "open_prs": {
-    "python_support": "issue #256 (protected files): feat: add cognitive complexity analysis for Python — branch repo-assist/feat-python-support-issue-237-c3177593d8cf115a, closes #237",
-    "js_ts_base_class": "feat: refactor JS/TS analyzers to use shared base class — branch repo-assist/improve-js-ts-base-class",
-    "js_ts_tests": "test: add comprehensive tests for JavaScript and TypeScript analyzers — branch repo-assist/improve-js-ts-tests"
+    "glob_question_mark": "fix: support ? wildcard in isExcluded glob pattern matching — branch repo-assist/improve-glob-question-mark-wildcard"
   },
   "monthly_issue": 236,
   "monthly_issue_month": "2026-04",
@@ -12,5 +10,5 @@
     "237": "2026-04-14 - Repo Assist commented linking to Python PR",
     "238": "2026-04-14 - Repo Assist commented with Java implementation tips"
   },
-  "notes": "Task 5 (2026-04-21): Extracted JsLikeMetricsAnalyzer base class — JS/TS analyzers now extend it, removing ~380 lines of duplication. Task 10 (2026-04-21): Added 38 tests for JS and TS analyzers (none existed before). Python PR still blocked on protected files (issue #256). Java (#238) is next candidate for future Task 10 run. PR #239 merged as v0.3.2."
+  "notes": "Task 5 (2026-04-27): Fixed ? glob wildcard support in isExcluded() — the ? char was being escaped as a regex literal instead of treated as a single-char wildcard. PR created on branch repo-assist/improve-glob-question-mark-wildcard. Task 2: no new human comments on #237 or #238. Python PR (#256) still blocked on protected files. JS/TS base class (#266) and tests (#267) merged on 2026-04-22. Release 0.3.3 published 2026-04-26. Java (#238) is next candidate for future Task 10/5 run."
 }
