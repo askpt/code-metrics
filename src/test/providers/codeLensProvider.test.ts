@@ -376,13 +376,13 @@ suite("Metrics Code Lens Provider Tests", () => {
         },
         // ? should not match a path separator
         {
-          pattern: "src/?oo.ts",
-          path: "src/foo.ts",
+          pattern: "/src/?oo.ts",
+          path: "/src/foo.ts",
           shouldExclude: true,
         },
         {
-          pattern: "src/?oo.ts",
-          path: "src/sub/foo.ts",
+          pattern: "/src/?oo.ts",
+          path: "/src/sub/foo.ts",
           shouldExclude: false,
         },
       ];
