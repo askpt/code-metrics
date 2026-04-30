@@ -47,7 +47,9 @@ function compileExcludePattern(
 function getCompiledPatterns(
   patterns: string[]
 ): { regex: RegExp; isFullPath: boolean }[] {
-  const cacheKey = patterns.join("\x00");
+  // Normalize separators before keying so Windows paths (backslash) and
+  // forward-slash paths for the same pattern list share a single cache entry.
+  const cacheKey = patterns.map((p) => p.replace(/\\/g, "/")).join("\x00");
   let compiled = excludeRegexCache.get(cacheKey);
   if (!compiled) {
     compiled = patterns.map(compileExcludePattern);
@@ -190,6 +192,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
 
   // Refresh code lenses when configuration changes
   const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
+    excludeRegexCache.clear();
     setTimeout(() => provider.refresh(), 100);
   });
 
