@@ -77,9 +77,11 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
         const regexPattern = normalizedPattern
           .replace(/\*\*/g, "\x00DS\x00") // placeholder for **
           .replace(/\*/g, "\x00S\x00") // placeholder for *
+          .replace(/\?/g, "\x00Q\x00") // placeholder for ?
           .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
           .replace(/\x00DS\x00/g, ".*") // ** matches across directories
-          .replace(/\x00S\x00/g, "[^/]*"); // single * matches within directory
+          .replace(/\x00S\x00/g, "[^/]*") // single * matches within directory
+          .replace(/\x00Q\x00/g, "[^/]"); // ? matches exactly one non-separator char
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(normalizedPath);
@@ -88,8 +90,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
         const filename = normalizedPath.split("/").pop() || "";
         const regexPattern = normalizedPattern
           .replace(/\*/g, "\x00S\x00") // placeholder for *
+          .replace(/\?/g, "\x00Q\x00") // placeholder for ?
           .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
-          .replace(/\x00S\x00/g, ".*"); // * matches any characters in filename
+          .replace(/\x00S\x00/g, ".*") // * matches any characters in filename
+          .replace(/\x00Q\x00/g, "."); // ? matches exactly one character in filename
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(filename);
