@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/askpt/code-metrics/compare/v0.3.3...v0.3.4) (2026-04-30)
+
+
+### 🐛 Bug Fixes
+
+* support ? wildcard in isExcluded glob pattern matching ([#270](https://github.com/askpt/code-metrics/issues/270)) ([ce22c0d](https://github.com/askpt/code-metrics/commit/ce22c0d8c42088ce3d6e4a0f8d93bfe2410be0e6))
+
 ## [0.3.3](https://github.com/askpt/code-metrics/compare/v0.3.2...v0.3.3) (2026-04-26)
 
 
