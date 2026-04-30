@@ -187,6 +187,10 @@ interface AnalyzerClass {
  * step (0-based → 1-based line/column in detail positions). This helper
  * centralises that logic so individual language registrations stay concise.
  *
+ * The returned function lazily resolves the analyzer class on its first invocation
+ * and caches the bound `analyzeFile` reference for all subsequent calls, so neither
+ * `require()` nor the class-validation check runs more than once per language.
+ *
  * @param modulePath - require()-style path to the language analyzer module (relative to this file)
  * @param className  - Name of the exported analyzer class that exposes a static `analyzeFile` method
  * @returns A function that takes source text and returns an array of UnifiedFunctionMetrics
@@ -196,16 +200,23 @@ export function createAnalyzer(
   modulePath: string,
   className: string
 ): (sourceText: string) => UnifiedFunctionMetrics[] {
+  // Cached reference to the resolved analyzeFile function — populated on first call.
+  let cachedAnalyze: ((sourceText: string) => RawFunctionMetrics[]) | null = null;
+
   return function (sourceText: string): UnifiedFunctionMetrics[] {
-    const mod = require(modulePath) as Record<string, AnalyzerClass | undefined>;
-    const analyzerClass = mod[className];
-    if (!analyzerClass || typeof analyzerClass.analyzeFile !== "function") {
-      throw new Error(
-        `Analyzer module "${modulePath}" does not export a class named "${className}" ` +
-        `with a static analyzeFile method.`
-      );
+    if (!cachedAnalyze) {
+      const mod = require(modulePath) as Record<string, AnalyzerClass | undefined>;
+      const analyzerClass = mod[className];
+      if (!analyzerClass || typeof analyzerClass.analyzeFile !== "function") {
+        throw new Error(
+          `Analyzer module "${modulePath}" does not export a class named "${className}" ` +
+          `with a static analyzeFile method.`
+        );
+      }
+      cachedAnalyze = analyzerClass.analyzeFile.bind(analyzerClass);
     }
-    const functions: RawFunctionMetrics[] = analyzerClass.analyzeFile(sourceText);
+
+    const functions: RawFunctionMetrics[] = cachedAnalyze(sourceText);
     return functions.map((func: RawFunctionMetrics) => ({
       name: func.name,
       complexity: func.complexity,
