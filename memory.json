@@ -1,0 +1,30 @@
+{
+  "last_run": "2026-05-05T22:14:00Z",
+  "last_run_id": "25405181912",
+  "backlog_cursor": {
+    "issues": 256,
+    "prs": 0
+  },
+  "comments_made": {
+    "237": "2026-04-14",
+    "238": "2026-04-14"
+  },
+  "fix_attempts": {},
+  "improvement_attempts": [
+    "perf-lru-cache (merged as #246)",
+    "test-cache-and-operators (merged)",
+    "fix-escape-regex (merged as #235)",
+    "refactor-jslike-base (merged as #266)",
+    "test-jslike-comprehensive (merged as #267)",
+    "fix-wildcard-glob (#270 - open PR, check status)",
+    "perf-cache-exclude-regexes (branch created 2026-04-28, no PR - branches not found)",
+    "improve-createanalyzer-lazy-resolution (branch created 2026-04-28, no PR - branches not found)",
+    "improve-codelens-config-passthrough (PR created 2026-05-05)"
+  ],
+  "notes": "Monthly activity issue for May 2026 created. April issue #236 closed. PR #270 status unknown - check if open. Task 2 skipped: no new human activity on issues.",
+  "monthly_activity_issue": {
+    "month": "2026-05",
+    "number": "new - check latest"
+  },
+  "checked_off_items": []
+}
