@@ -134,7 +134,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     functions.forEach((func) => {
       // Only show code lens for functions with complexity > 0
       if (func.complexity > 0) {
-        const codeLens = this.createCodeLens(func, document);
+        const codeLens = this.createCodeLens(func, document, config);
         if (codeLens) {
           codeLenses.push(codeLens);
         }
@@ -146,7 +146,8 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   private createCodeLens(
     func: UnifiedFunctionMetrics,
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
+    config: CodeMetricsConfig
   ): vscode.CodeLens | undefined {
     const complexity = func.complexity;
 
@@ -154,10 +155,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     const line = func.startLine;
     const range = new vscode.Range(line, 0, line, 0);
 
-    // Get status information using configuration manager
+    // Get status information using the already-resolved config
     const status = ConfigurationManager.getComplexityStatus(
       complexity,
-      document.uri
+      config
     );
 
     // Create the code lens title
