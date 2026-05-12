@@ -249,6 +249,7 @@ const languageAnalyzers: Record<
 > = {
   csharp:          createAnalyzer("./languages/csharpAnalyzer",     "CSharpMetricsAnalyzer"),
   go:              createAnalyzer("./languages/goAnalyzer",          "GoMetricsAnalyzer"),
+  java:            createAnalyzer("./languages/javaAnalyzer",        "JavaMetricsAnalyzer"),
   javascript:      createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
   javascriptreact: createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
   typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
