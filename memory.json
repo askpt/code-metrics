@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-05-05T22:14:00Z",
-  "last_run_id": "25405181912",
+  "last_run": "2026-05-12T17:32:30Z",
+  "last_run_id": "25751150959",
   "backlog_cursor": {
     "issues": 256,
     "prs": 0
@@ -16,15 +16,15 @@
     "fix-escape-regex (merged as #235)",
     "refactor-jslike-base (merged as #266)",
     "test-jslike-comprehensive (merged as #267)",
-    "fix-wildcard-glob (#270 - open PR, check status)",
-    "perf-cache-exclude-regexes (branch created 2026-04-28, no PR - branches not found)",
-    "improve-createanalyzer-lazy-resolution (branch created 2026-04-28, no PR - branches not found)",
-    "improve-codelens-config-passthrough (PR created 2026-05-05)"
+    "fix-wildcard-glob (#270 - superseded)",
+    "improve-codelens-config-passthrough (merged as #285)",
+    "feat-python-support-issue-237 (branch exists, protected file PR issue #256 open)",
+    "feat-java-support-issue-238 (PR created 2026-05-12)"
   ],
-  "notes": "Monthly activity issue for May 2026 created. April issue #236 closed. PR #270 status unknown - check if open. Task 2 skipped: no new human activity on issues.",
+  "notes": "PR #290 (release 0.3.5) is open from release-please. Monthly activity issue #286 for May 2026. Java support PR created for issue #238.",
   "monthly_activity_issue": {
     "month": "2026-05",
-    "number": "new - check latest"
+    "number": 286
   },
   "checked_off_items": []
 }
