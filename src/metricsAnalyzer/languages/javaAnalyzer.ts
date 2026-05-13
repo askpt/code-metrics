@@ -212,23 +212,40 @@ export class JavaMetricsAnalyzer {
    *
    * @param node - The current syntax node being visited
    */
-  private visit(node: Parser.SyntaxNode): void {
-    const increment = this.getComplexityIncrement(node);
+  private visit(node: Parser.SyntaxNode, skipSelfIncrement = false): void {
+    const increment =
+      skipSelfIncrement && node.type === "if_statement"
+        ? 0
+        : this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.complexity += increment;
-      this.details.push({
+      this.addDetail(
         increment,
-        reason: this.getComplexityReason(node),
-        line: node.startPosition.row,
-        column: node.startPosition.column,
-        nesting: this.nesting,
-      });
+        this.getComplexityReason(node),
+        node.startPosition.row,
+        node.startPosition.column
+      );
+    }
+
+    if (node.type === "if_statement" && this.hasElseBranch(node)) {
+      const elseToken = node.children.find((c) => !c.isNamed && c.type === "else");
+      const elseLine = elseToken?.startPosition.row ?? node.startPosition.row;
+      const elseColumn = elseToken?.startPosition.column ?? node.startPosition.column;
+      this.addDetail(
+        1,
+        this.getElseBranchReason(node),
+        elseLine,
+        elseColumn
+      );
     }
 
     if (this.increasesNesting(node)) {
       this.nesting++;
       for (const child of node.children) {
         if (!this.isMethodDeclaration(child)) {
+          if (node.type === "if_statement" && child === node.namedChildren[2]) {
+            this.visit(child, true);
+            continue;
+          }
           this.visit(child);
         }
       }
@@ -240,6 +257,31 @@ export class JavaMetricsAnalyzer {
         }
       }
     }
+  }
+
+  private addDetail(
+    increment: number,
+    reason: string,
+    line: number,
+    column: number
+  ): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
+  }
+
+  private hasElseBranch(node: Parser.SyntaxNode): boolean {
+    return node.children.some((c) => !c.isNamed && c.type === "else");
+  }
+
+  private getElseBranchReason(node: Parser.SyntaxNode): string {
+    const elseBranch = node.namedChildren[2];
+    return elseBranch?.type === "if_statement" ? "else if clause" : "else clause";
   }
 
   /**

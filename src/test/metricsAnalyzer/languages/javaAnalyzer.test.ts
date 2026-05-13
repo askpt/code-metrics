@@ -34,6 +34,54 @@ public class Test {
       assert.strictEqual(results[0].details[0].increment, 1);
     });
 
+    test("should count if/else with else as flat increment", () => {
+      const source = `
+public class Test {
+  public int max(int a, int b) {
+    if (a > b) {
+      return a;
+    } else {
+      return b;
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2);
+      assert.strictEqual(results[0].details.length, 2);
+      assert.strictEqual(results[0].details[0].reason, "if statement");
+      assert.strictEqual(results[0].details[0].increment, 1);
+      assert.strictEqual(results[0].details[1].reason, "else clause");
+      assert.strictEqual(results[0].details[1].increment, 1);
+    });
+
+    test("should count else-if chain without nesting penalty", () => {
+      const source = `
+public class Test {
+  public String grade(int score) {
+    if (score >= 90) {
+      return "A";
+    } else if (score >= 80) {
+      return "B";
+    } else {
+      return "C";
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      assert.strictEqual(results.length, 1);
+      // if(1) + else-if(1) + else(1)
+      assert.strictEqual(results[0].complexity, 3);
+      assert.deepStrictEqual(
+        results[0].details.map((detail) => detail.reason),
+        ["if statement", "else if clause", "else clause"]
+      );
+      assert.deepStrictEqual(
+        results[0].details.map((detail) => detail.increment),
+        [1, 1, 1]
+      );
+    });
+
     test("should analyze constructor", () => {
       const source = `
 public class Test {
