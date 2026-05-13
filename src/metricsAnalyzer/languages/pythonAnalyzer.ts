@@ -202,8 +202,10 @@ export class PythonMetricsAnalyzer {
       return;
     }
 
-    // Lambda adds +1 when nested
-    if (node.type === "lambda") {
+    // Lambda adds +1 when nested.
+    // Only match the named lambda expression node, not the anonymous "lambda" keyword token
+    // that tree-sitter includes as a child inside every lambda expression node.
+    if (node.type === "lambda" && node.isNamed) {
       if (this.nesting > 0) {
         const increment = 1 + this.nesting;
         this.complexity += increment;

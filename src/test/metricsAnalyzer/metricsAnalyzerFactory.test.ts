@@ -175,7 +175,7 @@ suite("Metrics Analyzer Factory Tests", () => {
                     print("Hello, World!")
             `;
 
-      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "python");
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "ruby");
 
       assert.strictEqual(results.length, 0);
     });
