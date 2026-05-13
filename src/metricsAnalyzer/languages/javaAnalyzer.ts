@@ -76,6 +76,8 @@ interface JavaFunctionMetrics {
  * ```
  */
 export class JavaMetricsAnalyzer {
+  private static readonly ELSE_BRANCH_INDEX = 2;
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -211,6 +213,8 @@ export class JavaMetricsAnalyzer {
    * and traversing its children with updated nesting levels.
    *
    * @param node - The current syntax node being visited
+   * @param skipSelfIncrement - When true, skips this node's own structural increment
+   * (used for else-if nodes that are already counted by the parent if_statement).
    */
   private visit(node: Parser.SyntaxNode, skipSelfIncrement = false): void {
     const increment =
@@ -240,9 +244,13 @@ export class JavaMetricsAnalyzer {
 
     if (this.increasesNesting(node)) {
       this.nesting++;
+      const elseBranchNode =
+        node.type === "if_statement"
+          ? this.getElseBranchNode(node)
+          : undefined;
       for (const child of node.children) {
         if (!this.isMethodDeclaration(child)) {
-          if (node.type === "if_statement" && child === node.namedChildren[2]) {
+          if (elseBranchNode && child === elseBranchNode) {
             this.visit(child, true);
             continue;
           }
@@ -275,13 +283,33 @@ export class JavaMetricsAnalyzer {
     });
   }
 
+  /**
+   * Detects whether an if_statement has an else clause in tree-sitter-java AST.
+   * The `else` keyword is represented as an unnamed token child.
+   */
   private hasElseBranch(node: Parser.SyntaxNode): boolean {
     return node.children.some((c) => !c.isNamed && c.type === "else");
   }
 
+  /**
+   * Returns the reason label for an if-statement else branch.
+   * Distinguishes between `else if` (nested if_statement as else branch)
+   * and plain `else` (block or single statement branch).
+   */
   private getElseBranchReason(node: Parser.SyntaxNode): string {
-    const elseBranch = node.namedChildren[2];
+    const elseBranch = this.getElseBranchNode(node);
     return elseBranch?.type === "if_statement" ? "else if clause" : "else clause";
+  }
+
+  /**
+   * Returns the optional else branch node for an if_statement.
+   * For tree-sitter-java named children: index 0 = condition, 1 = then branch,
+   * 2 = else branch when present.
+   */
+  private getElseBranchNode(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
+    return node.namedChildren.length > JavaMetricsAnalyzer.ELSE_BRANCH_INDEX
+      ? node.namedChildren[JavaMetricsAnalyzer.ELSE_BRANCH_INDEX]
+      : null;
   }
 
   /**
