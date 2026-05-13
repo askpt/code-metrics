@@ -142,7 +142,9 @@ export class JavaMetricsAnalyzer {
     this.details = [];
 
     const methodName = this.getMethodName(node);
-    const body = node.children.find((c) => c.type === "block");
+    const body = node.children.find(
+      (c) => c.type === "block" || c.type === "constructor_body"
+    );
     if (!body) {
       return null; // Abstract or interface method without body
     }
