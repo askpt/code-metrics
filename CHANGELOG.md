@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/askpt/code-metrics/compare/v0.3.4...v0.4.0) (2026-05-13)
+
+
+### ✨ New Features
+
+* add cognitive complexity analysis for Java ([#296](https://github.com/askpt/code-metrics/issues/296)) ([6f9e355](https://github.com/askpt/code-metrics/commit/6f9e35529e152984555bc614d876f5bdf573fdb4))
+* add cognitive complexity analysis for Python ([#297](https://github.com/askpt/code-metrics/issues/297)) ([3964283](https://github.com/askpt/code-metrics/commit/3964283745f8e1bbc38cebbdc4baa77f3fcee97c))
+
+
+### 🔄 Refactoring
+
+* pass resolved config into createCodeLens to avoid redundant getConfiguration calls ([#285](https://github.com/askpt/code-metrics/issues/285)) ([cbdbe51](https://github.com/askpt/code-metrics/commit/cbdbe51e404e719f8fbcfe29a64578cbc452294a))
+
 ## [0.3.4](https://github.com/askpt/code-metrics/compare/v0.3.3...v0.3.4) (2026-05-01)
 
 
