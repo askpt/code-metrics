@@ -348,7 +348,7 @@ func Subtract(a, b int) int {
     it("should return empty for unsupported language", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(
         "def hello(): pass",
-        "python"
+        "ruby"
       );
       assert.strictEqual(results.length, 0);
     });
@@ -808,7 +808,7 @@ function cached(x: number): number {
 
     it("should return empty array for unsupported language even when cache has entries", () => {
       MetricsAnalyzerFactory.analyzeFile("function x() {}", "typescript");
-      const results = MetricsAnalyzerFactory.analyzeFile("def x(): pass", "python");
+      const results = MetricsAnalyzerFactory.analyzeFile("def x(): pass", "ruby");
       assert.strictEqual(results.length, 0);
     });
   });
