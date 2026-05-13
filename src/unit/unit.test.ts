@@ -8,6 +8,7 @@
 import * as assert from "assert";
 import { CSharpMetricsAnalyzer } from "../metricsAnalyzer/languages/csharpAnalyzer";
 import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
+import { JavaMetricsAnalyzer } from "../metricsAnalyzer/languages/javaAnalyzer";
 import { JavaScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/javascriptAnalyzer";
 import { TypeScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/typescriptAnalyzer";
 import {
@@ -585,6 +586,7 @@ function hello(): string {
 
     it("should include javascript and typescript in supported languages", () => {
       const languages = MetricsAnalyzerFactory.getSupportedLanguages();
+      assert.ok(languages.includes("java"));
       assert.ok(languages.includes("javascript"));
       assert.ok(languages.includes("typescript"));
       assert.ok(languages.includes("javascriptreact"));
@@ -660,6 +662,52 @@ function search(matrix: number[][]): boolean {
         d.reason === "labeled break statement"
       );
       assert.ok(labeledBreak);
+    });
+  });
+
+  describe("Java Analyzer Core Logic", () => {
+    it("should count if/else with flat else increment", () => {
+      const sourceCode = `
+public class Test {
+  public int max(int a, int b) {
+    if (a > b) {
+      return a;
+    } else {
+      return b;
+    }
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if statement", "else clause"]
+      );
+    });
+
+    it("should count else-if chains without nesting penalty", () => {
+      const sourceCode = `
+public class Test {
+  public String grade(int score) {
+    if (score >= 90) {
+      return "A";
+    } else if (score >= 80) {
+      return "B";
+    } else {
+      return "C";
+    }
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 3);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if statement", "else if clause", "else clause"]
+      );
     });
   });
 
