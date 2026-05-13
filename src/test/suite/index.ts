@@ -15,6 +15,7 @@ export function run(): Promise<void> {
         "../metricsAnalyzer/languages/javascriptAnalyzer.test",
         "../metricsAnalyzer/languages/typescriptAnalyzer.test",
         "../metricsAnalyzer/languages/jsLikeAnalyzer.test",
+        "../metricsAnalyzer/languages/pythonAnalyzer.test",
         "../providers/codeLensProvider.test",
       ];
 

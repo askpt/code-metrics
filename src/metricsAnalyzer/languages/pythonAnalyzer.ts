@@ -120,6 +120,14 @@ export class PythonMetricsAnalyzer {
         if (result) {
           functions.push(result);
         }
+        // Continue traversal into the function body to discover nested
+        // function definitions (analyzed as separate top-level entries).
+        const body = node.children.find((c) => c.type === "block");
+        if (body) {
+          for (const child of body.children) {
+            visit(child);
+          }
+        }
         return;
       }
 
@@ -269,10 +277,10 @@ export class PythonMetricsAnalyzer {
       case "conditional_expression":
         return 1;
 
-      // Boolean operators: +1 per operator
+      // Boolean operators: +1 per operator, plus nesting penalty
       case "boolean_operator": {
         const op = this.getBooleanOperator(node);
-        return op === "and" || op === "or" ? 1 : 0;
+        return op === "and" || op === "or" ? 1 + this.nesting : 0;
       }
 
       default:
