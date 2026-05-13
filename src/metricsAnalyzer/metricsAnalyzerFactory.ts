@@ -38,7 +38,7 @@ export interface UnifiedMetricsDetail {
 export interface UnifiedFunctionMetrics {
   /** The name or identifier of the function */
   name: string;
-  /** The total cyclomatic complexity score for this function */
+  /** The total cognitive complexity score for this function */
   complexity: number;
   /** Array of individual complexity details that contribute to the total score */
   details: UnifiedMetricsDetail[];
