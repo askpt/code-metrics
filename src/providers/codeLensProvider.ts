@@ -5,6 +5,59 @@ import {
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { ConfigurationManager, CodeMetricsConfig } from "../configuration";
 
+/**
+ * Compiled regex cache for exclude patterns.
+ * Key: joined pattern string (patterns change rarely; cache avoids per-request recompilation).
+ * Value: array of compiled { regex, isFullPath } entries ready for matching.
+ */
+const excludeRegexCache = new Map<
+  string,
+  { regex: RegExp; isFullPath: boolean }[]
+>();
+
+/** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
+function compileExcludePattern(
+  pattern: string
+): { regex: RegExp; isFullPath: boolean } {
+  const normalized = pattern.replace(/\\/g, "/");
+  const isFullPath = normalized.includes("/");
+
+  if (isFullPath) {
+    const regexPattern = normalized
+      .replace(/\*\*/g, "\x00DS\x00")
+      .replace(/\*/g, "\x00S\x00")
+      .replace(/\?/g, "\x00Q\x00")
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/\x00DS\x00/g, ".*")
+      .replace(/\x00S\x00/g, "[^/]*")
+      .replace(/\x00Q\x00/g, "[^/]");
+    return { regex: new RegExp(`^${regexPattern}$`), isFullPath: true };
+  } else {
+    const regexPattern = normalized
+      .replace(/\*/g, "\x00S\x00")
+      .replace(/\?/g, "\x00Q\x00")
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/\x00S\x00/g, ".*")
+      .replace(/\x00Q\x00/g, ".");
+    return { regex: new RegExp(`^${regexPattern}$`), isFullPath: false };
+  }
+}
+
+/** Returns compiled regex entries for the given patterns, using a cache to avoid recompilation. */
+function getCompiledPatterns(
+  patterns: string[]
+): { regex: RegExp; isFullPath: boolean }[] {
+  // Normalize separators before keying so Windows paths (backslash) and
+  // forward-slash paths for the same pattern list share a single cache entry.
+  const cacheKey = patterns.map((p) => p.replace(/\\/g, "/")).join("\x00");
+  let compiled = excludeRegexCache.get(cacheKey);
+  if (!compiled) {
+    compiled = patterns.map(compileExcludePattern);
+    excludeRegexCache.set(cacheKey, compiled);
+  }
+  return compiled;
+}
+
 export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   private _onDidChangeCodeLenses: vscode.EventEmitter<void> =
     new vscode.EventEmitter<void>();
@@ -59,39 +112,13 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private isExcluded(filePath: string, excludePatterns: string[]): boolean {
-    // Normalize path separators to forward slashes for consistent matching
     const normalizedPath = filePath.replace(/\\/g, "/");
-
-    return excludePatterns.some((pattern) => {
-      // Normalize the pattern to use forward slashes
-      const normalizedPattern = pattern.replace(/\\/g, "/");
-
-      // Check if pattern contains path separators
-      const hasPathSeparators = normalizedPattern.includes("/");
-
-      if (hasPathSeparators) {
-        // Pattern contains path separators - match against full path.
-        // Step 1: preserve wildcards as null-byte placeholders so they survive
-        //         regex escaping; Step 2: escape regex metacharacters in the
-        //         literal portions; Step 3: restore wildcards as regex tokens.
-        const regexPattern = normalizedPattern
-          .replace(/\*\*/g, "\x00DS\x00") // placeholder for **
-          .replace(/\*/g, "\x00S\x00") // placeholder for *
-          .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
-          .replace(/\x00DS\x00/g, ".*") // ** matches across directories
-          .replace(/\x00S\x00/g, "[^/]*"); // single * matches within directory
-
-        const regex = new RegExp(`^${regexPattern}$`);
+    const compiled = getCompiledPatterns(excludePatterns);
+    return compiled.some(({ regex, isFullPath }) => {
+      if (isFullPath) {
         return regex.test(normalizedPath);
       } else {
-        // Pattern has no path separators - match against filename only.
         const filename = normalizedPath.split("/").pop() || "";
-        const regexPattern = normalizedPattern
-          .replace(/\*/g, "\x00S\x00") // placeholder for *
-          .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // escape regex metacharacters
-          .replace(/\x00S\x00/g, ".*"); // * matches any characters in filename
-
-        const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(filename);
       }
     });
@@ -107,7 +134,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     functions.forEach((func) => {
       // Only show code lens for functions with complexity > 0
       if (func.complexity > 0) {
-        const codeLens = this.createCodeLens(func, document);
+        const codeLens = this.createCodeLens(func, document, config);
         if (codeLens) {
           codeLenses.push(codeLens);
         }
@@ -119,7 +146,8 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   private createCodeLens(
     func: UnifiedFunctionMetrics,
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
+    config: CodeMetricsConfig
   ): vscode.CodeLens | undefined {
     const complexity = func.complexity;
 
@@ -127,10 +155,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     const line = func.startLine;
     const range = new vscode.Range(line, 0, line, 0);
 
-    // Get status information using configuration manager
+    // Get status information using the already-resolved config
     const status = ConfigurationManager.getComplexityStatus(
       complexity,
-      document.uri
+      config
     );
 
     // Create the code lens title
@@ -165,6 +193,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
 
   // Refresh code lenses when configuration changes
   const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
+    excludeRegexCache.clear();
     setTimeout(() => provider.refresh(), 100);
   });
 

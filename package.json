@@ -2,7 +2,7 @@
   "name": "code-metrics",
   "displayName": "Code Complexity Metrics",
   "description": "A comprehensive Visual Studio Code extension that calculates and displays code metrics including Cognitive Complexity based on SonarSource's specification.",
-  "version": "0.3.1",
+  "version": "0.3.4",
   "publisher": "dev-asilva",
   "preview": true,
   "repository": {
@@ -30,7 +30,8 @@
     "go",
     "golang",
     "metrics",
-    "python"
+    "python",
+    "java"
   ],
   "categories": [
     "Other"
@@ -42,7 +43,8 @@
     "onLanguage:javascriptreact",
     "onLanguage:python",
     "onLanguage:typescript",
-    "onLanguage:typescriptreact"
+    "onLanguage:typescriptreact",
+    "onLanguage:java"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -112,20 +114,21 @@
     "@types/mocha": "10.0.10",
     "@types/node": "22.19.17",
     "@types/vscode": "1.106.1",
-    "@typescript-eslint/eslint-plugin": "8.58.1",
-    "@typescript-eslint/parser": "8.58.1",
+    "@typescript-eslint/eslint-plugin": "8.59.3",
+    "@typescript-eslint/parser": "8.59.3",
     "@vscode/test-cli": "0.0.12",
     "@vscode/test-electron": "2.5.2",
-    "@vscode/vsce": "3.7.1",
+    "@vscode/vsce": "3.9.1",
     "c8": "11.0.0",
-    "eslint": "10.2.0",
+    "eslint": "10.3.0",
     "mocha": "11.7.5",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "tree-sitter": "0.21.1",
     "tree-sitter-c-sharp": "0.23.1",
     "tree-sitter-go": "0.21.2",
+    "tree-sitter-java": "0.21.0",
     "tree-sitter-javascript": "0.21.4",
     "tree-sitter-python": "0.21.0",
     "tree-sitter-typescript": "0.21.2"

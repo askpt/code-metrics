@@ -117,18 +117,21 @@ export class ConfigurationManager {
    * Gets the complexity status for a given complexity score.
    *
    * @param complexity - The complexity score to evaluate
-   * @param resource - Optional URI for workspace-specific configuration
+   * @param resourceOrConfig - Optional URI for workspace-specific configuration, or a pre-fetched config
    * @returns Object containing status information
    */
   public static getComplexityStatus(
     complexity: number,
-    resource?: vscode.Uri
+    resourceOrConfig?: vscode.Uri | CodeMetricsConfig
   ): {
     level: "low" | "warning" | "error";
     icon: string;
     text: string;
   } {
-    const config = this.getConfiguration(resource);
+    const config =
+      resourceOrConfig instanceof vscode.Uri || resourceOrConfig === undefined
+        ? this.getConfiguration(resourceOrConfig)
+        : resourceOrConfig;
 
     if (complexity >= config.errorThreshold) {
       return {

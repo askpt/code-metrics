@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.3.4](https://github.com/askpt/code-metrics/compare/v0.3.3...v0.3.4) (2026-05-01)
+
+
+### 🐛 Bug Fixes
+
+* support ? wildcard in isExcluded glob pattern matching ([#270](https://github.com/askpt/code-metrics/issues/270)) ([ce22c0d](https://github.com/askpt/code-metrics/commit/ce22c0d8c42088ce3d6e4a0f8d93bfe2410be0e6))
+
+
+### 🚀 Performance
+
+* cache compiled exclude-pattern regexes in isExcluded ([#274](https://github.com/askpt/code-metrics/issues/274)) ([e4dae93](https://github.com/askpt/code-metrics/commit/e4dae93f7664c923b57a0878e09724d64e473d1b))
+
+
+### 🔄 Refactoring
+
+* lazily cache resolved analyzeFile reference in createAnalyzer ([#275](https://github.com/askpt/code-metrics/issues/275)) ([5fc7d1f](https://github.com/askpt/code-metrics/commit/5fc7d1fa7ed5822464fced76d06b1c0bfad0b6e0))
+
+## [0.3.3](https://github.com/askpt/code-metrics/compare/v0.3.2...v0.3.3) (2026-04-26)
+
+
+### 🔄 Refactoring
+
+* extract shared base class for JavaScript and TypeScript analyzers ([#266](https://github.com/askpt/code-metrics/issues/266)) ([9d73035](https://github.com/askpt/code-metrics/commit/9d7303555d67db065e63f5df2261d29892e777f8))
+
+## [0.3.2](https://github.com/askpt/code-metrics/compare/v0.3.1...v0.3.2) (2026-04-20)
+
+
+### 🐛 Bug Fixes
+
+* escape regex metacharacters in glob exclude patterns ([#235](https://github.com/askpt/code-metrics/issues/235)) ([dd06c47](https://github.com/askpt/code-metrics/commit/dd06c477273a20f16cbcf9bbb83034802ec0950a))
+
+
+### 🧹 Chore
+
+* **deps:** Pin and update development dependencies ([#245](https://github.com/askpt/code-metrics/issues/245)) ([5f1c749](https://github.com/askpt/code-metrics/commit/5f1c74996cb1c070fbbfe47a95f045aa97f0a873))
+
+
+### 🚀 Performance
+
+* upgrade analysis cache from FIFO to LRU eviction ([#246](https://github.com/askpt/code-metrics/issues/246)) ([37d89c1](https://github.com/askpt/code-metrics/commit/37d89c171321321a3885d8b9ffbedfb36feef1d9))
+
 ## [0.3.1](https://github.com/askpt/code-metrics/compare/v0.3.0...v0.3.1) (2026-04-01)
 
 

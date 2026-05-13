@@ -4,6 +4,18 @@ description: Daily CI optimization coach that analyzes GitHub Actions workflows 
 on:
   schedule: weekly
   workflow_dispatch:
+  permissions:
+    pull-requests: read
+  steps:
+    - id: check
+      run: |
+        MAX_OPEN_PRS=8
+        if [[ "${{ github.event_name }}" != "schedule" ]]; then exit 0; fi
+        COUNT=$(gh pr list --repo ${{ github.repository }} --state open --search 'in:title "[ci-coach]"' --json number --jq 'length')
+        [[ "$COUNT" -lt "$MAX_OPEN_PRS" ]]
+      # exits 0 if not scheduled or <MAX_OPEN_PRS open PRs, 1 if ≥MAX_OPEN_PRS
+
+if: needs.pre_activation.outputs.check_result == 'success'
 
 network:
   allowed:
@@ -31,7 +43,7 @@ safe-outputs:
     title-prefix: "[ci-coach] "
 
 timeout-minutes: 30
-source: githubnext/agentics/workflows/ci-coach.md@aae6af93b4035df74630817afa13c528d6b74fe6
+source: githubnext/agentics/workflows/ci-coach.md@94ec5db57374c5b04a4b8eef8b4413f9af44d63f
 ---
 
 # CI Optimization Coach
