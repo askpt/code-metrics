@@ -221,8 +221,8 @@ function retry(attempts) {
     });
   });
 
-  suite("Nested function complexity isolation", () => {
-    test("should isolate nested arrow function complexity from outer", () => {
+  suite("Nested function complexity merging", () => {
+    test("should merge nested arrow function body complexity into outer", () => {
       const sourceCode = `
 function outer() {
   if (true) {
@@ -238,13 +238,13 @@ function outer() {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
-      // Outer: if(1) + arrow nested at nesting=1 (1+1=2) = 3
+      // if(1+0=1) + arrow nesting penalty at nesting=1 (1+1=2) + inner if at nesting=2 (1+2=3) = 6
       const outerFunc = results.find((r) => r.name === "outer");
       assert.ok(outerFunc);
-      assert.strictEqual(outerFunc!.complexity, 3);
+      assert.strictEqual(outerFunc!.complexity, 6);
     });
 
-    test("should handle nested function expression with its own complexity", () => {
+    test("should merge nested function expression body complexity into outer", () => {
       const sourceCode = `
 function container() {
   const helper = function processor() {
@@ -258,10 +258,10 @@ function container() {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
-      // container: function_expression nested at nesting=0 → +1
+      // function_expression nesting penalty at nesting=0 (1) + if at nesting=1 (2) + for at nesting=2 (3) = 6
       const container = results.find((r) => r.name === "container");
       assert.ok(container);
-      assert.strictEqual(container!.complexity, 1);
+      assert.strictEqual(container!.complexity, 6);
     });
   });
 

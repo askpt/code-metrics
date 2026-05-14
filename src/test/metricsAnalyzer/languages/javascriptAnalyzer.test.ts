@@ -414,7 +414,7 @@ function outer() {
   });
 
   suite("Nested Functions", () => {
-    test("should count nesting penalty for nested arrow function on outer", () => {
+    test("should count nesting penalty and body complexity for nested arrow function", () => {
       const sourceCode = `
 function outer() {
   const inner = () => {
@@ -427,12 +427,12 @@ function outer() {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
-      // The analyzer only returns the outer function; nested function metrics are not accumulated
+      // Only outer function in results; nested arrow body is merged in
       assert.strictEqual(results.length, 1);
       const outerFunc = results.find((r) => r.name === "outer");
       assert.ok(outerFunc);
-      // nested arrow at nesting=0 → +1
-      assert.strictEqual(outerFunc!.complexity, 1);
+      // Arrow nesting penalty at nesting=0 (+1) + if inside arrow at nesting=1 (+2) = 3
+      assert.strictEqual(outerFunc!.complexity, 3);
     });
 
     test("should add nesting penalty to outer function for nested arrow function", () => {

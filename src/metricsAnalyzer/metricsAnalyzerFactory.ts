@@ -254,5 +254,5 @@ const languageAnalyzers: Record<
   javascriptreact: createAnalyzer("./languages/javascriptAnalyzer",  "JavaScriptMetricsAnalyzer"),
   python:          createAnalyzer("./languages/pythonAnalyzer",      "PythonMetricsAnalyzer"),
   typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
-  typescriptreact: createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
+  typescriptreact: createAnalyzer("./languages/tsxAnalyzer",         "TsxMetricsAnalyzer"),
 };
