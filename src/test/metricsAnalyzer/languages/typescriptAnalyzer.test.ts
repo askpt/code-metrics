@@ -437,8 +437,8 @@ function outer(): () => number {
       assert.strictEqual(results.length, 1);
       const outerFunc = results.find((r) => r.name === "outer");
       assert.ok(outerFunc);
-      // nested arrow at nesting=0 → +1
-      assert.strictEqual(outerFunc!.complexity, 1);
+      // nested arrow at nesting=0 → +1, nested if at nesting=1 → +2
+      assert.strictEqual(outerFunc!.complexity, 3);
     });
 
     test("should add nesting penalty to outer function for nested arrow", () => {
