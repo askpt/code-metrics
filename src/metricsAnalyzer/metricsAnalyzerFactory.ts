@@ -270,5 +270,5 @@ const languageAnalyzers: Record<
   typescriptreact: createAnalyzer("./languages/tsxAnalyzer",         "TsxMetricsAnalyzer"),
 };
 
-/** Immutable set of supported language IDs for O(1) membership checks via {@link MetricsAnalyzerFactory.isSupportedLanguage}. */
+/** Set of supported language IDs for O(1) membership checks via {@link MetricsAnalyzerFactory.isSupportedLanguage}. */
 const supportedLanguageSet = new Set<string>(Object.keys(languageAnalyzers));
