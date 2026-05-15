@@ -75,6 +75,19 @@ export class MetricsAnalyzerFactory {
   }
 
   /**
+   * Returns whether the given language identifier is supported for complexity analysis.
+   *
+   * Prefer this over `getSupportedLanguages().includes(id)` — it performs an O(1) Set
+   * lookup instead of creating a new array and doing a linear scan.
+   *
+   * @param languageId - VS Code language identifier to test (e.g., 'typescript', 'go')
+   * @returns `true` if the language is supported, `false` otherwise
+   */
+  static isSupportedLanguage(languageId: string): boolean {
+    return supportedLanguageSet.has(languageId);
+  }
+
+  /**
    * Analyzes the complexity of functions within a source code file.
    *
    * This method serves as the main entry point for complexity analysis. It determines
@@ -256,3 +269,6 @@ const languageAnalyzers: Record<
   typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
   typescriptreact: createAnalyzer("./languages/tsxAnalyzer",         "TsxMetricsAnalyzer"),
 };
+
+/** Set of supported language IDs for O(1) membership checks via {@link MetricsAnalyzerFactory.isSupportedLanguage}. */
+const supportedLanguageSet = new Set<string>(Object.keys(languageAnalyzers));
