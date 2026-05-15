@@ -913,8 +913,9 @@ def check(a, b, c):
 `;
       const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      // if +1, and +1, or +1 → total 3
-      assert.ok(results[0].complexity >= 3);
+      // if: +1 (nesting=0); children visited at nesting=1
+      // or boolean_operator: +1+1=2 (nesting=1); and boolean_operator: +1+1=2 (nesting=1) → total 5
+      assert.strictEqual(results[0].complexity, 5);
     });
 
     it("should count except clause", () => {
@@ -969,19 +970,19 @@ def greet(name):
     });
 
     it("should normalize detail line numbers to 1-based", () => {
-      const sourceCode = `
-def check(x):
+      // No leading blank line: the `if` is at 0-based row 1.
+      // After factory normalization (+1) it must be exactly 2.
+      // Without normalization the raw row (1) would also satisfy >= 1,
+      // so an exact assertion is required to catch a regression.
+      const sourceCode = `def check(x):
     if x > 0:
         return True
     return False
 `;
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "python");
       assert.strictEqual(results.length, 1);
-      assert.ok(results[0].details.length > 0);
-      // All detail lines must be >= 1 (1-based)
-      results[0].details.forEach((d: UnifiedMetricsDetail) => {
-        assert.ok(d.line >= 1, `detail line ${d.line} should be 1-based`);
-      });
+      assert.strictEqual(results[0].details.length, 1);
+      assert.strictEqual(results[0].details[0].line, 2, "detail line should be 1-based (0-based row 1 + 1 = 2)");
     });
   });
 });
