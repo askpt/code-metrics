@@ -9,11 +9,16 @@ import { ConfigurationManager, CodeMetricsConfig } from "../configuration";
  * Compiled regex cache for exclude patterns.
  * Key: joined pattern string (patterns change rarely; cache avoids per-request recompilation).
  * Value: array of compiled { regex, isFullPath } entries ready for matching.
+ * Capped at EXCLUDE_CACHE_MAX_SIZE entries (LRU eviction) to prevent unbounded growth when
+ * workspace settings vary across many open folders or when settings change frequently.
  */
 const excludeRegexCache = new Map<
   string,
   { regex: RegExp; isFullPath: boolean }[]
 >();
+
+/** Maximum number of distinct pattern-list compilations to keep in the exclude regex cache. */
+const EXCLUDE_CACHE_MAX_SIZE = 32;
 
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
@@ -53,6 +58,14 @@ function getCompiledPatterns(
   let compiled = excludeRegexCache.get(cacheKey);
   if (!compiled) {
     compiled = patterns.map(compileExcludePattern);
+    if (excludeRegexCache.size >= EXCLUDE_CACHE_MAX_SIZE) {
+      // Evict the least-recently-used entry (first key in insertion order).
+      excludeRegexCache.delete(excludeRegexCache.keys().next().value!);
+    }
+    excludeRegexCache.set(cacheKey, compiled);
+  } else {
+    // Refresh LRU order: move this entry to the end.
+    excludeRegexCache.delete(cacheKey);
     excludeRegexCache.set(cacheKey, compiled);
   }
   return compiled;
