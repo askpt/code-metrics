@@ -10,6 +10,7 @@ import { CSharpMetricsAnalyzer } from "../metricsAnalyzer/languages/csharpAnalyz
 import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
 import { JavaMetricsAnalyzer } from "../metricsAnalyzer/languages/javaAnalyzer";
 import { JavaScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/javascriptAnalyzer";
+import { PythonMetricsAnalyzer } from "../metricsAnalyzer/languages/pythonAnalyzer";
 import { TypeScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/typescriptAnalyzer";
 import {
   MetricsAnalyzerFactory,
@@ -588,6 +589,7 @@ function hello(): string {
       const languages = MetricsAnalyzerFactory.getSupportedLanguages();
       assert.ok(languages.includes("java"));
       assert.ok(languages.includes("javascript"));
+      assert.ok(languages.includes("python"));
       assert.ok(languages.includes("typescript"));
       assert.ok(languages.includes("javascriptreact"));
       assert.ok(languages.includes("typescriptreact"));
@@ -824,6 +826,163 @@ function cached(x: number): number {
         () => badAnalyzer("some source"),
         /does not export a class named "NonExistentClass"/
       );
+    });
+  });
+
+  describe("Python Analyzer Core Logic", () => {
+    it("should analyze simple function with no complexity", () => {
+      const sourceCode = `
+def add(a, b):
+    return a + b
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].complexity, 0);
+      assert.strictEqual(results[0].details.length, 0);
+    });
+
+    it("should count if statement", () => {
+      const sourceCode = `
+def sign(x):
+    if x > 0:
+        return 1
+    return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const ifDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "if statement"
+      );
+      assert.ok(ifDetail);
+    });
+
+    it("should count for loop", () => {
+      const sourceCode = `
+def sum_list(items):
+    total = 0
+    for item in items:
+        total += item
+    return total
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const forDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for loop"
+      );
+      assert.ok(forDetail);
+    });
+
+    it("should count while loop", () => {
+      const sourceCode = `
+def countdown(n):
+    while n > 0:
+        n -= 1
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const whileDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "while loop"
+      );
+      assert.ok(whileDetail);
+    });
+
+    it("should apply nesting penalty for nested control flow", () => {
+      const sourceCode = `
+def nested(items):
+    for item in items:
+        if item > 0:
+            return item
+    return -1
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // for: +1 (nesting 0), if: +1 +1 nesting = +2 → total 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should count logical operators", () => {
+      const sourceCode = `
+def check(a, b, c):
+    if a and b or c:
+        return True
+    return False
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if: +1 (nesting=0); children visited at nesting=1
+      // or boolean_operator: +1+1=2 (nesting=1); and boolean_operator: +1+1=2 (nesting=1) → total 5
+      assert.strictEqual(results[0].complexity, 5);
+    });
+
+    it("should count except clause", () => {
+      const sourceCode = `
+def safe_divide(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const exceptDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason.toLowerCase().includes("except")
+      );
+      assert.ok(exceptDetail);
+    });
+
+    it("should handle multiple functions independently", () => {
+      const sourceCode = `
+def simple():
+    return 42
+
+def complex_fn(x):
+    if x > 0:
+        for i in range(x):
+            if i % 2 == 0:
+                return i
+    return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const simple = results.find((r) => r.name === "simple");
+      const complex = results.find((r) => r.name === "complex_fn");
+      assert.ok(simple);
+      assert.ok(complex);
+      assert.strictEqual(simple!.complexity, 0);
+      assert.ok(complex!.complexity > 0);
+    });
+
+    it("should analyze Python code via factory", () => {
+      const sourceCode = `
+def greet(name):
+    if name:
+        return "Hello, " + name
+    return "Hello, World"
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "python");
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should normalize detail line numbers to 1-based", () => {
+      // No leading blank line: the `if` is at 0-based row 1.
+      // After factory normalization (+1) it must be exactly 2.
+      // Without normalization the raw row (1) would also satisfy >= 1,
+      // so an exact assertion is required to catch a regression.
+      const sourceCode = `def check(x):
+    if x > 0:
+        return True
+    return False
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "python");
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].details.length, 1);
+      assert.strictEqual(results[0].details[0].line, 2, "detail line should be 1-based (0-based row 1 + 1 = 2)");
     });
   });
 });
