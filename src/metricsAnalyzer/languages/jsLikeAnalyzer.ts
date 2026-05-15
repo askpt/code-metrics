@@ -95,21 +95,22 @@ export class JsLikeMetricsAnalyzer {
     this.sourceText = sourceText;
     const tree = this.parser.parse(sourceText);
     const functions: JsLikeFunctionMetrics[] = [];
-    this.collectFunctions(tree.rootNode, functions, false);
+    this.collectFunctions(tree.rootNode, functions);
     return functions;
   }
 
   /**
-   * Recursively collects functions from the AST and calculates their complexity.
+   * Recursively collects top-level functions from the AST and calculates their complexity.
+   * Nested functions (arrow functions, function expressions, methods) are not collected as
+   * separate entries; instead, their body complexity is merged into the enclosing function
+   * at an increased nesting level via {@link analyzeNode}.
    *
    * @param node - The current AST node to process
    * @param functions - The array to accumulate function metrics into
-   * @param isNested - Whether this function is nested inside another function
    */
   private collectFunctions(
     node: Parser.SyntaxNode,
-    functions: JsLikeFunctionMetrics[],
-    isNested: boolean
+    functions: JsLikeFunctionMetrics[]
   ): void {
     const isFunctionNode =
       node.type === "function_declaration" ||
@@ -118,19 +119,7 @@ export class JsLikeMetricsAnalyzer {
       node.type === "arrow_function";
 
     if (isFunctionNode) {
-      // If nested, add complexity for the nesting
-      if (isNested) {
-        this.complexity += 1 + this.nesting;
-        this.details.push({
-          increment: 1 + this.nesting,
-          reason: this.getFunctionReason(node.type),
-          line: node.startPosition.row,
-          column: node.startPosition.column,
-          nesting: this.nesting,
-        });
-      }
-
-      // Save current state before analyzing nested function
+      // Save current state before analyzing this function
       const savedComplexity = this.complexity;
       const savedDetails = this.details;
       const savedNesting = this.nesting;
@@ -140,7 +129,7 @@ export class JsLikeMetricsAnalyzer {
       this.details = [];
       this.nesting = 0;
 
-      // Analyze the function body
+      // Analyze the function body; nested functions are merged in via analyzeNode
       const funcName = this.getFunctionName(node);
       this.analyzeNode(node);
 
@@ -161,7 +150,7 @@ export class JsLikeMetricsAnalyzer {
       this.nesting = savedNesting;
     } else {
       for (const child of node.children) {
-        this.collectFunctions(child, functions, isNested);
+        this.collectFunctions(child, functions);
       }
     }
   }
@@ -247,9 +236,25 @@ export class JsLikeMetricsAnalyzer {
     }
 
     for (const child of node.children) {
-      // Skip nested function bodies - they are analyzed separately
+      // Nested functions: add a nesting penalty and continue analyzing their body
+      // as part of the outer function at an increased nesting level, so that any
+      // complexity inside the nested body (ternaries, loops, etc.) counts toward
+      // the enclosing function rather than being silently discarded.
       if (this.isNestedFunction(child)) {
-        this.collectFunctions(child, [], true);
+        const increment = 1 + this.nesting;
+        this.complexity += increment;
+        this.details.push({
+          increment,
+          reason: this.getFunctionReason(child.type),
+          line: child.startPosition.row,
+          column: child.startPosition.column,
+          nesting: this.nesting,
+        });
+        this.nesting++;
+        for (const grandchild of child.children) {
+          this.analyzeNode(grandchild);
+        }
+        this.nesting--;
         continue;
       }
       // For else_clause containing if_statement (else-if):
