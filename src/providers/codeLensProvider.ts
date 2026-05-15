@@ -117,9 +117,8 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   private isSupported(document: vscode.TextDocument): boolean {
-    const supportedLanguages = MetricsAnalyzerFactory.getSupportedLanguages();
     return (
-      supportedLanguages.includes(document.languageId) &&
+      MetricsAnalyzerFactory.isSupportedLanguage(document.languageId) &&
       !document.uri.scheme.startsWith("git")
     );
   }
