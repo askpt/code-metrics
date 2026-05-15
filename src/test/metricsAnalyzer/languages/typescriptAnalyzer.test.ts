@@ -419,7 +419,7 @@ function outer(): void {
   });
 
   suite("Nested Functions and Arrow Functions", () => {
-    test("should count nesting penalty for nested arrow function on outer", () => {
+    test("should merge nested arrow body complexity into the outer function", () => {
       const sourceCode = `
 function outer(): () => number {
   const inner = (): number => {
@@ -433,12 +433,12 @@ function outer(): () => number {
 `;
       const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
-      // The analyzer only returns the outer function; nested function metrics are not accumulated
+      // Nested function body complexity is merged into the enclosing function score
       assert.strictEqual(results.length, 1);
       const outerFunc = results.find((r) => r.name === "outer");
       assert.ok(outerFunc);
-      // nested arrow at nesting=0 → +1
-      assert.strictEqual(outerFunc!.complexity, 1);
+      // nested arrow at nesting=0 → +1, nested if at nesting=1 → +2
+      assert.strictEqual(outerFunc!.complexity, 3);
     });
 
     test("should add nesting penalty to outer function for nested arrow", () => {
