@@ -11,6 +11,7 @@ import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
 import { JavaMetricsAnalyzer } from "../metricsAnalyzer/languages/javaAnalyzer";
 import { JavaScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/javascriptAnalyzer";
 import { PythonMetricsAnalyzer } from "../metricsAnalyzer/languages/pythonAnalyzer";
+import { TsxMetricsAnalyzer } from "../metricsAnalyzer/languages/tsxAnalyzer";
 import { TypeScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/typescriptAnalyzer";
 import {
   MetricsAnalyzerFactory,
@@ -983,6 +984,101 @@ def greet(name):
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].details.length, 1);
       assert.strictEqual(results[0].details[0].line, 2, "detail line should be 1-based (0-based row 1 + 1 = 2)");
+    });
+  });
+
+  describe("TSX Analyzer Core Logic", () => {
+    it("should report zero complexity for a simple JSX component", () => {
+      const sourceCode = `
+function Greeting({ name }: { name: string }) {
+  return <span>Hello, {name}!</span>;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Greeting");
+      assert.strictEqual(results[0].complexity, 0);
+      assert.strictEqual(results[0].details.length, 0);
+    });
+
+    it("should count if statement complexity in TSX component", () => {
+      const sourceCode = `
+function Badge({ count }: { count: number }) {
+  if (count > 0) {
+    return <span>{count}</span>;
+  }
+  return null;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Badge");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count logical && operator in JSX conditional rendering", () => {
+      const sourceCode = `
+function AdminBadge({ isAdmin }: { isAdmin: boolean }) {
+  return <div>{isAdmin && <span>Admin</span>}</div>;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "AdminBadge");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should not bleed complexity across functions separated by JSX", () => {
+      const sourceCode = `
+function Simple() {
+  return <div>Hello</div>;
+}
+
+function WithIf(x: number) {
+  if (x > 0) {
+    return <span>{x}</span>;
+  }
+  return null;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const simple = results.find((r) => r.name === "Simple");
+      const withIf = results.find((r) => r.name === "WithIf");
+      assert.ok(simple, "Simple function should be found");
+      assert.ok(withIf, "WithIf function should be found");
+      assert.strictEqual(simple!.complexity, 0);
+      assert.strictEqual(withIf!.complexity, 1);
+    });
+
+    it("should analyze TSX via factory with typescriptreact languageId", () => {
+      const sourceCode = `
+function Toggle({ on }: { on: boolean }) {
+  return <button>{on ? "ON" : "OFF"}</button>;
+}
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "typescriptreact");
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Toggle");
+      // ternary operator adds complexity
+      assert.ok(results[0].complexity > 0, "ternary operator should add complexity");
+    });
+
+    it("should handle multi-element JSX return with no complexity", () => {
+      const sourceCode = `
+function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <header>Title</header>
+      <main>{children}</main>
+    </div>
+  );
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Layout");
+      assert.strictEqual(results[0].complexity, 0);
     });
   });
 });
