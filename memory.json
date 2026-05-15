@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-05-15T08:12:38Z",
-  "last_run_id": "25907425468",
+  "last_run": "2026-05-15T09:22:26Z",
+  "last_run_id": "25910293125",
   "backlog_cursor": {
     "issues": 292,
     "prs": 0
@@ -25,10 +25,12 @@
     "test-python-unit-coverage (merged as #300)",
     "perf-bound-exclude-cache (merged as #301)",
     "feat-tsx-jsx-samples (merged as #302)",
-    "test-tsx-unit-coverage (PR created 2026-05-15)",
-    "improve-is-supported-language (PR created 2026-05-15)"
+    "test-tsx-unit-coverage (merged as #304)",
+    "improve-is-supported-language (merged as #305)",
+    "eng-patch-deps-20260515 (PR created 2026-05-15: tree-sitter-java 0.21.0->0.23.5)",
+    "docs-supported-languages-20260515 (PR created 2026-05-15: JSX/TSX in README)"
   ],
-  "notes": "v0.4.0 released. v0.4.1 release PR #303 pending. Two new PRs this run: TSX unit tests (0%->100% coverage), isSupportedLanguage() O(1) refactor.",
+  "notes": "v0.4.1 release PR #303 pending. Two new PRs this run: tree-sitter-java patch dep update, README fix for JSX/TSX languages. tree-sitter-c-sharp 0.23.5 needs tree-sitter@^0.25.0 (major), deferred. Future: consider full tree-sitter 0.21->0.25 ecosystem upgrade.",
   "monthly_activity_issue": {
     "month": "2026-05",
     "number": 286
