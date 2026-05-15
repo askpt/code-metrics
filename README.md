@@ -9,7 +9,7 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 - **Real-time Analysis**: Analyzes code metrics as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
-- **Multi-language Support**: Currently supports C#, Go, Java, JavaScript, Python, and TypeScript
+- **Multi-language Support**: Currently supports C#, Go, Java, JavaScript, JSX, Python, TypeScript, and TSX
 - **Configurable Thresholds**: Customize warning and error complexity thresholds
 - **Smart Exclusions**: Automatically excludes test files, build artifacts, and other specified patterns
 
@@ -21,8 +21,10 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 | Go | ✅ Supported | Full support including functions, methods, closures, goroutines |
 | Java | ✅ Supported | Full support including methods, constructors, lambdas |
 | JavaScript | ✅ Supported | Full support including functions, methods, arrow functions, closures |
+| JSX | ✅ Supported | Full support for JavaScript with JSX syntax (React components) |
 | Python | ✅ Supported | Full support including functions, methods, lambdas, comprehensions, match statements |
 | TypeScript | ✅ Supported | Full support including functions, methods, arrow functions, closures |
+| TSX | ✅ Supported | Full support for TypeScript with JSX syntax (React components) |
 
 ### What is Cognitive Complexity?
 
@@ -35,7 +37,7 @@ Cognitive Complexity is a metric that measures how difficult code is to understa
 
 ## Requirements
 
-- Visual Studio Code 1.103.0 or higher
+- Visual Studio Code 1.106.0 or higher
 - Supported language files for analysis
 
 ## Extension Settings
