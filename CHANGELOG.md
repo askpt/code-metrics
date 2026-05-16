@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.1](https://github.com/askpt/code-metrics/compare/v0.4.0...v0.4.1) (2026-05-16)
+
+
+### 🐛 Bug Fixes
+
+* add TSX and JSX sample files and fix reports ([#302](https://github.com/askpt/code-metrics/issues/302)) ([401806e](https://github.com/askpt/code-metrics/commit/401806e48376046545c36e6979f28cdd61b353b2))
+
+
+### 🚀 Performance
+
+* cap excludeRegexCache at 32 entries with LRU eviction ([#301](https://github.com/askpt/code-metrics/issues/301)) ([571da7c](https://github.com/askpt/code-metrics/commit/571da7c5335d6e0a9d1dd176c060b3f1207d56dc))
+
+
+### 🔄 Refactoring
+
+* add isSupportedLanguage() for O(1) language lookup ([#305](https://github.com/askpt/code-metrics/issues/305)) ([a6fc92a](https://github.com/askpt/code-metrics/commit/a6fc92a181c2d58a6239590443d003a09a38f5e5))
+
 ## [0.4.0](https://github.com/askpt/code-metrics/compare/v0.3.4...v0.4.0) (2026-05-13)
 
 
