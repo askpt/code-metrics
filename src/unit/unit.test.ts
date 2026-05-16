@@ -987,6 +987,245 @@ def greet(name):
     });
   });
 
+  describe("MetricsAnalyzerFactory.isSupportedLanguage()", () => {
+    it("should return true for all officially supported languages", () => {
+      const supported = [
+        "csharp",
+        "go",
+        "java",
+        "javascript",
+        "javascriptreact",
+        "python",
+        "typescript",
+        "typescriptreact",
+      ];
+      for (const lang of supported) {
+        assert.strictEqual(
+          MetricsAnalyzerFactory.isSupportedLanguage(lang),
+          true,
+          `Expected ${lang} to be supported`
+        );
+      }
+    });
+
+    it("should return false for unsupported languages", () => {
+      const unsupported = ["ruby", "cpp", "rust", "swift", "kotlin", "php", ""];
+      for (const lang of unsupported) {
+        assert.strictEqual(
+          MetricsAnalyzerFactory.isSupportedLanguage(lang),
+          false,
+          `Expected ${lang} to be unsupported`
+        );
+      }
+    });
+
+    it("should be case-sensitive (uppercase not supported)", () => {
+      assert.strictEqual(MetricsAnalyzerFactory.isSupportedLanguage("TypeScript"), false);
+      assert.strictEqual(MetricsAnalyzerFactory.isSupportedLanguage("PYTHON"), false);
+      assert.strictEqual(MetricsAnalyzerFactory.isSupportedLanguage("Go"), false);
+    });
+  });
+
+  describe("MetricsAnalyzerFactory.getSupportedLanguages()", () => {
+    it("should include all expected language identifiers", () => {
+      const languages = MetricsAnalyzerFactory.getSupportedLanguages();
+      const expected = [
+        "csharp",
+        "go",
+        "java",
+        "javascript",
+        "javascriptreact",
+        "python",
+        "typescript",
+        "typescriptreact",
+      ];
+      for (const lang of expected) {
+        assert.ok(languages.includes(lang), `Expected getSupportedLanguages() to include '${lang}'`);
+      }
+    });
+
+    it("should return at least 8 supported languages", () => {
+      const languages = MetricsAnalyzerFactory.getSupportedLanguages();
+      assert.ok(languages.length >= 8, `Expected at least 8 languages, got ${languages.length}`);
+    });
+
+    it("should be consistent with isSupportedLanguage()", () => {
+      const languages = MetricsAnalyzerFactory.getSupportedLanguages();
+      for (const lang of languages) {
+        assert.strictEqual(
+          MetricsAnalyzerFactory.isSupportedLanguage(lang),
+          true,
+          `isSupportedLanguage('${lang}') should be true since it's in getSupportedLanguages()`
+        );
+      }
+    });
+  });
+
+  describe("Java Analyzer Additional Coverage", () => {
+    it("should count for loop", () => {
+      const sourceCode = `
+public class Test {
+  public int sum(int n) {
+    int total = 0;
+    for (int i = 0; i < n; i++) {
+      total += i;
+    }
+    return total;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const forDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for loop"
+      );
+      assert.ok(forDetail, "Expected a for loop detail");
+    });
+
+    it("should count enhanced for loop (for-each)", () => {
+      const sourceCode = `
+public class Test {
+  public int sumList(int[] items) {
+    int total = 0;
+    for (int item : items) {
+      total += item;
+    }
+    return total;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const forDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "enhanced for loop"
+      );
+      assert.ok(forDetail, "Expected an enhanced for loop detail");
+    });
+
+    it("should count while loop", () => {
+      const sourceCode = `
+public class Test {
+  public int countdown(int n) {
+    while (n > 0) {
+      n--;
+    }
+    return n;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const whileDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "while loop"
+      );
+      assert.ok(whileDetail, "Expected a while loop detail");
+    });
+
+    it("should count do-while loop", () => {
+      const sourceCode = `
+public class Test {
+  public int readOnce(int n) {
+    do {
+      n--;
+    } while (n > 0);
+    return n;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const doDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "do-while loop"
+      );
+      assert.ok(doDetail, "Expected a do-while loop detail");
+    });
+
+    it("should count catch clause", () => {
+      const sourceCode = `
+public class Test {
+  public int safeParse(String s) {
+    try {
+      return Integer.parseInt(s);
+    } catch (NumberFormatException e) {
+      return 0;
+    }
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const catchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "catch clause"
+      );
+      assert.ok(catchDetail, "Expected a catch clause detail");
+    });
+
+    it("should count ternary expression", () => {
+      const sourceCode = `
+public class Test {
+  public int abs(int x) {
+    return x >= 0 ? x : -x;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const ternaryDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "ternary expression"
+      );
+      assert.ok(ternaryDetail, "Expected a ternary expression detail");
+    });
+
+    it("should apply nesting penalty for nested control flow", () => {
+      const sourceCode = `
+public class Test {
+  public int firstPositive(int[] items) {
+    for (int item : items) {
+      if (item > 0) {
+        return item;
+      }
+    }
+    return -1;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // for-each: +1 (nesting 0), if: +1 +1 nesting = +2 → total 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should analyze multiple methods independently", () => {
+      const sourceCode = `
+public class Test {
+  public int simple(int x) {
+    return x + 1;
+  }
+  public int conditional(int x) {
+    if (x > 0) {
+      return x;
+    }
+    return 0;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const simple = results.find((r) => r.name === "Test.simple");
+      const conditional = results.find((r) => r.name === "Test.conditional");
+      assert.ok(simple, "Expected Test.simple method");
+      assert.ok(conditional, "Expected Test.conditional method");
+      assert.strictEqual(simple!.complexity, 0);
+      assert.strictEqual(conditional!.complexity, 1);
+    });
+  });
+
   describe("TSX Analyzer Core Logic", () => {
     it("should report zero complexity for a simple JSX component", () => {
       const sourceCode = `
