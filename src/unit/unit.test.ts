@@ -13,6 +13,7 @@ import { JavaScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/javascri
 import { PythonMetricsAnalyzer } from "../metricsAnalyzer/languages/pythonAnalyzer";
 import { TsxMetricsAnalyzer } from "../metricsAnalyzer/languages/tsxAnalyzer";
 import { TypeScriptMetricsAnalyzer } from "../metricsAnalyzer/languages/typescriptAnalyzer";
+import { RustMetricsAnalyzer } from "../metricsAnalyzer/languages/rustAnalyzer";
 import {
   MetricsAnalyzerFactory,
   UnifiedFunctionMetrics,
@@ -1009,7 +1010,7 @@ def greet(name):
     });
 
     it("should return false for unsupported languages", () => {
-      const unsupported = ["ruby", "cpp", "rust", "swift", "kotlin", "php", ""];
+      const unsupported = ["ruby", "cpp", "swift", "kotlin", "php", ""];
       for (const lang of unsupported) {
         assert.strictEqual(
           MetricsAnalyzerFactory.isSupportedLanguage(lang),
@@ -1036,6 +1037,7 @@ def greet(name):
         "javascript",
         "javascriptreact",
         "python",
+        "rust",
         "typescript",
         "typescriptreact",
       ];
@@ -1318,6 +1320,165 @@ function Layout({ children }: { children: React.ReactNode }) {
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Layout");
       assert.strictEqual(results[0].complexity, 0);
+    });
+  });
+
+  describe("Rust Analyzer Core Logic", () => {
+    it("should analyze a simple function with no complexity", () => {
+      const sourceCode = `
+fn add(a: i32, b: i32) -> i32 {
+  a + b
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should count if expression", () => {
+      const sourceCode = `
+fn check(x: i32) -> i32 {
+  if x > 0 {
+    1
+  } else {
+    0
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count for loop", () => {
+      const sourceCode = `
+fn sum(n: i32) -> i32 {
+  let mut s = 0;
+  for i in 0..n {
+    s += i;
+  }
+  s
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count while loop", () => {
+      const sourceCode = `
+fn countdown(mut n: i32) {
+  while n > 0 {
+    n -= 1;
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count loop expression", () => {
+      const sourceCode = `
+fn spin() {
+  loop {
+    break;
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count match expression", () => {
+      const sourceCode = `
+fn classify(x: i32) -> &'static str {
+  match x {
+    0 => "zero",
+    _ => "other",
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count logical && and || operators", () => {
+      const sourceCode = `
+fn validate(a: i32, b: i32) -> bool {
+  a > 0 && b > 0 || a == b
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2);
+    });
+
+    it("should apply nesting penalty for nested control flow", () => {
+      const sourceCode = `
+fn nested(x: i32) -> i32 {
+  if x > 0 {
+    for i in 0..x {
+      if i % 2 == 0 {
+        return i;
+      }
+    }
+  }
+  0
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // outer if: +1 (nesting 0) = 1
+      // for: +1 (nesting 1) + 1 = 2
+      // inner if: +1 (nesting 2) + 2 = 3
+      // total = 6
+      assert.strictEqual(results[0].complexity, 6);
+    });
+
+    it("should qualify impl methods with type name", () => {
+      const sourceCode = `
+struct Counter { val: i32 }
+impl Counter {
+  fn increment(&mut self) {
+    self.val += 1;
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Counter::increment");
+    });
+
+    it("should analyze multiple functions independently", () => {
+      const sourceCode = `
+fn simple(x: i32) -> i32 { x }
+fn complex(x: i32) -> i32 {
+  if x > 0 {
+    x
+  } else {
+    0
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      assert.strictEqual(results[0].complexity, 0);
+      assert.strictEqual(results[1].complexity, 1);
+    });
+
+    it("should analyze Rust code via factory with rust language id", () => {
+      const sourceCode = `
+fn hello() -> i32 {
+  if true { 1 } else { 0 }
+}
+`;
+      const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "rust");
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
     });
   });
 });

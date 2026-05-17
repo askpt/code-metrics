@@ -31,7 +31,8 @@
     "golang",
     "metrics",
     "python",
-    "java"
+    "java",
+    "rust"
   ],
   "categories": [
     "Other"
@@ -44,7 +45,8 @@
     "onLanguage:python",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
-    "onLanguage:java"
+    "onLanguage:java",
+    "onLanguage:rust"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -131,6 +133,7 @@
     "tree-sitter-java": "0.23.5",
     "tree-sitter-javascript": "0.21.4",
     "tree-sitter-python": "0.21.0",
+    "tree-sitter-rust": "0.21.0",
     "tree-sitter-typescript": "0.21.2"
   }
 }
