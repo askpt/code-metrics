@@ -32,18 +32,28 @@ const child = spawn(npmCommand, ["run", "test:vscode"], {
   env: childEnv,
 });
 
-let output = "";
+const rollingWindowSize = Math.max(knownSandboxNetworkError.length - 1, 0);
+let knownSandboxNetworkErrorDetected = false;
+let rollingOutputTail = "";
 
-child.stdout.on("data", (chunk) => {
+const handleChunk = (chunk, write) => {
   const text = chunk.toString();
-  output += text;
-  process.stdout.write(text);
-});
+  const searchableText = rollingOutputTail + text;
 
-child.stderr.on("data", (chunk) => {
-  const text = chunk.toString();
-  output += text;
-  process.stderr.write(text);
+  if (!knownSandboxNetworkErrorDetected && searchableText.includes(knownSandboxNetworkError)) {
+    knownSandboxNetworkErrorDetected = true;
+  }
+
+  rollingOutputTail = searchableText.slice(-rollingWindowSize);
+  write(text);
+};
+
+child.stdout.on("data", (chunk) => handleChunk(chunk, (text) => process.stdout.write(text)));
+child.stderr.on("data", (chunk) => handleChunk(chunk, (text) => process.stderr.write(text)));
+
+child.on("error", (error) => {
+  console.error(`Failed to start npm for VS Code integration tests: ${error.message}`);
+  process.exit(1);
 });
 
 child.on("close", (code) => {
@@ -51,7 +61,7 @@ child.on("close", (code) => {
     process.exit(0);
   }
 
-  if (output.includes(knownSandboxNetworkError)) {
+  if (knownSandboxNetworkErrorDetected) {
     console.warn(
       "\nSkipping VS Code integration tests because the VS Code binary cannot be downloaded in this sandbox/network environment."
     );
