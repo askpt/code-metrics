@@ -87,8 +87,11 @@ npm run compile
 # Run linter
 npm run lint
 
-# Run tests (requires VS Code)
+# Run tests (falls back gracefully in sandbox/offline environments)
 npm test
+
+# Run VS Code integration tests explicitly (requires network access to download VS Code if not cached)
+npm run test:vscode
 ```
 
 ### GitHub Codespaces
@@ -106,7 +109,8 @@ The development environment will be automatically configured with Node.js 22.x a
 - `npm run compile`: Compile TypeScript to JavaScript
 - `npm run watch`: Auto-compile on file changes
 - `npm run lint`: Run ESLint
-- `npm test`: Run extension tests
+- `npm test`: Run compile/lint plus VS Code integration tests (or skip integration tests when VS Code download is blocked by sandbox/network)
+- `npm run test:vscode`: Run VS Code integration tests only
 
 ## Contributing
 
