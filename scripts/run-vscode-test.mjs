@@ -23,8 +23,8 @@ const childEnvKeys = [
 
 const childEnv = Object.fromEntries(
   childEnvKeys
+    .filter((key) => process.env[key] !== undefined)
     .map((key) => [key, process.env[key]])
-    .filter(([, value]) => value !== undefined)
 );
 
 const child = spawn(npmCommand, ["run", "test:vscode"], {
@@ -58,5 +58,6 @@ child.on("close", (code) => {
     process.exit(0);
   }
 
+  // Node may report a null exit code when the child is terminated by signal.
   process.exit(code !== null ? code : 1);
 });
