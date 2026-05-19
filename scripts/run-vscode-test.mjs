@@ -2,10 +2,34 @@ import { spawn } from "node:child_process";
 
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 const knownSandboxNetworkError = "getaddrinfo ENOTFOUND update.code.visualstudio.com";
+const childEnvKeys = [
+  "PATH",
+  "HOME",
+  "USERPROFILE",
+  "TMP",
+  "TEMP",
+  "SystemRoot",
+  "ComSpec",
+  "PATHEXT",
+  "APPDATA",
+  "LOCALAPPDATA",
+  "HTTP_PROXY",
+  "HTTPS_PROXY",
+  "NO_PROXY",
+  "NPM_CONFIG_PREFIX",
+  "npm_config_cache",
+  "npm_config_userconfig",
+];
+
+const childEnv = Object.fromEntries(
+  childEnvKeys
+    .map((key) => [key, process.env[key]])
+    .filter(([, value]) => value !== undefined)
+);
 
 const child = spawn(npmCommand, ["run", "test:vscode"], {
   stdio: ["ignore", "pipe", "pipe"],
-  env: process.env,
+  env: childEnv,
 });
 
 let output = "";
@@ -34,5 +58,5 @@ child.on("close", (code) => {
     process.exit(0);
   }
 
-  process.exit(code ?? 1);
+  process.exit(code !== null ? code : 1);
 });
