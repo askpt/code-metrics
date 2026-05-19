@@ -32,7 +32,7 @@ const child = spawn(npmCommand, ["run", "test:vscode"], {
   env: childEnv,
 });
 
-const rollingWindowSize = Math.max(knownSandboxNetworkError.length, 0);
+const rollingWindowSize = knownSandboxNetworkError.length;
 let knownSandboxNetworkErrorDetected = false;
 let rollingOutputTail = "";
 
