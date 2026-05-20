@@ -227,10 +227,21 @@ export class GoMetricsAnalyzer {
         // Extract the type from the receiver parameter list
         const typeNode = this.findTypeInParameterList(receiver);
         if (typeNode) {
-          receiverType = this.sourceText.substring(
-            typeNode.startIndex,
-            typeNode.endIndex
-          );
+          if (typeNode.type === "pointer_type") {
+            // For pointer receivers (*T), display just the base type name T
+            // so CodeLens shows "MyStruct.Method" rather than "*MyStruct.Method"
+            const innerType = typeNode.children.find(
+              (c) => c.type === "type_identifier"
+            );
+            receiverType = innerType
+              ? this.sourceText.substring(innerType.startIndex, innerType.endIndex)
+              : this.sourceText.substring(typeNode.startIndex, typeNode.endIndex).replace(/^\*/, "");
+          } else {
+            receiverType = this.sourceText.substring(
+              typeNode.startIndex,
+              typeNode.endIndex
+            );
+          }
         }
       }
 
