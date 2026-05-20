@@ -235,7 +235,10 @@ export class GoMetricsAnalyzer {
             );
             receiverType = innerType
               ? this.sourceText.substring(innerType.startIndex, innerType.endIndex)
-              : this.sourceText.substring(typeNode.startIndex, typeNode.endIndex).replace(/^\*/, "");
+              : this.sourceText
+                  .substring(typeNode.startIndex, typeNode.endIndex)
+                  .replace(/^\*+\s*/, "")
+                  .trim();
           } else {
             receiverType = this.sourceText.substring(
               typeNode.startIndex,
