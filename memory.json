@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-05-21T15:02:44Z",
-  "last_run_id": "26234177532",
+  "last_run": "2026-05-21T19:28:42Z",
+  "last_run_id": "26248225839",
   "backlog_cursor": {
     "issues": 292,
     "prs": 0
@@ -34,9 +34,10 @@
     "feat-rust-support-20260517 (merged as #327)",
     "eng-patch-deps-20260517 (merged as #316)",
     "improve-go-pointer-receiver-and-tests-20260520 (merged as #324)",
-    "test-rust-analyzer-20260521 (PR created - rustAnalyzer.test.ts integration tests)"
+    "test-rust-analyzer-20260521 (PR created - rustAnalyzer.test.ts integration tests)",
+    "improve-rust-trait-impl-naming-20260521 (PR created - trait impl naming fix + 4 tests)"
   ],
-  "notes": "PR #325 (release-please v0.5.0) is open - needs maintainer merge. Rust support (#327) merged. Go pointer receiver fix (#324) merged. tree-sitter@0.25 upgrade blocked: grammar packages use ESM with top-level await. Patch dep updates available: @typescript-eslint 8.59.3→8.59.4, mocha 11.7.5→11.7.6, tree-sitter-c-sharp 0.23.1→0.23.5, tree-sitter-rust 0.21→0.24.",
+  "notes": "PR #325 (release-please v0.5.0) is open - needs maintainer merge. Rust trait impl naming fix PR open (improve-rust-trait-impl-naming). Patch dep updates available: @typescript-eslint 8.59.3→8.59.4, mocha 11.7.5→11.7.6, tree-sitter-c-sharp 0.23.1→0.23.5, tree-sitter-rust 0.21→0.24.",
   "monthly_activity_issue": {
     "month": "2026-05",
     "number": 286
