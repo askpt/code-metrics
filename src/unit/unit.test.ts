@@ -1434,6 +1434,31 @@ fn validate(a: i32, b: i32) -> bool {
       assert.strictEqual(results[0].complexity, 2);
     });
 
+    it("should count else-if chains without double-counting nested if expressions", () => {
+      const sourceCode = `
+fn classify(x: i32) -> i32 {
+  if x > 0 {
+    1
+  } else if x < 0 {
+    -1
+  } else {
+    0
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 3);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if expression", "else if clause", "else clause"]
+      );
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.increment),
+        [1, 1, 1]
+      );
+    });
+
     it("should apply nesting penalty for nested control flow", () => {
       const sourceCode = `
 fn nested(x: i32) -> i32 {
@@ -1456,6 +1481,29 @@ fn nested(x: i32) -> i32 {
       assert.strictEqual(results[0].complexity, 6);
     });
 
+    it("should count nested closures independently from enclosing control flow", () => {
+      const sourceCode = `
+fn wrap(flag: bool) {
+  if flag {
+    let _handler = || {
+      if flag {
+        1
+      } else {
+        0
+      }
+    };
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 7);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if expression", "closure (nested)", "if expression", "else clause"]
+      );
+    });
+
     it("should qualify impl methods with type name", () => {
       const sourceCode = `
 struct Counter { val: i32 }
@@ -1468,6 +1516,25 @@ impl Counter {
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Counter::increment");
+    });
+
+    it("should analyze nested functions as separate entries", () => {
+      const sourceCode = `
+fn outer() {
+  fn inner() {
+    if true {
+    }
+  }
+
+  inner();
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      assert.strictEqual(results[0].name, "outer");
+      assert.strictEqual(results[0].complexity, 0);
+      assert.strictEqual(results[1].name, "inner");
+      assert.strictEqual(results[1].complexity, 1);
     });
 
     it("should analyze multiple functions independently", () => {
@@ -1496,6 +1563,35 @@ fn hello() -> i32 {
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "rust");
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].complexity, 2);
+    });
+
+    it("should count labeled break and continue", () => {
+      const sourceCode = `
+fn loops() {
+  'outer: loop {
+    if true {
+      break 'outer;
+    }
+
+    'inner: loop {
+      continue 'inner;
+    }
+  }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 11);
+      assert.ok(
+        results[0].details.some(
+          (d: UnifiedMetricsDetail) => d.reason === "labeled break"
+        )
+      );
+      assert.ok(
+        results[0].details.some(
+          (d: UnifiedMetricsDetail) => d.reason === "labeled continue"
+        )
+      );
     });
   });
 

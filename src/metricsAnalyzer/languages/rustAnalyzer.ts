@@ -102,6 +102,8 @@ export class RustMetricsAnalyzer {
    *
    * This method parses the source code and identifies all function-like constructs
    * (free functions and impl methods) and calculates their cognitive complexity scores.
+   * Nested function definitions are collected as separate entries and are not
+   * counted toward the enclosing function's complexity.
    *
    * @param sourceText - The complete Rust source code to analyze
    * @returns An array of complexity analysis results, one for each function found
@@ -129,6 +131,12 @@ export class RustMetricsAnalyzer {
         const result = this.analyzeFunction(node);
         if (result) {
           functions.push(result);
+        }
+        const body = node.children.find((child) => child.type === "block");
+        if (body) {
+          for (const child of body.children) {
+            visit(child);
+          }
         }
       } else {
         for (const child of node.children) {
@@ -327,9 +335,7 @@ export class RustMetricsAnalyzer {
       case "break_expression":
       case "continue_expression": {
         // Labeled break/continue always add complexity; unlabeled do not.
-        const hasLabel = node.children.some(
-          (child) => child.type === "loop_label"
-        );
+        const hasLabel = this.hasLabel(node);
         return hasLabel ? 1 : 0;
       }
 
@@ -383,20 +389,22 @@ export class RustMetricsAnalyzer {
       case "closure_expression":
         return "closure (nested)";
       case "break_expression": {
-        const hasLabel = node.children.some(
-          (child) => child.type === "loop_label"
-        );
+        const hasLabel = this.hasLabel(node);
         return hasLabel ? "labeled break" : "break (nested)";
       }
       case "continue_expression": {
-        const hasLabel = node.children.some(
-          (child) => child.type === "loop_label"
-        );
+        const hasLabel = this.hasLabel(node);
         return hasLabel ? "labeled continue" : "continue (nested)";
       }
       default:
         return "unknown complexity source";
     }
+  }
+
+  private hasLabel(node: Parser.SyntaxNode): boolean {
+    return node.children.some(
+      (child) => child.type === "label" || child.type === "loop_label"
+    );
   }
 
   /**
