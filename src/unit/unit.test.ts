@@ -1320,4 +1320,143 @@ function Layout({ children }: { children: React.ReactNode }) {
       assert.strictEqual(results[0].complexity, 0);
     });
   });
+
+  describe("Go Analyzer Additional Coverage", () => {
+    it("should strip pointer dereference from pointer receiver method names", () => {
+      const sourceCode = `
+package main
+
+type MyStruct struct{}
+
+func (s *MyStruct) Compute(x int) int {
+    if x > 0 {
+        return x
+    }
+    return 0
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // Pointer receiver (*MyStruct) should display as "MyStruct.Compute", not "*MyStruct.Compute"
+      assert.strictEqual(results[0].name, "MyStruct.Compute");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should use plain type name for value receiver methods", () => {
+      const sourceCode = `
+package main
+
+type Counter struct{ count int }
+
+func (c Counter) Get() int {
+    return c.count
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Counter.Get");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should count goto statements", () => {
+      const sourceCode = `
+package main
+
+func ProcessWithGoto(n int) int {
+    result := 0
+loop:
+    if n > 0 {
+        result += n
+        n--
+        goto loop
+    }
+    return result
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const gotoDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "goto statement"
+      );
+      assert.ok(gotoDetail, "goto statement should add complexity");
+    });
+
+    it("should count type switch statements", () => {
+      const sourceCode = `
+package main
+
+func Describe(i interface{}) string {
+    switch v := i.(type) {
+    case int:
+        return "int"
+    case string:
+        return "string"
+    default:
+        _ = v
+        return "other"
+    }
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const typeSwitchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "type switch statement"
+      );
+      assert.ok(typeSwitchDetail, "type switch should add complexity");
+    });
+
+    it("should count labeled break statements", () => {
+      const sourceCode = `
+package main
+
+func SearchMatrix(matrix [][]int, target int) bool {
+outer:
+    for _, row := range matrix {
+        for _, val := range row {
+            if val == target {
+                break outer
+            }
+        }
+    }
+    return false
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const labeledBreak = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "labeled break statement"
+      );
+      assert.ok(labeledBreak, "labeled break should add complexity");
+    });
+
+    it("should count func literals (closures) nested inside functions", () => {
+      const sourceCode = `
+package main
+
+func Apply(nums []int, transform func(int) int) []int {
+    result := make([]int, len(nums))
+    for i, n := range nums {
+        fn := func(x int) int {
+            if x > 0 {
+                return transform(x)
+            }
+            return 0
+        }
+        result[i] = fn(n)
+    }
+    return result
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const closureDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "function literal (nested)"
+      );
+      assert.ok(closureDetail, "nested func literal should add complexity");
+    });
+  });
 });

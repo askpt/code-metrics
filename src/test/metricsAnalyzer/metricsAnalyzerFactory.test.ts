@@ -651,7 +651,7 @@ func (c *Calculator) MultiplyWithCheck(a, b int) int {
 
       const addMethod = results.find((f) => f.name === "Calculator.Add");
       const multiplyMethod = results.find(
-        (f) => f.name === "*Calculator.MultiplyWithCheck"
+        (f) => f.name === "Calculator.MultiplyWithCheck"
       );
 
       assert.ok(addMethod);
