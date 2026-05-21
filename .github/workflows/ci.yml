@@ -58,6 +58,8 @@ jobs:
       # (lint is OS-agnostic and already runs on Linux via test:coverage)
       - run: npm run compile
         if: runner.os != 'Linux'
+      - run: npm run test:unit
+        if: runner.os != 'Linux'
       - run: npm run test:vscode
         if: runner.os != 'Linux'
       - name: Upload coverage to Codecov

@@ -268,6 +268,7 @@ const languageAnalyzers: Record<
   python:          createAnalyzer("./languages/pythonAnalyzer",      "PythonMetricsAnalyzer"),
   typescript:      createAnalyzer("./languages/typescriptAnalyzer",  "TypeScriptMetricsAnalyzer"),
   typescriptreact: createAnalyzer("./languages/tsxAnalyzer",         "TsxMetricsAnalyzer"),
+  rust:            createAnalyzer("./languages/rustAnalyzer",         "RustMetricsAnalyzer"),
 };
 
 /** Set of supported language IDs for O(1) membership checks via {@link MetricsAnalyzerFactory.isSupportedLanguage}. */
