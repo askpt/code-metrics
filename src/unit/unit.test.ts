@@ -1353,6 +1353,19 @@ fn check(x: i32) -> i32 {
         results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
         ["if expression", "else clause"]
       );
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.increment),
+        [1, 1]
+      );
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.nesting),
+        [0, 1]
+      );
+      assert.strictEqual(
+        results[0].details[1].increment,
+        1,
+        "else clause should be a flat +1 even when nested"
+      );
     });
 
     it("should count for loop", () => {

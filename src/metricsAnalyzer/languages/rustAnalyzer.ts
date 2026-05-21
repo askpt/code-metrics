@@ -228,11 +228,13 @@ export class RustMetricsAnalyzer {
    * Recursively visits all nodes in the syntax tree to analyze complexity.
    *
    * @param node - The current syntax node being visited
+   * @param skipSelfIncrement - When true, skips this node's own structural increment
+   * (used for else-if nodes that are already counted by the enclosing else clause)
    */
   private visit(node: Parser.SyntaxNode, skipSelfIncrement = false): void {
     const baseIncrement = skipSelfIncrement ? 0 : this.getComplexityIncrement(node);
     if (baseIncrement > 0) {
-      const nestingPenalty = node.type === "else_clause" ? 0 : this.nesting;
+      const nestingPenalty = this.getNestingPenalty(node);
       const increment = baseIncrement + nestingPenalty;
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
@@ -249,7 +251,7 @@ export class RustMetricsAnalyzer {
       this.nesting++;
       for (const child of node.children) {
         if (!this.isFunctionDeclaration(child)) {
-          if (node.type === "else_clause" && child.type === "if_expression") {
+          if (this.shouldSkipChildStructuralIncrement(node, child)) {
             this.visit(child, true);
             continue;
           }
@@ -260,7 +262,7 @@ export class RustMetricsAnalyzer {
     } else {
       for (const child of node.children) {
         if (!this.isFunctionDeclaration(child)) {
-          if (node.type === "else_clause" && child.type === "if_expression") {
+          if (this.shouldSkipChildStructuralIncrement(node, child)) {
             this.visit(child, true);
             continue;
           }
@@ -271,11 +273,31 @@ export class RustMetricsAnalyzer {
   }
 
   /**
+   * Returns the nesting penalty for a node's structural increment.
+   * Else/else-if clauses are counted as a flat +1 without nesting penalty.
+   */
+  private getNestingPenalty(node: Parser.SyntaxNode): number {
+    return node.type === "else_clause" ? 0 : this.nesting;
+  }
+
+  /**
+   * Determines whether a child node should skip its own structural increment.
+   * For else-if chains, the nested if_expression is already represented by the
+   * parent else_clause increment, so we avoid double-counting it.
+   */
+  private shouldSkipChildStructuralIncrement(
+    parent: Parser.SyntaxNode,
+    child: Parser.SyntaxNode
+  ): boolean {
+    return parent.type === "else_clause" && child.type === "if_expression";
+  }
+
+  /**
    * Calculates the complexity increment for a specific syntax node type.
    *
    * Based on cognitive complexity rules:
-    * - Control flow (if, for, while, loop, match): +1
-    * - Else/else-if clauses: +1 (flat)
+   * - Control flow (if, for, while, loop, match): +1
+   * - Else/else-if clauses: +1 (flat)
    * - Logical operators (&& and ||): +1 each
    * - Closures when nested: +1
    * - Labeled breaks/continues: +1
