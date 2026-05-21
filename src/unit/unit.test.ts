@@ -1348,7 +1348,11 @@ fn check(x: i32) -> i32 {
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].complexity, 2);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if expression", "else clause"]
+      );
     });
 
     it("should count for loop", () => {
@@ -1467,7 +1471,7 @@ fn complex(x: i32) -> i32 {
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 2);
       assert.strictEqual(results[0].complexity, 0);
-      assert.strictEqual(results[1].complexity, 1);
+      assert.strictEqual(results[1].complexity, 2);
     });
 
     it("should analyze Rust code via factory with rust language id", () => {
@@ -1478,7 +1482,7 @@ fn hello() -> i32 {
 `;
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "rust");
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].complexity, 2);
     });
   });
 

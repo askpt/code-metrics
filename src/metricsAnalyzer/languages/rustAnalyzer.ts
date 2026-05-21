@@ -229,10 +229,11 @@ export class RustMetricsAnalyzer {
    *
    * @param node - The current syntax node being visited
    */
-  private visit(node: Parser.SyntaxNode): void {
-    const baseIncrement = this.getComplexityIncrement(node);
+  private visit(node: Parser.SyntaxNode, skipSelfIncrement = false): void {
+    const baseIncrement = skipSelfIncrement ? 0 : this.getComplexityIncrement(node);
     if (baseIncrement > 0) {
-      const increment = baseIncrement + this.nesting;
+      const nestingPenalty = node.type === "else_clause" ? 0 : this.nesting;
+      const increment = baseIncrement + nestingPenalty;
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
       this.details.push({
@@ -248,6 +249,10 @@ export class RustMetricsAnalyzer {
       this.nesting++;
       for (const child of node.children) {
         if (!this.isFunctionDeclaration(child)) {
+          if (node.type === "else_clause" && child.type === "if_expression") {
+            this.visit(child, true);
+            continue;
+          }
           this.visit(child);
         }
       }
@@ -255,6 +260,10 @@ export class RustMetricsAnalyzer {
     } else {
       for (const child of node.children) {
         if (!this.isFunctionDeclaration(child)) {
+          if (node.type === "else_clause" && child.type === "if_expression") {
+            this.visit(child, true);
+            continue;
+          }
           this.visit(child);
         }
       }
@@ -265,7 +274,8 @@ export class RustMetricsAnalyzer {
    * Calculates the complexity increment for a specific syntax node type.
    *
    * Based on cognitive complexity rules:
-   * - Control flow (if, for, while, loop, match): +1
+    * - Control flow (if, for, while, loop, match): +1
+    * - Else/else-if clauses: +1 (flat)
    * - Logical operators (&& and ||): +1 each
    * - Closures when nested: +1
    * - Labeled breaks/continues: +1
@@ -280,6 +290,8 @@ export class RustMetricsAnalyzer {
       case "while_expression":
       case "loop_expression":
       case "match_expression":
+        return 1;
+      case "else_clause":
         return 1;
 
       case "binary_expression": {
@@ -330,6 +342,10 @@ export class RustMetricsAnalyzer {
     switch (node.type) {
       case "if_expression":
         return "if expression";
+      case "else_clause": {
+        const hasNestedIf = node.children.some((child) => child.type === "if_expression");
+        return hasNestedIf ? "else if clause" : "else clause";
+      }
       case "for_expression":
         return "for loop";
       case "while_expression":
