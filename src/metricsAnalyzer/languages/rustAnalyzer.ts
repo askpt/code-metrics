@@ -180,12 +180,27 @@ export class RustMetricsAnalyzer {
     if (parent && parent.type === "declaration_list") {
       const implNode = parent.parent;
       if (implNode && implNode.type === "impl_item") {
-        const typeNode = implNode.children.find(
-          (child) =>
-            child.type === "type_identifier" ||
-            child.type === "generic_type" ||
-            child.type === "scoped_type_identifier"
+        // For `impl Trait for Type`, prefer the implementing type (after `for`).
+        // For inherent `impl Type`, use the only type present.
+        const forIndex = implNode.children.findIndex(
+          (child) => child.type === "for"
         );
+        const typeNode =
+          forIndex !== -1
+            ? implNode.children
+                .slice(forIndex + 1)
+                .find(
+                  (child) =>
+                    child.type === "type_identifier" ||
+                    child.type === "generic_type" ||
+                    child.type === "scoped_type_identifier"
+                )
+            : implNode.children.find(
+                (child) =>
+                  child.type === "type_identifier" ||
+                  child.type === "generic_type" ||
+                  child.type === "scoped_type_identifier"
+              );
         if (typeNode) {
           const typeName = this.sourceText.substring(
             typeNode.startIndex,

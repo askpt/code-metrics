@@ -1598,6 +1598,66 @@ fn loops() {
         )
       );
     });
+
+    it("should use implementing type name for trait impl (impl Trait for Type)", () => {
+      const sourceCode = `
+use std::fmt;
+
+struct Point { x: f64, y: f64 }
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // Should use implementing type "Point", not trait "Display"
+      assert.strictEqual(results[0].name, "Point::fmt");
+    });
+
+    it("should use inherent impl type name when no trait (impl Type)", () => {
+      const sourceCode = `
+struct Rectangle { width: f64, height: f64 }
+
+impl Rectangle {
+    fn area(&self) -> f64 {
+        self.width * self.height
+    }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Rectangle::area");
+    });
+
+    it("should handle multiple trait impl methods independently", () => {
+      const sourceCode = `
+use std::fmt;
+
+struct Counter { value: i32 }
+
+impl fmt::Display for Counter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+impl Counter {
+    fn increment(&mut self) {
+        if self.value < i32::MAX {
+            self.value += 1;
+        }
+    }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      assert.strictEqual(results[0].name, "Counter::fmt");
+      assert.strictEqual(results[1].name, "Counter::increment");
+      assert.strictEqual(results[1].complexity, 1); // single if
+    });
   });
 
   describe("Go Analyzer Additional Coverage", () => {
