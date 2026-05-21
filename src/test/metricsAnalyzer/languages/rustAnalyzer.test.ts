@@ -219,6 +219,25 @@ impl Counter {
       assert.strictEqual(results[0].complexity, 0);
     });
 
+    test("should use implementing type name for trait impl (impl Trait for Type)", () => {
+      const sourceCode = `
+use std::fmt;
+
+struct Point { x: f64, y: f64 }
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+`;
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      // Should use implementing type "Point", not trait "Display"
+      assert.strictEqual(results[0].name, "Point::fmt");
+    });
+
     test("should analyze impl method with complexity", () => {
       const sourceCode = `
 struct Validator { max: i32 }
