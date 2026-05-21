@@ -572,7 +572,7 @@ func (c *Counter) Increment() {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "*Counter.Increment");
+      assert.strictEqual(results[0].name, "Counter.Increment");
       assert.strictEqual(results[0].complexity, 1);
     });
 

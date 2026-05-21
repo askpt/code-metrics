@@ -106,7 +106,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test",
+    "test": "node ./scripts/run-vscode-test.mjs",
     "test:vscode": "vscode-test",
     "test:unit": "npm run compile && c8 --config .c8rc.json mocha out/unit/unit.test.js",
     "test:coverage": "npm run compile && npm run lint && c8 --config .c8rc.json mocha out/unit/unit.test.js && vscode-test",
@@ -114,7 +114,7 @@
   },
   "devDependencies": {
     "@types/mocha": "10.0.10",
-    "@types/node": "22.19.17",
+    "@types/node": "22.19.19",
     "@types/vscode": "1.106.1",
     "@typescript-eslint/eslint-plugin": "8.59.3",
     "@typescript-eslint/parser": "8.59.3",

@@ -33,6 +33,8 @@ We welcome contributions to the Code Metrics VS Code extension! This document pr
    ```bash
    npm run lint
    npm test
+   # Optional: force VS Code integration tests (requires network if VS Code is not cached)
+   npm run test:vscode
    ```
 
 ### GitHub Codespaces
@@ -63,6 +65,8 @@ For a quick start, you can use GitHub Codespaces:
    npm run compile
    npm run lint
    npm test
+   # Optional: force VS Code integration tests (requires network if VS Code is not cached)
+   npm run test:vscode
    ```
 
 4. **Debug the Extension**
@@ -103,6 +107,9 @@ npm test
 
 # Compile and lint before testing
 npm run pretest
+
+# Run VS Code integration tests explicitly
+npm run test:vscode
 ```
 
 ### Writing Tests
