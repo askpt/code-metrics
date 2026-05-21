@@ -33,8 +33,10 @@ fn max_val(a: i32, b: i32) -> i32 {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "max_val");
-      assert.strictEqual(results[0].complexity, 1);
-      assert.strictEqual(results[0].details[0].reason, "if expression");
+      assert.strictEqual(results[0].complexity, 2);
+      const reasons = results[0].details.map((d) => d.reason);
+      assert.ok(reasons.includes("if expression"));
+      assert.ok(reasons.includes("else clause"));
     });
 
     test("should analyze multiple functions in same file", () => {
@@ -53,7 +55,7 @@ fn subtract(a: i32, b: i32) -> i32 {
       assert.strictEqual(results[0].name, "add");
       assert.strictEqual(results[0].complexity, 0);
       assert.strictEqual(results[1].name, "subtract");
-      assert.strictEqual(results[1].complexity, 1);
+      assert.strictEqual(results[1].complexity, 2);
     });
 
     test("should handle empty source", () => {
@@ -152,12 +154,13 @@ fn sign(x: i32) -> i32 {
     }
 }
 `;
-      // if(1) + else if(1) = 2
+      // if(1) + else if(1) + else(1) = 3
       const results = analyzer.analyzeFunctions(sourceCode);
-      assert.strictEqual(results[0].complexity, 2);
+      assert.strictEqual(results[0].complexity, 3);
       const reasons = results[0].details.map((d) => d.reason);
       assert.ok(reasons.includes("if expression"));
       assert.ok(reasons.includes("else if clause"));
+      assert.ok(reasons.includes("else clause"));
     });
   });
 
@@ -257,7 +260,7 @@ impl Math {
       assert.strictEqual(results[0].name, "Math::add");
       assert.strictEqual(results[0].complexity, 0);
       assert.strictEqual(results[1].name, "Math::max_val");
-      assert.strictEqual(results[1].complexity, 1);
+      assert.strictEqual(results[1].complexity, 2);
     });
   });
 
@@ -277,14 +280,17 @@ fn make_adder(n: i32) -> impl Fn(i32) -> i32 {
       const sourceCode = `
 fn process(items: &[i32]) -> i32 {
     if items.is_empty() {
-        return 0;
+        return items.iter().map(|x| x * 2).sum();
     }
-    items.iter().map(|x| x * 2).sum()
+    items.iter().sum()
 }
 `;
-      // if(1) + closure nested inside if context → complexity >= 1
+      // if(1) + closure(2, nested inside if) = 3
       const results = analyzer.analyzeFunctions(sourceCode);
-      assert.ok(results[0].complexity >= 1);
+      assert.strictEqual(results[0].complexity, 3);
+      const reasons = results[0].details.map((d) => d.reason);
+      assert.ok(reasons.includes("if expression"));
+      assert.ok(reasons.includes("closure (nested)"));
     });
   });
 
