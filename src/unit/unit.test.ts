@@ -1497,6 +1497,11 @@ fn wrap(flag: bool) {
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
+      // outer if: +1 (nesting 0) = 1
+      // closure: +1 (nesting 1) + 1 = 2
+      // inner if: +1 (nesting 2) + 2 = 3
+      // else clause: +1 (flat increment) = 1
+      // total = 7
       assert.strictEqual(results[0].complexity, 7);
       assert.deepStrictEqual(
         results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
