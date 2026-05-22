@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.5.0](https://github.com/askpt/code-metrics/compare/v0.4.1...v0.5.0) (2026-05-22)
+
+
+### 🐛 Bug Fixes
+
+* use implementing type name for Rust trait impl methods ([#329](https://github.com/askpt/code-metrics/issues/329)) ([fd1e8f9](https://github.com/askpt/code-metrics/commit/fd1e8f91be04d4c98887ab42866bfc49c267ed33))
+
+
+### ✨ New Features
+
+* add Rust language support with cognitive complexity analysis ([#327](https://github.com/askpt/code-metrics/issues/327)) ([6e2ba04](https://github.com/askpt/code-metrics/commit/6e2ba0489685ce8b0265688636bd93396b6db6e1))
+
+
+### 🚀 Performance
+
+* cache CodeMetricsConfig per workspace folder in provideCodeLenses ([#332](https://github.com/askpt/code-metrics/issues/332)) ([93a7588](https://github.com/askpt/code-metrics/commit/93a7588d35b76c2c1b9d13fc0c59a27ee17573b8))
+
+
+### 🔄 Refactoring
+
+* strip pointer prefix from Go pointer receiver method names in CodeLens ([#324](https://github.com/askpt/code-metrics/issues/324)) ([a850de1](https://github.com/askpt/code-metrics/commit/a850de18d76e414c57e4696f90c2da6d244f7bfa))
+
 ## [0.4.1](https://github.com/askpt/code-metrics/compare/v0.4.0...v0.4.1) (2026-05-16)
 
 
