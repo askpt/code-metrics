@@ -99,13 +99,12 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     if (!config) {
       config = ConfigurationManager.getConfiguration(document.uri);
       if (configCache.size >= CONFIG_CACHE_MAX_SIZE) {
-        // Evict the least-recently-used entry (first key in insertion order).
-        configCache.delete(configCache.keys().next().value!);
+        // Evict the oldest entry in insertion order.
+        const oldestKey = configCache.keys().next().value;
+        if (oldestKey !== undefined) {
+          configCache.delete(oldestKey);
+        }
       }
-      configCache.set(configKey, config);
-    } else {
-      // Refresh LRU order: move this entry to the end.
-      configCache.delete(configKey);
       configCache.set(configKey, config);
     }
 
