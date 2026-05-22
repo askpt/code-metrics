@@ -410,6 +410,7 @@ suite("Metrics Code Lens Provider Tests", () => {
 
         const originalGetConfig = vscode.workspace.getConfiguration;
         vscode.workspace.getConfiguration = () => mockConfig;
+        provider.clearConfigCache();
 
         const result = await provider.provideCodeLenses(
           mockDocument,
