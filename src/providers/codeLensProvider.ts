@@ -20,15 +20,6 @@ const excludeRegexCache = new Map<
 /** Maximum number of distinct pattern-list compilations to keep in the exclude regex cache. */
 const EXCLUDE_CACHE_MAX_SIZE = 32;
 
-/**
- * Cache of resolved CodeMetricsConfig objects keyed by workspace folder URI string (or "" for
- * the global scope when there is no workspace folder).
- *
- * `provideCodeLenses` is called on every keystroke, so avoiding repeated `getConfiguration`
- * round-trips — which each make 5 separate VS Code API calls — measurably reduces overhead.
- * The cache is cleared by the configuration change watcher whenever settings change.
- */
-const configCache = new Map<string, CodeMetricsConfig>();
 const CONFIG_CACHE_MAX_SIZE = 32;
 
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
@@ -87,6 +78,15 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     new vscode.EventEmitter<void>();
   public readonly onDidChangeCodeLenses: vscode.Event<void> =
     this._onDidChangeCodeLenses.event;
+  /**
+   * Cache of resolved CodeMetricsConfig objects keyed by workspace folder URI string (or "" for
+   * the global scope when there is no workspace folder).
+   *
+   * `provideCodeLenses` is called on every keystroke, so avoiding repeated `getConfiguration`
+   * round-trips — which each make 5 separate VS Code API calls — measurably reduces overhead.
+   * The cache is cleared by the configuration change watcher whenever settings change.
+   */
+  private readonly configCache = new Map<string, CodeMetricsConfig>();
 
   public async provideCodeLenses(
     document: vscode.TextDocument,
@@ -95,17 +95,17 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     // Use a per-workspace-folder config cache to avoid repeated VS Code API calls on every keystroke.
     const folder = vscode.workspace.getWorkspaceFolder(document.uri);
     const configKey = folder ? folder.uri.toString() : "";
-    let config = configCache.get(configKey);
+    let config = this.configCache.get(configKey);
     if (!config) {
       config = ConfigurationManager.getConfiguration(document.uri);
-      if (configCache.size >= CONFIG_CACHE_MAX_SIZE) {
+      if (this.configCache.size >= CONFIG_CACHE_MAX_SIZE) {
         // Evict the oldest entry in insertion order.
-        const oldestKey = configCache.keys().next().value;
+        const oldestKey = this.configCache.keys().next().value;
         if (oldestKey !== undefined) {
-          configCache.delete(oldestKey);
+          this.configCache.delete(oldestKey);
         }
       }
-      configCache.set(configKey, config);
+      this.configCache.set(configKey, config);
     }
 
     if (
@@ -214,6 +214,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   public refresh(): void {
     this._onDidChangeCodeLenses.fire();
   }
+
+  public clearConfigCache(): void {
+    this.configCache.clear();
+  }
 }
 
 // Register the code lens provider
@@ -231,7 +235,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
   // Refresh code lenses when configuration changes
   const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
     excludeRegexCache.clear();
-    configCache.clear();
+    provider.clearConfigCache();
     setTimeout(() => provider.refresh(), 100);
   });
 
