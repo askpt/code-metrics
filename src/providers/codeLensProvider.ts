@@ -29,6 +29,7 @@ const EXCLUDE_CACHE_MAX_SIZE = 32;
  * The cache is cleared by the configuration change watcher whenever settings change.
  */
 const configCache = new Map<string, CodeMetricsConfig>();
+const CONFIG_CACHE_MAX_SIZE = 32;
 
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
@@ -97,6 +98,14 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     let config = configCache.get(configKey);
     if (!config) {
       config = ConfigurationManager.getConfiguration(document.uri);
+      if (configCache.size >= CONFIG_CACHE_MAX_SIZE) {
+        // Evict the least-recently-used entry (first key in insertion order).
+        configCache.delete(configCache.keys().next().value!);
+      }
+      configCache.set(configKey, config);
+    } else {
+      // Refresh LRU order: move this entry to the end.
+      configCache.delete(configKey);
       configCache.set(configKey, config);
     }
 
