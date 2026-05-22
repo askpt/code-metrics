@@ -20,6 +20,16 @@ const excludeRegexCache = new Map<
 /** Maximum number of distinct pattern-list compilations to keep in the exclude regex cache. */
 const EXCLUDE_CACHE_MAX_SIZE = 32;
 
+/**
+ * Cache of resolved CodeMetricsConfig objects keyed by workspace folder URI string (or "" for
+ * the global scope when there is no workspace folder).
+ *
+ * `provideCodeLenses` is called on every keystroke, so avoiding repeated `getConfiguration`
+ * round-trips — which each make 5 separate VS Code API calls — measurably reduces overhead.
+ * The cache is cleared by the configuration change watcher whenever settings change.
+ */
+const configCache = new Map<string, CodeMetricsConfig>();
+
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
   pattern: string
@@ -81,7 +91,14 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.CodeLens[]> {
-    const config = ConfigurationManager.getConfiguration(document.uri);
+    // Use a per-workspace-folder config cache to avoid repeated VS Code API calls on every keystroke.
+    const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+    const configKey = folder ? folder.uri.toString() : "";
+    let config = configCache.get(configKey);
+    if (!config) {
+      config = ConfigurationManager.getConfiguration(document.uri);
+      configCache.set(configKey, config);
+    }
 
     if (
       !config.enabled ||
@@ -206,6 +223,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
   // Refresh code lenses when configuration changes
   const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
     excludeRegexCache.clear();
+    configCache.clear();
     setTimeout(() => provider.refresh(), 100);
   });
 
