@@ -19,6 +19,10 @@ const childEnvKeys = [
   "NPM_CONFIG_PREFIX",
   "npm_config_cache",
   "npm_config_userconfig",
+  // X11 display variables required for xvfb-run to reach the child process on Linux
+  "DISPLAY",
+  "XAUTHORITY",
+  "DBUS_SESSION_BUS_ADDRESS",
 ];
 
 const childEnv = Object.fromEntries(
