@@ -10,8 +10,8 @@ on:
     - id: check
       run: |
         MAX_OPEN_PRS=8
-        if [[ "${{ github.event_name }}" != "schedule" ]]; then exit 0; fi
-        COUNT=$(gh pr list --repo ${{ github.repository }} --state open --search 'in:title "[ci-coach]"' --json number --jq 'length')
+        if [[ "$GITHUB_EVENT_NAME" != "schedule" ]]; then exit 0; fi
+        COUNT=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --search 'in:title "[ci-coach]"' --json number --jq 'length')
         [[ "$COUNT" -lt "$MAX_OPEN_PRS" ]]
       # exits 0 if not scheduled or <MAX_OPEN_PRS open PRs, 1 if ≥MAX_OPEN_PRS
 
@@ -43,7 +43,7 @@ safe-outputs:
     title-prefix: "[ci-coach] "
 
 timeout-minutes: 30
-source: githubnext/agentics/workflows/ci-coach.md@79c99dfd73f3b7ad8ab2b0f4944838018dbe4736
+source: githubnext/agentics/workflows/ci-coach.md@dcdf09723d42ef9b6c75335e4612fd145d4ccdaa
 ---
 
 # CI Optimization Coach
