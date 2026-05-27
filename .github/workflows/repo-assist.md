@@ -81,7 +81,7 @@ safe-outputs:
     max: 4
   push-to-pull-request-branch:
     target: "*"
-    title-prefix: "[repo-assist] "
+    required-title-prefix: "[repo-assist] "
     max: 4
     protected-files: fallback-to-issue
   create-issue:
