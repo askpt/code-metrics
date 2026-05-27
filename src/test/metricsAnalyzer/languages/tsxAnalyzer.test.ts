@@ -188,5 +188,72 @@ async function DataView({ id }: { id: string }) {
       assert.strictEqual(results[0].complexity, 1);
       assert.strictEqual(results[0].details[0].reason, "if statement");
     });
+
+    test("should handle ternary operator in JSX expression", () => {
+      const sourceCode = `
+function Status({ active }: { active: boolean }) {
+  return (
+    <span>{active ? "Active" : "Inactive"}</span>
+  );
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Status");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    test("should handle arrow function component with hook", () => {
+      const sourceCode = `
+const Counter = () => {
+  const [count, setCount] = React.useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+};
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Counter");
+      // inline arrow in onClick: +1 for nested function
+      assert.strictEqual(results[0].complexity, 1);
+    });
+  });
+
+  suite("Edge Cases", () => {
+    test("should return empty array for empty source", () => {
+      const results = TsxMetricsAnalyzer.analyzeFile("");
+      assert.strictEqual(results.length, 0);
+    });
+
+    test("should handle JSX-only file with no logic", () => {
+      const sourceCode = `
+function Pure() {
+  return <div><p>Hello</p></div>;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    test("should correctly count nested conditionals in TSX", () => {
+      const sourceCode = `
+function Widget({ show, count }: { show: boolean; count: number }) {
+  if (show) {
+    if (count > 0) {
+      return <span>{count}</span>;
+    }
+  }
+  return null;
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      // outer if: +1, inner if at nesting=1: +2 → total 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
   });
 });
