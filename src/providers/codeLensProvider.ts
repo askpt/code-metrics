@@ -95,11 +95,12 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   private readonly configCache = new Map<string, CodeMetricsConfig>();
 
   /**
-   * Cache of analysis results keyed by `"<uri>#<version>"`.
+   * Cache of analysis results keyed by `"<uri>#<languageId>#<version>"`.
    *
    * VS Code calls `provideCodeLenses` on every document change, but the document version
-   * increments only when the text actually changes. Caching by URI + version means that
-   * cursor movements, focus switches, and scroll events skip the tree-sitter parse entirely.
+   * increments only when the text actually changes. Caching by URI + language ID + version
+   * means that cursor movements, focus switches, and scroll events skip the tree-sitter parse
+   * entirely without reusing results after a language mode switch.
    * The cache is bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
    */
   private readonly analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
@@ -137,7 +138,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     }
 
     try {
-      const analysisKey = `${document.uri.toString()}#${document.version}`;
+      const analysisKey = `${document.uri.toString()}#${document.languageId}#${document.version}`;
       let functions = this.analysisCache.get(analysisKey);
       if (!functions) {
         const sourceText = document.getText();
