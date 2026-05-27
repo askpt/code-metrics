@@ -226,6 +226,24 @@ const Counter = () => {
       assert.strictEqual(results.length, 0);
     });
 
+    test("should handle component returning JSX fragment with no logic", () => {
+      const sourceCode = `
+function FragmentOnly() {
+  return (
+    <>
+      <span>A</span>
+      <span>B</span>
+    </>
+  );
+}
+`;
+      const results = TsxMetricsAnalyzer.analyzeFile(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "FragmentOnly");
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
     test("should handle JSX-only file with no logic", () => {
       const sourceCode = `
 function Pure() {
