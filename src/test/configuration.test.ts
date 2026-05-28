@@ -15,11 +15,29 @@ import {
 } from "../configuration";
 
 suite("ConfigurationManager Tests", () => {
-  teardown(async () => {
-    // Reset all extension settings to defaults after each test
-    await vscode.workspace
-      .getConfiguration()
-      .update("codeMetrics", undefined, vscode.ConfigurationTarget.Global);
+  teardown(async function () {
+    this.timeout(10000);
+    // Reset configuration to defaults after each test
+    const config = vscode.workspace.getConfiguration("codeMetrics");
+    await Promise.all([
+      config.update("enabled", undefined, vscode.ConfigurationTarget.Global),
+      config.update(
+        "warningThreshold",
+        undefined,
+        vscode.ConfigurationTarget.Global
+      ),
+      config.update(
+        "errorThreshold",
+        undefined,
+        vscode.ConfigurationTarget.Global
+      ),
+      config.update("showCodeLens", undefined, vscode.ConfigurationTarget.Global),
+      config.update(
+        "excludePatterns",
+        undefined,
+        vscode.ConfigurationTarget.Global
+      ),
+    ]);
   });
 
   test("should return default configuration when no custom values are set", () => {
