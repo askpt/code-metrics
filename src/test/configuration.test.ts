@@ -15,7 +15,8 @@ import {
 } from "../configuration";
 
 suite("ConfigurationManager Tests", () => {
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(10000);
     // Reset configuration to defaults after each test
     const config = vscode.workspace.getConfiguration("codeMetrics");
     await config.update(
