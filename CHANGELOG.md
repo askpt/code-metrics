@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/askpt/code-metrics/compare/v0.6.0...v0.6.1) (2026-05-28)
+
+
+### 🚀 Performance
+
+* add LRU refresh for configCache and prune analysisCache on document close ([#352](https://github.com/askpt/code-metrics/issues/352)) ([641a453](https://github.com/askpt/code-metrics/commit/641a453bf610c6e924de99fad07a54cf21084149))
+* cache analyzeFile results by document URI + version ([#348](https://github.com/askpt/code-metrics/issues/348)) ([479f769](https://github.com/askpt/code-metrics/commit/479f769bdc6d573016df1331c733aed5faa6e0fa))
+
 ## [0.6.0](https://github.com/askpt/code-metrics/compare/v0.5.0...v0.6.0) (2026-05-23)
 
 
