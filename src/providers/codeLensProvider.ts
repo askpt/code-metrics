@@ -123,6 +123,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
         }
       }
       this.configCache.set(configKey, config);
+    } else {
+      // Refresh LRU order: move this entry to the end so it survives the next eviction.
+      this.configCache.delete(configKey);
+      this.configCache.set(configKey, config);
     }
 
     if (
@@ -255,6 +259,20 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   public clearAnalysisCache(): void {
     this.analysisCache.clear();
   }
+
+  /**
+   * Removes all analysis-cache entries whose key starts with the given document URI.
+   * Called when a document is closed so stale per-version entries don't occupy memory
+   * until the cache fills up and LRU eviction takes over.
+   */
+  public pruneAnalysisCacheForDocument(uriString: string): void {
+    const prefix = `${uriString}#`;
+    for (const key of this.analysisCache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.analysisCache.delete(key);
+      }
+    }
+  }
 }
 
 // Register the code lens provider
@@ -276,5 +294,10 @@ export function registerCodeLensProvider(): vscode.Disposable {
     setTimeout(() => provider.refresh(), 100);
   });
 
-  return vscode.Disposable.from(...disposables, configWatcher);
+  // Proactively evict analysis-cache entries for closed documents to reduce memory pressure.
+  const closeWatcher = vscode.workspace.onDidCloseTextDocument((doc) => {
+    provider.pruneAnalysisCacheForDocument(doc.uri.toString());
+  });
+
+  return vscode.Disposable.from(...disposables, configWatcher, closeWatcher);
 }
