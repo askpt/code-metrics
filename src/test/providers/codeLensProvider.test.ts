@@ -2,7 +2,10 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import { MetricsCodeLensProvider } from "../../providers/codeLensProvider";
 import { ConfigurationManager } from "../../configuration";
-import { UnifiedFunctionMetrics } from "../../metricsAnalyzer/metricsAnalyzerFactory";
+import {
+  MetricsAnalyzerFactory,
+  UnifiedFunctionMetrics,
+} from "../../metricsAnalyzer/metricsAnalyzerFactory";
 
 suite("Metrics Code Lens Provider Tests", () => {
   let provider: MetricsCodeLensProvider;
@@ -679,6 +682,77 @@ suite("Metrics Code Lens Provider Tests", () => {
       assert.strictEqual(result.length, 0);
 
       vscode.workspace.getConfiguration = originalGetConfig;
+    });
+  });
+
+  suite("Analysis Cache", () => {
+    test("should not reuse cached analysis when document language changes", async () => {
+      const sourceText = "function cached(value) { return value; }";
+      const sharedPath = "/test/file.ts";
+      const firstDocument = createMockDocument(
+        "typescript",
+        sourceText,
+        sharedPath
+      );
+      const secondDocument = createMockDocument(
+        "javascript",
+        sourceText,
+        sharedPath
+      );
+      const firstMetrics: UnifiedFunctionMetrics[] = [
+        {
+          name: "cached",
+          complexity: 1,
+          details: [],
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: sourceText.length,
+        },
+      ];
+      const secondMetrics: UnifiedFunctionMetrics[] = [
+        {
+          name: "cached",
+          complexity: 2,
+          details: [],
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: sourceText.length,
+        },
+      ];
+
+      const originalGetConfiguration = ConfigurationManager.getConfiguration;
+      const originalAnalyzeFile = MetricsAnalyzerFactory.analyzeFile;
+      ConfigurationManager.getConfiguration = () => ({
+        enabled: true,
+        showCodeLens: true,
+        warningThreshold: 10,
+        errorThreshold: 15,
+        excludePatterns: [],
+      });
+      MetricsAnalyzerFactory.analyzeFile = (
+        _documentText: string,
+        languageId: string
+      ) => (languageId === "typescript" ? firstMetrics : secondMetrics);
+      try {
+        const firstResult = await provider.provideCodeLenses(
+          firstDocument,
+          mockToken
+        );
+        const secondResult = await provider.provideCodeLenses(
+          secondDocument,
+          mockToken
+        );
+
+        assert.strictEqual(firstResult.length, 1);
+        assert.strictEqual(secondResult.length, 1);
+        assert.ok(firstResult[0].command?.title.includes("(1)"));
+        assert.ok(secondResult[0].command?.title.includes("(2)"));
+      } finally {
+        MetricsAnalyzerFactory.analyzeFile = originalAnalyzeFile;
+        ConfigurationManager.getConfiguration = originalGetConfiguration;
+      }
     });
   });
 

@@ -22,6 +22,12 @@ const EXCLUDE_CACHE_MAX_SIZE = 32;
 
 const CONFIG_CACHE_MAX_SIZE = 32;
 
+/**
+ * Maximum number of document analysis results to keep in the analysis cache.
+ * One entry per open document is typical; 64 is generous for large workspaces.
+ */
+const ANALYSIS_CACHE_MAX_SIZE = 64;
+
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
   pattern: string
@@ -88,6 +94,17 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    */
   private readonly configCache = new Map<string, CodeMetricsConfig>();
 
+  /**
+   * Cache of analysis results keyed by `"<uri>#<languageId>#<version>"`.
+   *
+   * VS Code calls `provideCodeLenses` on every document change, but the document version
+   * increments only when the text actually changes. Caching by URI + language ID + version
+   * means that cursor movements, focus switches, and scroll events skip the tree-sitter parse
+   * entirely without reusing results after a language mode switch.
+   * The cache is bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
+   */
+  private readonly analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
+
   public async provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
@@ -121,11 +138,27 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     }
 
     try {
-      const sourceText = document.getText();
-      const functions = MetricsAnalyzerFactory.analyzeFile(
-        sourceText,
-        document.languageId
-      );
+      const analysisKey = `${document.uri.toString()}#${document.languageId}#${document.version}`;
+      let functions = this.analysisCache.get(analysisKey);
+      if (!functions) {
+        const sourceText = document.getText();
+        functions = MetricsAnalyzerFactory.analyzeFile(
+          sourceText,
+          document.languageId
+        );
+        if (this.analysisCache.size >= ANALYSIS_CACHE_MAX_SIZE) {
+          // Evict the least-recently-used entry (first key in insertion order).
+          const oldestKey = this.analysisCache.keys().next().value;
+          if (oldestKey !== undefined) {
+            this.analysisCache.delete(oldestKey);
+          }
+        }
+        this.analysisCache.set(analysisKey, functions);
+      } else {
+        // Refresh LRU order.
+        this.analysisCache.delete(analysisKey);
+        this.analysisCache.set(analysisKey, functions);
+      }
       return this.createCodeLenses(functions, document, config);
     } catch (error) {
       console.error("Error creating code lenses:", error);
@@ -217,6 +250,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   public clearConfigCache(): void {
     this.configCache.clear();
+  }
+
+  public clearAnalysisCache(): void {
+    this.analysisCache.clear();
   }
 }
 
