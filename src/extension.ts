@@ -1,8 +1,7 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { registerCodeLensProvider } from "./providers/codeLensProvider";
 import { UnifiedFunctionMetrics } from "./metricsAnalyzer/metricsAnalyzerFactory";
+import { ConfigurationManager } from "./configuration";
 
 /** Shared output channel for function complexity details (created once, reused). */
 let detailsChannel: vscode.OutputChannel | undefined;
@@ -13,7 +12,7 @@ let detailsChannel: vscode.OutputChannel | undefined;
  */
 function showFunctionDetails(
   func?: UnifiedFunctionMetrics,
-  _uri?: vscode.Uri
+  uri?: vscode.Uri
 ): void {
   if (!func) {
     return;
@@ -23,9 +22,14 @@ function showFunctionDetails(
     detailsChannel = vscode.window.createOutputChannel("Code Metrics Details");
   }
 
+  const config = ConfigurationManager.getConfiguration(uri);
+  const status = ConfigurationManager.getComplexityStatus(func.complexity, config);
+
   detailsChannel.clear();
   detailsChannel.appendLine(`Function: ${func.name}`);
-  detailsChannel.appendLine(`Cognitive Complexity: ${func.complexity}`);
+  detailsChannel.appendLine(
+    `Cognitive Complexity: ${func.complexity}  ${status.icon} ${status.text}`
+  );
   detailsChannel.appendLine(
     `Location: lines ${func.startLine + 1}–${func.endLine + 1}`
   );
