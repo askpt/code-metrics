@@ -141,6 +141,13 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
       return [];
     }
 
+    // Bail out early if VS Code has already cancelled this request (e.g. the user
+    // typed another character while analysis was pending). This avoids wasting a
+    // potentially expensive tree-sitter parse whose result would be discarded anyway.
+    if (token.isCancellationRequested) {
+      return [];
+    }
+
     try {
       const analysisKey = `${document.uri.toString()}#${document.languageId}#${document.version}`;
       let functions = this.analysisCache.get(analysisKey);
@@ -203,19 +210,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument,
     config: CodeMetricsConfig
   ): vscode.CodeLens[] {
-    const codeLenses: vscode.CodeLens[] = [];
-
-    functions.forEach((func) => {
-      // Only show code lens for functions with complexity > 0
-      if (func.complexity > 0) {
-        const codeLens = this.createCodeLens(func, document, config);
-        if (codeLens) {
-          codeLenses.push(codeLens);
-        }
-      }
-    });
-
-    return codeLenses;
+    return functions
+      .filter((func) => func.complexity > 0)
+      .map((func) => this.createCodeLens(func, document, config))
+      .filter((lens): lens is vscode.CodeLens => lens !== undefined);
   }
 
   private createCodeLens(
