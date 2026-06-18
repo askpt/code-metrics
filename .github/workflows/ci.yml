@@ -54,10 +54,8 @@ jobs:
             vscode-test-${{ runner.os }}-
       - run: xvfb-run -a npm run test:coverage
         if: runner.os == 'Linux'
-      # On non-Linux, compile and run tests directly to skip the redundant lint
-      # (lint is OS-agnostic and already runs on Linux via test:coverage)
-      - run: npm run compile
-        if: runner.os != 'Linux'
+      # On non-Linux, run unit tests directly (test:unit already compiles)
+      # and skip lint (OS-agnostic; already run on Linux via test:coverage).
       - run: npm run test:unit
         if: runner.os != 'Linux'
       - run: npm run test:vscode
