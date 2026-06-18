@@ -1,13 +1,14 @@
 {
-  "last_run": "2026-06-01T06:38:40Z",
-  "last_run_id": "26739249308",
+  "last_run": "2026-06-18T18:26:27Z",
+  "last_run_id": "27780584660",
   "backlog_cursor": {
-    "issues": 292,
+    "issues": 355,
     "prs": 0
   },
   "comments_made": {
     "237": "2026-04-14",
-    "238": "2026-05-12"
+    "238": "2026-05-12",
+    "379": "2026-06-18"
   },
   "fix_attempts": {},
   "improvement_attempts": [
@@ -38,13 +39,15 @@
     "perf-analysis-cache-20260527 (merged as #348)",
     "eng-patch-deps-20260527 (merged as #350)",
     "improve-codelens-cache-20260528 (merged as #352)",
-    "feat-ruby-support-20260601 (PR created)",
-    "improve-perf-and-clarity-20260601 (PR created - cancellation token + createCodeLenses refactor)"
+    "feat-ruby-support-20260601 (blocked by protected files - issue #353)",
+    "improve-perf-and-clarity-20260601 (blocked by protected files)",
+    "perf-exclude-result-cache-20260618 (PR created)",
+    "eng-ci-remove-redundant-compile-20260618 (PR created)"
   ],
-  "notes": "No open user issues. Two new PRs this run: feat-ruby-support-20260601 (Ruby language support) and improve-perf-and-clarity-20260601 (cancellation token + code clarity). release-please PR #351 open for v0.6.1. tree-sitter-c 0.24.1 requires tree-sitter@^0.22.4 (not compatible with current 0.21.1).",
+  "notes": "No open user issues. Dependabot PR #379 (undici security, 7 CVEs) created today - commented to highlight urgency. PR #351 (release-please v0.6.1) still open. Ruby support (issue #353) requires manual PR creation by maintainer. tree-sitter-c 0.24.1 requires tree-sitter@^0.22.4 (not compatible with current 0.21.1).",
   "monthly_activity_issue": {
     "month": "2026-06",
-    "number": null
+    "number": 355
   },
   "checked_off_items": []
 }
