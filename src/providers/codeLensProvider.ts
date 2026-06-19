@@ -223,11 +223,20 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     }
 
     const compiled = getCompiledPatterns(excludePatterns);
-    // Extract the filename once; reused for every basename-only pattern in the loop.
-    const filename = normalizedPath.split("/").pop() || "";
-    const result = compiled.some(({ regex, isFullPath }) =>
-      regex.test(isFullPath ? normalizedPath : filename)
-    );
+    // Lazily extract the filename the first time a basename-only pattern is encountered.
+    // Using lastIndexOf + substring avoids allocating an intermediate array for the common
+    // case where all patterns are full-path patterns (the default configuration).
+    let filename: string | undefined;
+    const result = compiled.some(({ regex, isFullPath }) => {
+      if (isFullPath) {
+        return regex.test(normalizedPath);
+      }
+      if (filename === undefined) {
+        const sep = normalizedPath.lastIndexOf("/");
+        filename = sep === -1 ? normalizedPath : normalizedPath.substring(sep + 1);
+      }
+      return regex.test(filename);
+    });
 
     // Store result, evicting the oldest entry if the cache is full.
     if (this.excludeResultCache.size >= EXCLUDE_RESULT_CACHE_MAX_SIZE) {
