@@ -28,6 +28,12 @@ const CONFIG_CACHE_MAX_SIZE = 32;
  */
 const ANALYSIS_CACHE_MAX_SIZE = 64;
 
+/**
+ * Maximum number of per-path exclusion decisions to keep in the result cache.
+ * File paths are stable within a session; 512 is generous for large workspaces.
+ */
+const EXCLUDE_RESULT_CACHE_MAX_SIZE = 512;
+
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
   pattern: string
@@ -104,6 +110,16 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    * The cache is bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
    */
   private readonly analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
+
+  /**
+   * Cache of per-path exclusion decisions.
+   * Key: normalized file path (forward-slash separators). Value: whether the path is excluded.
+   * Stable within a session — file paths do not change — so the result of expensive regex
+   * matching is computed once per path and reused for every subsequent keystroke on that file.
+   * Cleared whenever configuration (and thus exclude patterns) changes.
+   * Bounded to EXCLUDE_RESULT_CACHE_MAX_SIZE entries (LRU eviction).
+   */
+  private readonly excludeResultCache = new Map<string, boolean>();
 
   public async provideCodeLenses(
     document: vscode.TextDocument,
@@ -194,15 +210,42 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   private isExcluded(filePath: string, excludePatterns: string[]): boolean {
     const normalizedPath = filePath.replace(/\\/g, "/");
+
+    // Check the path-level result cache first. `provideCodeLenses` is called on every
+    // keystroke; for the same file path the exclusion decision never changes between
+    // config changes, so we avoid rerunning regex matching on every event.
+    const cached = this.excludeResultCache.get(normalizedPath);
+    if (cached !== undefined) {
+      // Refresh LRU position so frequently-opened files survive eviction.
+      this.excludeResultCache.delete(normalizedPath);
+      this.excludeResultCache.set(normalizedPath, cached);
+      return cached;
+    }
+
     const compiled = getCompiledPatterns(excludePatterns);
-    return compiled.some(({ regex, isFullPath }) => {
+    // Lazily extract the filename the first time a basename-only pattern is encountered.
+    // Using lastIndexOf + substring avoids allocating an intermediate array for the common
+    // case where all patterns are full-path patterns (the default configuration).
+    let filename: string | undefined;
+    const result = compiled.some(({ regex, isFullPath }) => {
       if (isFullPath) {
         return regex.test(normalizedPath);
-      } else {
-        const filename = normalizedPath.split("/").pop() || "";
-        return regex.test(filename);
       }
+      if (filename === undefined) {
+        const sep = normalizedPath.lastIndexOf("/");
+        filename = sep === -1 ? normalizedPath : normalizedPath.substring(sep + 1);
+      }
+      return regex.test(filename);
     });
+
+    // Store result, evicting the oldest entry if the cache is full.
+    if (this.excludeResultCache.size >= EXCLUDE_RESULT_CACHE_MAX_SIZE) {
+      this.excludeResultCache.delete(
+        this.excludeResultCache.keys().next().value!
+      );
+    }
+    this.excludeResultCache.set(normalizedPath, result);
+    return result;
   }
 
   private createCodeLenses(
@@ -252,6 +295,8 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   public clearConfigCache(): void {
     this.configCache.clear();
+    // Exclude patterns are part of config; invalidate path-level exclusion results too.
+    this.excludeResultCache.clear();
   }
 
   public clearAnalysisCache(): void {

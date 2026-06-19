@@ -436,6 +436,76 @@ suite("Metrics Code Lens Provider Tests", () => {
         vscode.workspace.getConfiguration = originalGetConfig;
       }
     });
+
+    test("should invalidate excludeResultCache when clearConfigCache is called", async () => {
+      const filePath = "/path/to/file.generated.cs";
+      const sourceCode = `
+                public class Test {
+                    public void Method() {
+                        if (true) return;
+                    }
+                }
+            `;
+
+      // First call: file matches exclude pattern → result is cached as excluded.
+      mockDocument = createMockDocument("csharp", sourceCode, filePath);
+      const excludingConfig = createMockConfiguration({
+        enabled: true,
+        showCodeLens: true,
+        excludePatterns: ["*.generated.*"],
+        warningThreshold: 10,
+        threshold: 15,
+      });
+      const originalGetConfig = vscode.workspace.getConfiguration;
+      vscode.workspace.getConfiguration = () => excludingConfig;
+      provider.clearConfigCache();
+
+      const firstResult = await provider.provideCodeLenses(
+        mockDocument,
+        mockToken
+      );
+      assert.strictEqual(
+        firstResult.length,
+        0,
+        "File should be excluded by the initial pattern"
+      );
+
+      // Second call without clearing cache: same decision returned from cache.
+      const cachedResult = await provider.provideCodeLenses(
+        mockDocument,
+        mockToken
+      );
+      assert.strictEqual(
+        cachedResult.length,
+        0,
+        "Cached exclusion should still apply"
+      );
+
+      // Simulate a configuration change: exclude pattern no longer matches the file.
+      const nonExcludingConfig = createMockConfiguration({
+        enabled: true,
+        showCodeLens: true,
+        excludePatterns: [],
+        warningThreshold: 10,
+        threshold: 15,
+      });
+      vscode.workspace.getConfiguration = () => nonExcludingConfig;
+
+      // Clear the config cache (as the configuration-change watcher would do).
+      provider.clearConfigCache();
+
+      // Third call: stale cache entry should be gone; new decision should be computed.
+      const afterClearResult = await provider.provideCodeLenses(
+        mockDocument,
+        mockToken
+      );
+      assert.ok(
+        afterClearResult.length > 0,
+        "File should not be excluded after clearConfigCache with updated patterns"
+      );
+
+      vscode.workspace.getConfiguration = originalGetConfig;
+    });
   });
 
   suite("Code Lens Generation", () => {
