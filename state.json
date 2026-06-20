@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-18T18:26:27Z",
-  "last_run_id": "27780584660",
+  "last_run": "2026-06-20T14:34:25Z",
+  "last_run_id": "27874145275",
   "backlog_cursor": {
     "issues": 355,
     "prs": 0
@@ -40,11 +40,12 @@
     "eng-patch-deps-20260527 (merged as #350)",
     "improve-codelens-cache-20260528 (merged as #352)",
     "feat-ruby-support-20260601 (blocked by protected files - issue #353)",
-    "improve-perf-and-clarity-20260601 (blocked by protected files)",
-    "perf-exclude-result-cache-20260618 (PR created)",
-    "eng-ci-remove-redundant-compile-20260618 (PR created)"
+    "perf-exclude-result-cache-20260618 (merged as #381)",
+    "eng-ci-remove-redundant-compile-20260618 (merged as #382)",
+    "perf-visit-loop-dedup-20260620 (PR created)",
+    "eng-tree-sitter-typescript-20260620 (PR created - tree-sitter-typescript 0.21.2->0.23.2)"
   ],
-  "notes": "No open user issues. Dependabot PR #379 (undici security, 7 CVEs) created today - commented to highlight urgency. PR #351 (release-please v0.6.1) still open. Ruby support (issue #353) requires manual PR creation by maintainer. tree-sitter-c 0.24.1 requires tree-sitter@^0.22.4 (not compatible with current 0.21.1).",
+  "notes": "No open user issues. Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Two new PRs created this run: perf-visit-loop-dedup and eng-tree-sitter-typescript. Tree-sitter ecosystem upgrade blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x - must wait for all parsers to align on same core version.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
