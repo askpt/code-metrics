@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/askpt/code-metrics/compare/v0.6.1...v0.6.2) (2026-06-20)
+
+
+### 🔄 Refactoring
+
+* deduplicate visit-loop bodies across all language analyzers ([#389](https://github.com/askpt/code-metrics/issues/389)) ([02eceef](https://github.com/askpt/code-metrics/commit/02eceef991f8074cfbae882f58b0922a5c301c9b))
+
 ## [0.6.1](https://github.com/askpt/code-metrics/compare/v0.6.0...v0.6.1) (2026-06-19)
 
 
