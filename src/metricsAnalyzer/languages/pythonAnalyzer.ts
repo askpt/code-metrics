@@ -237,17 +237,13 @@ export class PythonMetricsAnalyzer {
       });
     }
 
-    if (this.increasesNesting(node)) {
-      this.nesting++;
-      for (const child of node.children) {
-        this.visit(child);
-      }
-      this.nesting--;
-    } else {
-      for (const child of node.children) {
-        this.visit(child);
-      }
+    // Conditionally bump nesting, iterate children once, then restore.
+    const nests = this.increasesNesting(node);
+    if (nests) { this.nesting++; }
+    for (const child of node.children) {
+      this.visit(child);
     }
+    if (nests) { this.nesting--; }
   }
 
   /**
