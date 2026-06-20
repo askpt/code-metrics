@@ -244,29 +244,21 @@ export class JavaMetricsAnalyzer {
       );
     }
 
-    if (this.increasesNesting(node)) {
-      this.nesting++;
-      const elseBranchNode =
-        node.type === "if_statement"
-          ? this.getElseBranchNode(node)
-          : undefined;
-      for (const child of node.children) {
-        if (!this.isMethodDeclaration(child)) {
-          if (elseBranchNode && child === elseBranchNode) {
-            this.visit(child, true);
-            continue;
-          }
-          this.visit(child);
-        }
-      }
-      this.nesting--;
-    } else {
-      for (const child of node.children) {
-        if (!this.isMethodDeclaration(child)) {
-          this.visit(child);
-        }
+    // Conditionally bump nesting, iterate children once, then restore.
+    // When nesting, if_statement's else branch skips the inner if's own increment
+    // to avoid double-counting (the else_clause +1 already accounts for it).
+    const nests = this.increasesNesting(node);
+    if (nests) { this.nesting++; }
+    const elseBranchNode =
+      nests && node.type === "if_statement"
+        ? this.getElseBranchNode(node)
+        : undefined;
+    for (const child of node.children) {
+      if (!this.isMethodDeclaration(child)) {
+        this.visit(child, elseBranchNode !== undefined && child === elseBranchNode);
       }
     }
+    if (nests) { this.nesting--; }
   }
 
   private addDetail(

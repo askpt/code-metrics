@@ -333,26 +333,15 @@ export class GoMetricsAnalyzer {
       });
     }
 
-    // Handle nesting changes
-    if (this.increasesNesting(node)) {
-      this.nesting++;
-      // Process child nodes with increased nesting
-      for (const child of node.children) {
-        // Skip nested function declarations to avoid double-counting
-        if (!this.isFunctionDeclaration(child)) {
-          this.visit(child);
-        }
-      }
-      this.nesting--;
-    } else {
-      // Process child nodes at same nesting level
-      for (const child of node.children) {
-        // Skip nested function declarations to avoid double-counting
-        if (!this.isFunctionDeclaration(child)) {
-          this.visit(child);
-        }
+    // Conditionally bump nesting, iterate children once, then restore.
+    const nests = this.increasesNesting(node);
+    if (nests) { this.nesting++; }
+    for (const child of node.children) {
+      if (!this.isFunctionDeclaration(child)) {
+        this.visit(child);
       }
     }
+    if (nests) { this.nesting--; }
   }
 
   /**
