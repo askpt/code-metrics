@@ -270,29 +270,16 @@ export class RustMetricsAnalyzer {
       });
     }
 
-    if (this.increasesNesting(node)) {
-      this.nesting++;
-      for (const child of node.children) {
-        if (!this.isFunctionDeclaration(child)) {
-          if (this.shouldSkipChildStructuralIncrement(node, child)) {
-            this.visit(child, true);
-            continue;
-          }
-          this.visit(child);
-        }
-      }
-      this.nesting--;
-    } else {
-      for (const child of node.children) {
-        if (!this.isFunctionDeclaration(child)) {
-          if (this.shouldSkipChildStructuralIncrement(node, child)) {
-            this.visit(child, true);
-            continue;
-          }
-          this.visit(child);
-        }
+    // Conditionally bump nesting, iterate children once, then restore.
+    // shouldSkipChildStructuralIncrement handles else-if chains to avoid double-counting.
+    const nests = this.increasesNesting(node);
+    if (nests) { this.nesting++; }
+    for (const child of node.children) {
+      if (!this.isFunctionDeclaration(child)) {
+        this.visit(child, this.shouldSkipChildStructuralIncrement(node, child));
       }
     }
+    if (nests) { this.nesting--; }
   }
 
   /**
