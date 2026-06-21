@@ -438,13 +438,14 @@ export class GoMetricsAnalyzer {
    * @returns The operator string or null if not found
    */
   private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // In Go's tree-sitter, the operator is usually in the middle
-    for (const child of node.children) {
-      const text = this.sourceText.substring(child.startIndex, child.endIndex);
-      if (text === "&&" || text === "||") {
-        return text;
-      }
-    }
+    // binary_expression structure: [left, operator, right] — operator always at index 1
+    const operatorNode = node.child(1);
+    if (!operatorNode) { return null; }
+    const text = this.sourceText.substring(
+      operatorNode.startIndex,
+      operatorNode.endIndex
+    );
+    if (text === "&&" || text === "||") { return text; }
     return null;
   }
 
