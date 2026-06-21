@@ -678,21 +678,16 @@ export class CSharpMetricsAnalyzer {
    * @returns The operator string or null if not found
    */
   private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // Find the operator token in binary expression
-    const operatorNode = node.children.find(
-      (child) =>
-        child.type === "&&" ||
-        child.type === "||" ||
-        child.type === "binary_operator"
-    );
-
-    if (operatorNode) {
+    // binary_expression structure: [left, operator, right] — operator always at index 1
+    const operatorNode = node.child(1);
+    if (!operatorNode) { return null; }
+    const type = operatorNode.type;
+    if (type === "&&" || type === "||" || type === "binary_operator") {
       return this.sourceText.substring(
         operatorNode.startIndex,
         operatorNode.endIndex
       );
     }
-
     return null;
   }
 
