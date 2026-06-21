@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-20T14:34:25Z",
-  "last_run_id": "27874145275",
+  "last_run": "2026-06-21T07:32:00Z",
+  "last_run_id": "27897314383",
   "backlog_cursor": {
     "issues": 355,
     "prs": 0
@@ -42,10 +42,13 @@
     "feat-ruby-support-20260601 (blocked by protected files - issue #353)",
     "perf-exclude-result-cache-20260618 (merged as #381)",
     "eng-ci-remove-redundant-compile-20260618 (merged as #382)",
-    "perf-visit-loop-dedup-20260620 (PR created)",
-    "eng-tree-sitter-typescript-20260620 (PR created - tree-sitter-typescript 0.21.2->0.23.2)"
+    "perf-visit-loop-dedup-20260620 (merged as #389)",
+    "eng-tree-sitter-typescript-20260620 (merged as #391)",
+    "test-csharp-python-js-coverage-20260621 (PR created - Task 9)",
+    "perf-operator-child-access-20260621 (PR created - Task 8)",
+    "improve-go-haslabel-helper-20260621 (PR created - Task 5)"
   ],
-  "notes": "No open user issues. Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Two new PRs created this run: perf-visit-loop-dedup and eng-tree-sitter-typescript. Tree-sitter ecosystem upgrade blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x - must wait for all parsers to align on same core version.",
+  "notes": "Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Three new PRs created this run: test coverage improvements (C#/Python/JS), O(1) operator access performance, goAnalyzer hasLabel refactor. Tree-sitter ecosystem upgrade still blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
