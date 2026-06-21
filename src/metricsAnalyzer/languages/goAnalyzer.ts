@@ -384,10 +384,7 @@ export class GoMetricsAnalyzer {
       case "break_statement":
       case "continue_statement":
         // Check if it has a label (labeled break/continue add complexity)
-        const hasLabel = node.children.some(
-          (child) => child.type === "label_name"
-        );
-        if (hasLabel) {
+        if (this.hasLabel(node)) {
           return 1;
         }
         // Non-labeled break/continue in nested structures
@@ -422,6 +419,13 @@ export class GoMetricsAnalyzer {
       return funcName === "recover";
     }
     return false;
+  }
+
+  /**
+   * Returns true if the node has a label_name child (labeled break/continue/goto).
+   */
+  private hasLabel(node: Parser.SyntaxNode): boolean {
+    return node.children.some((child) => child.type === "label_name");
   }
 
   /**
@@ -472,17 +476,11 @@ export class GoMetricsAnalyzer {
       case "func_literal":
         return "function literal (nested)";
       case "break_statement":
-        const hasBreakLabel = node.children.some(
-          (child) => child.type === "label_name"
-        );
-        return hasBreakLabel
+        return this.hasLabel(node)
           ? "labeled break statement"
           : "break statement (nested)";
       case "continue_statement":
-        const hasContinueLabel = node.children.some(
-          (child) => child.type === "label_name"
-        );
-        return hasContinueLabel
+        return this.hasLabel(node)
           ? "labeled continue statement"
           : "continue statement (nested)";
       case "goto_statement":
