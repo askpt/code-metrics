@@ -105,7 +105,7 @@ export class PythonMetricsAnalyzer {
     const visit = (node: Parser.SyntaxNode, className?: string) => {
       if (node.type === "class_definition") {
         // Extract class name and descend into its body
-        const nameNode = node.children.find((c) => c.type === "identifier");
+        const nameNode = node.childForFieldName("name");
         const name = nameNode
           ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
           : "<class>";
@@ -122,7 +122,7 @@ export class PythonMetricsAnalyzer {
         }
         // Continue traversal into the function body to discover nested
         // function definitions (analyzed as separate top-level entries).
-        const body = node.children.find((c) => c.type === "block");
+        const body = node.childForFieldName("body");
         if (body) {
           for (const child of body.children) {
             visit(child);
@@ -157,7 +157,7 @@ export class PythonMetricsAnalyzer {
 
     const functionName = this.getFunctionName(node, className);
 
-    const body = node.children.find((c) => c.type === "block");
+    const body = node.childForFieldName("body");
     if (!body) {
       return null;
     }
@@ -183,7 +183,7 @@ export class PythonMetricsAnalyzer {
    * @returns The function name as a string
    */
   private getFunctionName(node: Parser.SyntaxNode, className?: string): string {
-    const nameNode = node.children.find((c) => c.type === "identifier");
+    const nameNode = node.childForFieldName("name");
     const name = nameNode
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";

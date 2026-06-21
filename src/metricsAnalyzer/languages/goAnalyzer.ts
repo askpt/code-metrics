@@ -215,12 +215,8 @@ export class GoMetricsAnalyzer {
   private getFunctionName(node: Parser.SyntaxNode): string {
     // For method declarations, include receiver type
     if (node.type === "method_declaration") {
-      const receiver = node.children.find(
-        (child) => child.type === "parameter_list"
-      );
-      const nameNode = node.children.find(
-        (child) => child.type === "field_identifier"
-      );
+      const receiver = node.childForFieldName("receiver");
+      const nameNode = node.childForFieldName("name");
 
       let receiverType = "";
       if (receiver) {
@@ -261,7 +257,7 @@ export class GoMetricsAnalyzer {
     }
 
     // For regular function declarations
-    const nameNode = node.children.find((child) => child.type === "identifier");
+    const nameNode = node.childForFieldName("name");
     if (nameNode) {
       return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
     }
@@ -302,9 +298,7 @@ export class GoMetricsAnalyzer {
    * @returns The body node (block) or null if no body is found
    */
   private getFunctionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-    // Find block (function body) in children
-    const body = node.children.find((child) => child.type === "block");
-    return body || null;
+    return node.childForFieldName("body");
   }
 
   /**

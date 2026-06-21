@@ -132,7 +132,7 @@ export class RustMetricsAnalyzer {
         if (result) {
           functions.push(result);
         }
-        const body = node.children.find((child) => child.type === "block");
+        const body = node.childForFieldName("body");
         if (body) {
           for (const child of body.children) {
             visit(child);
@@ -166,7 +166,7 @@ export class RustMetricsAnalyzer {
    * @returns The qualified function name string
    */
   private getFunctionName(node: Parser.SyntaxNode): string {
-    const nameNode = node.children.find((child) => child.type === "identifier");
+    const nameNode = node.childForFieldName("name");
     if (!nameNode) {
       return "<anonymous>";
     }
@@ -229,7 +229,7 @@ export class RustMetricsAnalyzer {
     const functionName = this.getFunctionName(node);
 
     // Find the function body (block node)
-    const body = node.children.find((child) => child.type === "block");
+    const body = node.childForFieldName("body");
     if (!body) {
       return null;
     }
