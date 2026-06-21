@@ -293,12 +293,14 @@ export class PythonMetricsAnalyzer {
    * @returns The operator text ("and" or "or") or null
    */
   private getBooleanOperator(node: Parser.SyntaxNode): string | null {
-    for (const child of node.children) {
-      const text = this.sourceText.substring(child.startIndex, child.endIndex);
-      if (text === "and" || text === "or") {
-        return text;
-      }
-    }
+    // boolean_operator structure: [left, operator, right] — operator always at index 1
+    const operatorNode = node.child(1);
+    if (!operatorNode) { return null; }
+    const text = this.sourceText.substring(
+      operatorNode.startIndex,
+      operatorNode.endIndex
+    );
+    if (text === "and" || text === "or") { return text; }
     return null;
   }
 

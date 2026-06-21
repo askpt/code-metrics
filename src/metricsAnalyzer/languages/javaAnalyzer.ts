@@ -366,11 +366,11 @@ export class JavaMetricsAnalyzer {
    * @returns The operator string or null if not found
    */
   private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    for (const child of node.children) {
-      if (child.type === "&&" || child.type === "||") {
-        return child.type;
-      }
-    }
+    // binary_expression structure: [left, operator, right] — operator always at index 1
+    const operatorNode = node.child(1);
+    if (!operatorNode) { return null; }
+    const type = operatorNode.type;
+    if (type === "&&" || type === "||") { return type; }
     return null;
   }
 
