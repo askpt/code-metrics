@@ -229,7 +229,7 @@ export class RustMetricsAnalyzer {
     const functionName = this.getFunctionName(node);
 
     // Find the function body (block node)
-    const body = node.children.find((child) => child.type === "block");
+    const body = node.childForFieldName("body");
     if (!body) {
       return null;
     }
