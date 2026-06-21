@@ -142,9 +142,7 @@ export class JavaMetricsAnalyzer {
     this.details = [];
 
     const methodName = this.getMethodName(node);
-    const body = node.children.find(
-      (c) => c.type === "block" || c.type === "constructor_body"
-    );
+    const body = node.childForFieldName("body");
     if (!body) {
       return null; // Abstract or interface method without body
     }
@@ -169,7 +167,7 @@ export class JavaMetricsAnalyzer {
    * @returns Qualified name string
    */
   private getMethodName(node: Parser.SyntaxNode): string {
-    const nameNode = node.children.find((c) => c.type === "identifier");
+    const nameNode = node.childForFieldName("name");
     const methodName = nameNode
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";
@@ -182,9 +180,7 @@ export class JavaMetricsAnalyzer {
         parent.type === "interface_declaration" ||
         parent.type === "enum_declaration"
       ) {
-        const classNameNode = parent.children.find(
-          (c) => c.type === "identifier"
-        );
+        const classNameNode = parent.childForFieldName("name");
         if (classNameNode) {
           const className = this.sourceText.substring(
             classNameNode.startIndex,
