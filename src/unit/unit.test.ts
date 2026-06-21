@@ -1798,4 +1798,457 @@ func Apply(nums []int, transform func(int) int) []int {
       assert.ok(closureDetail, "nested func literal should add complexity");
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CSharp Analyzer Additional Coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp Analyzer Additional Coverage", () => {
+    it("should count goto statements", () => {
+      const sourceCode = `
+public class Test {
+    public void GotoMethod() {
+        int i = 0;
+        start:
+        if (i < 5) {
+            i++;
+            goto start;
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const gotoDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "goto statement"
+      );
+      assert.ok(gotoDetail, "goto statement should add complexity");
+    });
+
+    it("should use class name in constructor name", () => {
+      const sourceCode = `
+public class MyService {
+    public MyService(int value) {
+        if (value > 0) {
+            this.value = value;
+        }
+    }
+    private int value;
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      const ctor = results.find((r: UnifiedFunctionMetrics) =>
+        r.name.includes("constructor")
+      );
+      assert.ok(ctor, "constructor should be found");
+      assert.ok(
+        ctor!.name.includes("MyService"),
+        "constructor name should include class name"
+      );
+    });
+
+    it("should detect destructor declarations", () => {
+      const sourceCode = `
+public class Resource {
+    ~Resource() {
+        // cleanup
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(
+        results[0].name.includes("destructor") || results[0].name.startsWith("~"),
+        "destructor should be found"
+      );
+      assert.strictEqual(results[0].complexity, 0);
+    });
+
+    it("should count switch expression (C# 8+)", () => {
+      const sourceCode = `
+public class Test {
+    public string Classify(int n) {
+        return n switch {
+            > 0 => "positive",
+            < 0 => "negative",
+            _ => "zero"
+        };
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "switch expression"
+      );
+      assert.ok(switchDetail, "switch expression should add complexity");
+    });
+
+    it("should count lambda expressions nested inside control flow", () => {
+      const sourceCode = `
+public class Test {
+    public void LambdaMethod(List<int> items) {
+        for (int i = 0; i < items.Count; i++) {
+            Func<int, int> transform = x => x * 2;
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const lambdaDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "lambda expression (nested)"
+      );
+      assert.ok(lambdaDetail, "lambda nested in loop should add complexity");
+    });
+
+    it("should count anonymous method expressions nested inside control flow", () => {
+      const sourceCode = `
+public class Test {
+    public void AnonMethod(List<int> items) {
+        foreach (var item in items) {
+            Func<int, int> fn = delegate(int x) { return x + 1; };
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const anonDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "anonymous method (nested)"
+      );
+      assert.ok(anonDetail, "anonymous method nested in loop should add complexity");
+    });
+
+    it("should count conditional expressions (ternary operator)", () => {
+      const sourceCode = `
+public class Test {
+    public string Sign(int n) {
+        return n > 0 ? "positive" : "non-positive";
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const ternaryDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "ternary operator"
+      );
+      assert.ok(ternaryDetail, "ternary operator should add complexity");
+    });
+
+    it("should count continue statements in nested context", () => {
+      const sourceCode = `
+public class Test {
+    public void SkipNegatives(int[] items) {
+        for (int i = 0; i < items.Length; i++) {
+            if (items[i] < 0) {
+                continue;
+            }
+            Console.WriteLine(items[i]);
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const continueDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "continue statement (nested)"
+      );
+      assert.ok(continueDetail, "continue in nested context should add complexity");
+    });
+
+    it("should count break statements in nested context", () => {
+      const sourceCode = `
+public class Test {
+    public int FindFirst(int[] items, int target) {
+        for (int i = 0; i < items.Length; i++) {
+            if (items[i] == target) {
+                break;
+            }
+        }
+        return -1;
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const breakDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "break statement (nested)"
+      );
+      assert.ok(breakDetail, "break in nested context should add complexity");
+    });
+
+    it("should count try/catch blocks correctly", () => {
+      const sourceCode = `
+public class Test {
+    public int SafeDivide(int a, int b) {
+        try {
+            return a / b;
+        } catch (DivideByZeroException) {
+            return 0;
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const catchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "catch clause"
+      );
+      assert.ok(catchDetail, "catch clause should add complexity");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Python Analyzer Additional Coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Python Analyzer Additional Coverage", () => {
+    it("should count elif clauses", () => {
+      const sourceCode = `
+def grade(score):
+    if score >= 90:
+        return "A"
+    elif score >= 80:
+        return "B"
+    elif score >= 70:
+        return "C"
+    else:
+        return "F"
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const elifDetails = results[0].details.filter((d: UnifiedMetricsDetail) =>
+        d.reason === "elif clause"
+      );
+      assert.strictEqual(elifDetails.length, 2, "two elif clauses expected");
+    });
+
+    it("should count set comprehension", () => {
+      const sourceCode = `
+def unique_positives(items):
+    return {x for x in items}
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const setCompDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "set comprehension"
+      );
+      assert.ok(setCompDetail, "set comprehension should add complexity");
+    });
+
+    it("should count dictionary comprehension", () => {
+      const sourceCode = `
+def square_dict(items):
+    return {x: x*x for x in items}
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const dictCompDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "dictionary comprehension"
+      );
+      assert.ok(dictCompDetail, "dictionary comprehension should add complexity");
+    });
+
+    it("should count generator expression", () => {
+      const sourceCode = `
+def sum_squares(items):
+    return sum(x*x for x in items)
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const genDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "generator expression"
+      );
+      assert.ok(genDetail, "generator expression should add complexity");
+    });
+
+    it("should count conditional expression (ternary)", () => {
+      const sourceCode = `
+def absolute(x):
+    return x if x >= 0 else -x
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const condDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "conditional expression"
+      );
+      assert.ok(condDetail, "conditional expression should add complexity");
+    });
+
+    it("should count nested lambda expressions", () => {
+      const sourceCode = `
+def process(items):
+    for item in items:
+        transform = lambda x: x * 2
+    return items
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const lambdaDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "lambda (nested)"
+      );
+      assert.ok(lambdaDetail, "lambda inside for loop should add complexity");
+    });
+
+    it("should count match statement (structural pattern matching)", () => {
+      const sourceCode = `
+def classify(status):
+    match status:
+        case 200:
+            return "OK"
+        case 404:
+            return "Not Found"
+        case _:
+            return "Unknown"
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const matchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "match statement"
+      );
+      assert.ok(matchDetail, "match statement should add complexity");
+    });
+
+    it("should prefix class methods with class name", () => {
+      const sourceCode = `
+class Calculator:
+    def add(self, a, b):
+        return a + b
+    def divide(self, a, b):
+        if b == 0:
+            return 0
+        return a / b
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const addMethod = results.find((r) => r.name === "Calculator.add");
+      const divideMethod = results.find((r) => r.name === "Calculator.divide");
+      assert.ok(addMethod, "class method should use class.method format");
+      assert.ok(divideMethod, "class method should use class.method format");
+      assert.strictEqual(addMethod!.complexity, 0);
+      assert.strictEqual(divideMethod!.complexity, 1);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // JavaScript / TypeScript Analyzer Additional Coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("JS/TS Analyzer Additional Coverage", () => {
+    it("should count do-while loops in JavaScript", () => {
+      const sourceCode = `
+function readOnce(n) {
+  do {
+    n--;
+  } while (n > 0);
+  return n;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const doDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "do...while loop"
+      );
+      assert.ok(doDetail, "do-while should add complexity");
+    });
+
+    it("should count switch statements in JavaScript", () => {
+      const sourceCode = `
+function dayName(n) {
+  switch (n) {
+    case 0: return "Sun";
+    case 1: return "Mon";
+    default: return "?";
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "switch statement"
+      );
+      assert.ok(switchDetail, "switch statement should add complexity");
+    });
+
+    it("should count nested arrow function with internal complexity", () => {
+      const sourceCode = `
+function process(items) {
+  return items.map(x => {
+    if (x > 0) {
+      return x * 2;
+    }
+    return 0;
+  });
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const arrowDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "arrow function (nested)"
+      );
+      assert.ok(arrowDetail, "nested arrow function should add complexity");
+    });
+
+    it("should correctly identify for...of vs for...in loops", () => {
+      const forOf = `
+function sumItems(items) {
+  let total = 0;
+  for (const item of items) {
+    total += item;
+  }
+  return total;
+}
+`;
+      const forIn = `
+function listKeys(obj) {
+  const keys = [];
+  for (const key in obj) {
+    keys.push(key);
+  }
+  return keys;
+}
+`;
+      const ofResults = JavaScriptMetricsAnalyzer.analyzeFile(forOf);
+      const inResults = JavaScriptMetricsAnalyzer.analyzeFile(forIn);
+
+      const ofDetail = ofResults[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for...of loop"
+      );
+      const inDetail = inResults[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for...in loop"
+      );
+      assert.ok(ofDetail, "for...of should be labelled correctly");
+      assert.ok(inDetail, "for...in should be labelled correctly");
+    });
+
+    it("should count nested function expressions with internal complexity", () => {
+      const sourceCode = `
+function outer(items) {
+  const filtered = items.filter(function(x) {
+    if (x > 0) {
+      return true;
+    }
+    return false;
+  });
+  return filtered;
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity > 0);
+      const fnExprDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "function expression (nested)"
+      );
+      assert.ok(fnExprDetail, "nested function expression should add complexity");
+    });
+  });
 });
