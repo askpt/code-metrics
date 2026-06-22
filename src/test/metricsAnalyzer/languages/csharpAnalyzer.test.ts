@@ -21,7 +21,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].name, "Test.Add");
       assert.strictEqual(results[0].complexity, 0);
       assert.strictEqual(results[0].details.length, 0);
     });
@@ -41,7 +41,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Max");
+      assert.strictEqual(results[0].name, "Test.Max");
       assert.strictEqual(results[0].complexity, 1);
       assert.strictEqual(results[0].details.length, 1);
       assert.strictEqual(results[0].details[0].reason, "if statement");
@@ -67,7 +67,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Process");
+      assert.strictEqual(results[0].name, "Test.Process");
       // Expected complexity: if(1) + for(2) + nested if(3) + nested continue(4) = 10
       assert.strictEqual(results[0].complexity, 10);
       assert.strictEqual(results[0].details.length, 4);
@@ -426,7 +426,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "~<destructor>");
+      assert.strictEqual(results[0].name, "~Test");
       assert.strictEqual(results[0].complexity, 1);
     });
 
@@ -497,8 +497,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       assert.strictEqual(results.length, 2);
 
-      const outerMethod = results.find((f) => f.name === "OuterMethod");
-      const localFunction = results.find((f) => f.name === "LocalFunction");
+      const outerMethod = results.find((f) => f.name === "Test.OuterMethod");
+      const localFunction = results.find((f) => f.name === "Test.LocalFunction");
 
       assert.ok(outerMethod);
       assert.ok(localFunction);
@@ -536,7 +536,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       // Should only find the concrete method, not the abstract one
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "ConcreteMethod");
+      assert.strictEqual(results[0].name, "Test.ConcreteMethod");
     });
 
     test("should handle interface methods", () => {
@@ -584,8 +584,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       assert.strictEqual(results.length, 2);
 
-      const outerMethod = results.find((f) => f.name === "OuterMethod");
-      const innerMethod = results.find((f) => f.name === "InnerMethod");
+      const outerMethod = results.find((f) => f.name === "Outer.OuterMethod");
+      const innerMethod = results.find((f) => f.name === "Inner.InnerMethod");
 
       assert.ok(outerMethod);
       assert.ok(innerMethod);
@@ -668,7 +668,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "SimpleMethod");
+      assert.strictEqual(results[0].name, "Test.SimpleMethod");
       assert.strictEqual(results[0].complexity, 1);
     });
   });
@@ -702,7 +702,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.strictEqual(results.length, 3);
 
       // Find the main method
-      const mainMethod = results.find((r) => r.name === "ProcessData");
+      const mainMethod = results.find((r) => r.name === "Test.ProcessData");
       assert.ok(mainMethod, "Should find ProcessData method");
 
       // Should detect complexity from the #else block
@@ -733,7 +733,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "GetValue");
+      assert.strictEqual(results[0].name, "Calculator.GetValue");
 
       // Should detect ternary operators in both branches
       assert.ok(results[0].complexity > 0, "Should detect ternary operators");
@@ -762,7 +762,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "IsValid");
+      assert.strictEqual(results[0].name, "Validator.IsValid");
 
       // Should detect logical operators
       assert.ok(results[0].complexity > 0, "Should detect logical operators");
@@ -805,7 +805,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].name, "DataProcessor.Add");
 
       // Should detect complexity from both preprocessor branches
       assert.ok(
@@ -839,7 +839,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "GetFeature");
+      assert.strictEqual(results[0].name, "Feature.GetFeature");
 
       // Should detect complexity from nested preprocessor blocks
       assert.ok(

@@ -212,53 +212,84 @@ export class CSharpMetricsAnalyzer {
   }
 
   /**
-   * Extracts the function name from a function declaration node.
+   * Returns the name of the nearest enclosing type declaration (class, struct,
+   * interface, record, or enum) for the given node, or `null` if no enclosing
+   * type exists (e.g. top-level local functions).
    *
-   * Handles different types of function declarations:
-   * - Regular methods: uses the identifier
-   * - Constructors: uses class name + "(constructor)"
-   * - Destructors: uses "~<destructor>"
-   * - Anonymous functions: uses "<anonymous>"
-   *
-   * @param node - The function declaration syntax node
-   * @returns The function name as a string
+   * @param node - The syntax node to start searching from
+   * @returns The enclosing type name, or null if none found
    */
-  private getFunctionName(node: Parser.SyntaxNode): string {
-    // Handle special function types first
-    if (node.type === "constructor_declaration") {
-      // Find parent class
-      let parent = node.parent;
-      while (parent && parent.type !== "class_declaration") {
-        parent = parent.parent;
-      }
-      if (parent) {
-        const classNameNode = parent.children.find(
-          (child) => child.type === "identifier"
-        );
-        if (classNameNode) {
-          return (
-            this.sourceText.substring(
-              classNameNode.startIndex,
-              classNameNode.endIndex
-            ) + " (constructor)"
-          );
+  private getEnclosingTypeName(node: Parser.SyntaxNode): string | null {
+    const typeDeclarations = new Set([
+      "class_declaration",
+      "struct_declaration",
+      "interface_declaration",
+      "record_declaration",
+      "enum_declaration",
+    ]);
+    let parent = node.parent;
+    while (parent) {
+      if (typeDeclarations.has(parent.type)) {
+        const nameNode = parent.childForFieldName("name");
+        if (nameNode) {
+          return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
         }
       }
-      return "<constructor>";
+      parent = parent.parent;
+    }
+    return null;
+  }
+
+  /**
+   * Extracts the qualified function name from a function declaration node.
+   *
+   * Produces names in the format `EnclosingType.MethodName` for methods and
+   * accessors inside a type declaration (consistent with Go, Java, and Python
+   * analyzers), and bare names for local functions that have no enclosing type.
+   *
+   * Special cases:
+   * - Constructors: `EnclosingType (constructor)`
+   * - Destructors: `~EnclosingType`
+   * - Local functions without an enclosing type: bare method name
+   *
+   * @param node - The function declaration syntax node
+   * @returns The qualified function name as a string
+   */
+  private getFunctionName(node: Parser.SyntaxNode): string {
+    if (node.type === "constructor_declaration") {
+      // Use the constructor's own "name" field (always equals the class name in C#).
+      const nameNode = node.childForFieldName("name");
+      const ctorName = nameNode
+        ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
+        : "<constructor>";
+      return `${ctorName} (constructor)`;
     }
 
-    // For destructors
     if (node.type === "destructor_declaration") {
-      return "~<destructor>";
+      const nameNode = node.childForFieldName("name");
+      const dtorName = nameNode
+        ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
+        : "<destructor>";
+      return `~${dtorName}`;
     }
 
-    // Try to find identifier node for the function name (regular methods)
-    const nameNode = node.children.find((child) => child.type === "identifier");
-    if (nameNode) {
-      return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
-    }
+    // For regular methods, operators, accessors, and local functions: use the
+    // "name" field when available, falling back to a scan of child nodes for
+    // an identifier token.
+    const nameNode =
+      node.childForFieldName("name") ??
+      node.children.find((child) => child.type === "identifier") ??
+      null;
+    const methodName = nameNode
+      ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
+      : "<anonymous>";
 
-    return "<anonymous>";
+    // Qualify with the enclosing type name. For methods, accessors, and local
+    // functions, getEnclosingTypeName() walks up the ancestor chain and returns
+    // the nearest enclosing type (class, struct, etc.), so all of these will
+    // produce a qualified name.
+    const enclosingType = this.getEnclosingTypeName(node);
+    return enclosingType ? `${enclosingType}.${methodName}` : methodName;
   }
 
   /**
