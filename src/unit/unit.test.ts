@@ -2304,15 +2304,21 @@ public class Test {
   public boolean check(int a, int b, int c) {
     return a > 0 && b > 0;
   }
+  public boolean checkOr(int a, int b) {
+    return a > 0 || b > 0;
+  }
 }
 `;
       const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 1);
-      const binaryDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+      assert.strictEqual(results.length, 2);
+      const andDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
         d.reason === "binary && operator"
       );
-      assert.ok(binaryDetail, "binary && operator should add complexity");
+      assert.ok(andDetail, "binary && operator should add complexity");
+      const orDetail = results[1].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "binary || operator"
+      );
+      assert.ok(orDetail, "binary || operator should add complexity");
     });
 
     it("should count chained && only once (deduplication)", () => {

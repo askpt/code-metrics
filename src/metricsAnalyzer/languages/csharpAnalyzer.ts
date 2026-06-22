@@ -274,8 +274,8 @@ export class CSharpMetricsAnalyzer {
     }
 
     // For regular methods, operators, accessors, and local functions: use the
-    // "name" field when available, falling back to a children scan for operator
-    // declarations (whose names are punctuation tokens, not identifiers).
+    // "name" field when available, falling back to a scan of child nodes for
+    // an identifier token.
     const nameNode =
       node.childForFieldName("name") ??
       node.children.find((child) => child.type === "identifier") ??
@@ -284,8 +284,10 @@ export class CSharpMetricsAnalyzer {
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";
 
-    // Qualify with the enclosing type name for methods inside a type declaration.
-    // Local functions inside method bodies have no enclosing type and use a bare name.
+    // Qualify with the enclosing type name. For methods, accessors, and local
+    // functions, getEnclosingTypeName() walks up the ancestor chain and returns
+    // the nearest enclosing type (class, struct, etc.), so all of these will
+    // produce a qualified name.
     const enclosingType = this.getEnclosingTypeName(node);
     return enclosingType ? `${enclosingType}.${methodName}` : methodName;
   }
