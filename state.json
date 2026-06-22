@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-21T09:37:00Z",
-  "last_run_id": "27900245790",
+  "last_run": "2026-06-22T00:00:00Z",
+  "last_run_id": "27932241686",
   "backlog_cursor": {
     "issues": 355,
     "prs": 0
@@ -47,10 +47,12 @@
     "test-csharp-python-js-coverage-20260621 (closed without merge as #393)",
     "perf-operator-child-access-20260621 (merged as #394)",
     "improve-go-haslabel-helper-20260621 (merged as #395)",
-    "perf-childForFieldName-20260621 (PR created - Task 8)",
-    "eng-patch-deps-20260621 (PR created - Task 4)"
+    "perf-childForFieldName-20260621 (merged as #397)",
+    "eng-patch-deps-20260621 (merged as #399)",
+    "improve-csharp-method-qualification-20260622 (PR created - Task 5+9)",
+    "feat-kotlin-support-20260622 (PR created - Task 10)"
   ],
-  "notes": "Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Two new PRs created this run: perf-childForFieldName (O(1) field access in 4 analyzers) and eng-patch-deps (types/node 25→26 + noFallthroughCasesInSwitch). Release PR #396 (v0.6.3) is pending merge. Tree-sitter ecosystem upgrade still blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
+  "notes": "Two new PRs created this run: (1) improve-csharp-method-qualification: qualifies C# method names as EnclosingType.MethodName + 6 new coverage tests (Java switch/lambda/binary-op/chain-dedup, Go labeled continue, C# switch_statement); (2) feat-kotlin-support: full Kotlin analyzer using tree-sitter-kotlin 0.3.8, 10 tests, 99.1% coverage. Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Release PR #396 (v0.6.3) pending merge. Tree-sitter ecosystem upgrade still blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
