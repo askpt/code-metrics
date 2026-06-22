@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-06-22T00:00:00Z",
-  "last_run_id": "27932241686",
+  "last_run": "2026-06-22T16:03:45Z",
+  "last_run_id": "27966207734",
   "backlog_cursor": {
-    "issues": 355,
+    "issues": 402,
     "prs": 0
   },
   "comments_made": {
@@ -49,10 +49,11 @@
     "improve-go-haslabel-helper-20260621 (merged as #395)",
     "perf-childForFieldName-20260621 (merged as #397)",
     "eng-patch-deps-20260621 (merged as #399)",
-    "improve-csharp-method-qualification-20260622 (PR created - Task 5+9)",
-    "feat-kotlin-support-20260622 (PR created - Task 10)"
+    "improve-csharp-method-qualification-20260622 (PR open as #401)",
+    "feat-kotlin-support-20260622 (blocked by protected files - issue #402)",
+    "improve-jslike-arrow-method-and-coverage-20260622 (PR created - object method arrow naming + 5 tests)"
   ],
-  "notes": "Two new PRs created this run: (1) improve-csharp-method-qualification: qualifies C# method names as EnclosingType.MethodName + 6 new coverage tests (Java switch/lambda/binary-op/chain-dedup, Go labeled continue, C# switch_statement); (2) feat-kotlin-support: full Kotlin analyzer using tree-sitter-kotlin 0.3.8, 10 tests, 99.1% coverage. Issue #353 (Ruby support) still open - needs maintainer to apply manual patch. Release PR #396 (v0.6.3) pending merge. Tree-sitter ecosystem upgrade still blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
+  "notes": "Three open Repo Assist items: PR #401 (C# method qualification, open), issue #353 (Ruby, blocked), issue #402 (Kotlin, blocked). New PR created this run: improve-jslike-arrow-method-and-coverage-20260622 (arrow function named by object property key + 5 tests, 126→131 passing). Release PR #396 (v0.6.3) pending merge. Dependabot PR #403 (actions/checkout 6→7) open. Tree-sitter ecosystem upgrade still blocked: java@0.23.5 needs ^0.21.x, rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
