@@ -2250,5 +2250,88 @@ function outer(items) {
       );
       assert.ok(fnExprDetail, "nested function expression should add complexity");
     });
+
+    it("should name arrow function by its object property key", () => {
+      const sourceCode = `
+const api = {
+  getData: () => {
+    if (flag) {
+      return data;
+    }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "object method arrow function is a top-level entry");
+      assert.strictEqual(results[0].name, "getData", "should use the property key as the function name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should count while loops in JavaScript", () => {
+      const sourceCode = `
+function processQueue(queue) {
+  while (queue.length > 0) {
+    const item = queue.shift();
+    if (item != null) {
+      item.run();
+    }
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // while=1, if=2 (nesting=1) → 3
+      assert.strictEqual(results[0].complexity, 3);
+      const whileDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "while loop"
+      );
+      assert.ok(whileDetail, "while loop should produce a 'while loop' reason");
+    });
+
+    it("should count nested class method inside a function", () => {
+      const sourceCode = `
+function outer() {
+  class Processor {
+    process(x) {
+      if (x > 0) {
+        return x;
+      }
+    }
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "only outer function is a top-level entry");
+      const nestedMethodDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "method (nested)"
+      );
+      assert.ok(nestedMethodDetail, "inner class method should produce 'method (nested)' reason");
+      // method nesting penalty = +1, if inside method at nesting=1 = +2 → total 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should use (arrow function) name for arrow function not assigned to variable or object", () => {
+      const sourceCode = `
+module.exports = () => {
+  if (x) { return 1; }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "(arrow function)", "exported arrow function with no assignment should be (arrow function)");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should use (anonymous) name for anonymous function expression", () => {
+      const sourceCode = `
+const result = (function() {
+  if (x) { return 1; }
+})();
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "(anonymous)", "anonymous function expression should show (anonymous)");
+      assert.strictEqual(results[0].complexity, 1);
+    });
   });
 });

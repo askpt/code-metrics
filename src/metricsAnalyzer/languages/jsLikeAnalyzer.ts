@@ -203,6 +203,15 @@ export class JsLikeMetricsAnalyzer {
           return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
         }
       }
+      if (parent && parent.type === "pair") {
+        // Arrow function as an object property value: { myMethod: () => {} }
+        const keyNode = parent.children.find(
+          (c) => c.type === "property_identifier" || c.type === "identifier"
+        );
+        if (keyNode) {
+          return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+        }
+      }
       return "(arrow function)";
     }
 
