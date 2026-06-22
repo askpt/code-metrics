@@ -38,7 +38,7 @@ suite("Metrics Analyzer Factory Tests", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].name, "Test.Add");
       assert.strictEqual(results[0].complexity, 0);
       assert.strictEqual(results[0].details.length, 0);
     });
@@ -58,7 +58,7 @@ suite("Metrics Analyzer Factory Tests", () => {
       const results = MetricsAnalyzerFactory.analyzeFile(sourceCode, "csharp");
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Max");
+      assert.strictEqual(results[0].name, "Test.Max");
       assert.strictEqual(results[0].complexity, 1);
       assert.strictEqual(results[0].details.length, 1);
       assert.strictEqual(results[0].details[0].reason, "if statement");
@@ -99,9 +99,9 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       assert.strictEqual(results.length, 3);
 
-      const addFunction = results.find((f) => f.name === "Add");
-      const divideFunction = results.find((f) => f.name === "Divide");
-      const processFunction = results.find((f) => f.name === "ProcessNumbers");
+      const addFunction = results.find((f) => f.name === "Calculator.Add");
+      const divideFunction = results.find((f) => f.name === "Calculator.Divide");
+      const processFunction = results.find((f) => f.name === "Calculator.ProcessNumbers");
 
       assert.ok(addFunction);
       assert.ok(divideFunction);
@@ -291,8 +291,8 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       assert.strictEqual(results.length, 2);
 
-      const firstMethod = results.find((f) => f.name === "FirstMethod");
-      const secondMethod = results.find((f) => f.name === "SecondMethod");
+      const firstMethod = results.find((f) => f.name === "Test.FirstMethod");
+      const secondMethod = results.find((f) => f.name === "Test.SecondMethod");
 
       assert.ok(firstMethod);
       assert.ok(secondMethod);
@@ -487,10 +487,10 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       assert.strictEqual(results.length, 3);
 
-      const addFunction = results.find((f) => f.name === "Add");
-      const processDataFunction = results.find((f) => f.name === "ProcessData");
+      const addFunction = results.find((f) => f.name === "Calculator.Add");
+      const processDataFunction = results.find((f) => f.name === "Calculator.ProcessData");
       const isComplexConditionFunction = results.find(
-        (f) => f.name === "IsComplexCondition"
+        (f) => f.name === "Calculator.IsComplexCondition"
       );
 
       assert.ok(addFunction);

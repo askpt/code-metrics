@@ -247,7 +247,7 @@ func Subtract(a, b int) int {
       const results = analyzer.analyzeFunctions(SampleCSharpCode.SIMPLE_METHOD);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].name, "Test.Add");
       assert.strictEqual(results[0].complexity, 0);
       assert.strictEqual(results[0].details.length, 0);
     });
@@ -257,7 +257,7 @@ func Subtract(a, b int) int {
       const results = analyzer.analyzeFunctions(SampleCSharpCode.SINGLE_IF);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Max");
+      assert.strictEqual(results[0].name, "Test.Max");
       assert.strictEqual(results[0].complexity, 1);
       assert.strictEqual(results[0].details.length, 1);
       assert.strictEqual(results[0].details[0].reason, "if statement");
@@ -271,7 +271,7 @@ func Subtract(a, b int) int {
 
       assert.ok(results.length > 0);
       const mainMethod = results.find(
-        (r: UnifiedFunctionMetrics) => r.name === "ComplexMethod"
+        (r: UnifiedFunctionMetrics) => r.name === "Test.ComplexMethod"
       );
       assert.ok(mainMethod);
       assert.ok(mainMethod.complexity > 5); // Should have significant complexity
@@ -344,7 +344,7 @@ func Subtract(a, b int) int {
         "csharp"
       );
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "Add");
+      assert.strictEqual(results[0].name, "Test.Add");
       assert.strictEqual(results[0].complexity, 0);
     });
 
@@ -2332,6 +2332,145 @@ const result = (function() {
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "(anonymous)", "anonymous function expression should show (anonymous)");
       assert.strictEqual(results[0].complexity, 1);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Java Analyzer Additional Coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Java Analyzer Additional Coverage", () => {
+    it("should count switch statements", () => {
+      const sourceCode = `
+public class Test {
+  public String dayName(int n) {
+    switch (n) {
+      case 0: return "Sunday";
+      case 6: return "Saturday";
+      default: return "Weekday";
+    }
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 1);
+      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "switch statement"
+      );
+      assert.ok(switchDetail, "switch statement should add complexity");
+    });
+
+    it("should count lambda expressions", () => {
+      const sourceCode = `
+import java.util.Arrays;
+import java.util.List;
+public class Test {
+  public int sumPositive(List<Integer> items) {
+    return items.stream()
+      .filter(x -> x > 0)
+      .mapToInt(x -> x)
+      .sum();
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const lambdaDetails = results[0].details.filter((d: UnifiedMetricsDetail) =>
+        d.reason === "lambda expression"
+      );
+      assert.ok(lambdaDetails.length >= 1, "lambda expressions should add complexity");
+    });
+
+    it("should count binary && and || operators", () => {
+      const sourceCode = `
+public class Test {
+  public boolean check(int a, int b, int c) {
+    return a > 0 && b > 0;
+  }
+  public boolean checkOr(int a, int b) {
+    return a > 0 || b > 0;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const andDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "binary && operator"
+      );
+      assert.ok(andDetail, "binary && operator should add complexity");
+      const orDetail = results[1].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "binary || operator"
+      );
+      assert.ok(orDetail, "binary || operator should add complexity");
+    });
+
+    it("should count chained && only once (deduplication)", () => {
+      // a && b && c is ONE logical chain, not two — counts once regardless of depth
+      const sourceCode = `
+public class Test {
+  public boolean allPositive(int a, int b, int c) {
+    return a > 0 && b > 0 && c > 0;
+  }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // Only 1 increment for the whole && chain, not one per operand pair
+      assert.strictEqual(results[0].complexity, 1, "chained && should count once");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Go Analyzer Additional Coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Go Analyzer Additional Coverage", () => {
+    it("should count labeled continue as complexity", () => {
+      const sourceCode = `
+package main
+
+func processMatrix(matrix [][]int) {
+outer:
+    for i := 0; i < len(matrix); i++ {
+        for j := 0; j < len(matrix[i]); j++ {
+            if matrix[i][j] < 0 {
+                continue outer
+            }
+        }
+    }
+}
+`;
+      const results = new GoMetricsAnalyzer().analyzeFunctions(sourceCode);
+      assert.ok(results.length >= 1, "should detect at least one function");
+      const detail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "labeled continue statement"
+      );
+      assert.ok(detail, "labeled continue should add complexity");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CSharp Analyzer Additional Coverage (switch_statement)
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp switch_statement Coverage", () => {
+    it("should count traditional switch statements", () => {
+      const sourceCode = `
+public class Test {
+    public string GetDay(int n) {
+        switch (n) {
+            case 0: return "Sunday";
+            case 6: return "Saturday";
+            default: return "Weekday";
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "switch statement"
+      );
+      assert.ok(switchDetail, "switch statement should add complexity with reason 'switch statement'");
     });
   });
 });
