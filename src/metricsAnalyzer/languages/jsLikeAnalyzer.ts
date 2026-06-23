@@ -179,16 +179,16 @@ export class JsLikeMetricsAnalyzer {
    */
   private getFunctionName(node: Parser.SyntaxNode): string {
     if (node.type === "function_declaration" || node.type === "function_expression") {
-      const nameNode = node.children.find((c) => c.type === "identifier");
+      // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for both node types)
+      const nameNode = node.childForFieldName("name");
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
       }
     }
 
     if (node.type === "method_definition") {
-      const nameNode = node.children.find(
-        (c) => c.type === "property_identifier" || c.type === "identifier"
-      );
+      // tree-sitter-javascript exposes the "name" field for method_definition nodes
+      const nameNode = node.childForFieldName("name");
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
       }
