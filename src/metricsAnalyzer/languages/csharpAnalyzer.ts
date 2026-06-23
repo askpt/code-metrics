@@ -183,19 +183,20 @@ export class CSharpMetricsAnalyzer {
   private analyzeFunction(
     node: Parser.SyntaxNode
   ): CSharpFunctionMetrics | null {
+    // Find the function body first — abstract/interface methods have no body and can be
+    // skipped without the cost of name resolution or state reset.
+    const body = this.getFunctionBody(node);
+    if (!body) {
+      return null; // Abstract method or interface method
+    }
+
     // Reset state for new function
     this.nesting = 0;
     this.complexity = 0;
     this.details = [];
 
-    // Get function name
+    // Resolve the qualified name only after confirming the body exists
     const functionName = this.getFunctionName(node);
-
-    // Find the function body
-    const body = this.getFunctionBody(node);
-    if (!body) {
-      return null; // Abstract method or interface method
-    }
 
     // Analyze the function body
     this.visit(body);
