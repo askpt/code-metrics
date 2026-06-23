@@ -430,12 +430,13 @@ export class CSharpMetricsAnalyzer {
         return 1;
 
       // Logical operators (+1 for each)
-      case "binary_expression":
+      case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         if (operator === "&&" || operator === "||") {
           return 1;
         }
         return 0;
+      }
 
       // Conditional expressions (+1)
       case "conditional_expression":
@@ -749,9 +750,10 @@ export class CSharpMetricsAnalyzer {
         return "try statement";
       case "catch_clause":
         return "catch clause";
-      case "binary_expression":
+      case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         return `binary ${operator} operator`;
+      }
       case "conditional_expression":
         return "ternary operator";
       case "lambda_expression":

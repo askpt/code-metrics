@@ -23,6 +23,7 @@ export default [{
         curly: "warn",
         eqeqeq: "warn",
         "no-throw-literal": "warn",
+        "no-case-declarations": "error",
         semi: "warn",
     },
 }];
