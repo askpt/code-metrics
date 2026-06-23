@@ -363,12 +363,13 @@ export class GoMetricsAnalyzer {
         return 1;
 
       // Logical operators (+1 for each)
-      case "binary_expression":
+      case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         if (operator === "&&" || operator === "||") {
           return 1;
         }
         return 0;
+      }
 
       // Func literals (closures) - add complexity only when nested
       case "func_literal":
@@ -464,9 +465,10 @@ export class GoMetricsAnalyzer {
         return "type switch statement";
       case "select_statement":
         return "select statement";
-      case "binary_expression":
+      case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         return `binary ${operator} operator`;
+      }
       case "func_literal":
         return "function literal (nested)";
       case "break_statement":
