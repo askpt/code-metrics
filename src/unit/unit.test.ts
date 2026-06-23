@@ -2522,7 +2522,7 @@ public class Temperature {
       assert.ok(implicitOp, "implicit conversion operator should be named 'T.implicit operator <type>'");
     });
 
-    it("should analyse property accessor declarations (get/set)", () => {
+    it("should analyze property accessor declarations (get/set)", () => {
       const sourceCode = `
 public class Config {
     private int _value;
