@@ -274,9 +274,49 @@ export class CSharpMetricsAnalyzer {
       return `~${dtorName}`;
     }
 
-    // For regular methods, operators, accessors, and local functions: use the
-    // "name" field when available, falling back to a scan of child nodes for
-    // an identifier token.
+    if (node.type === "operator_declaration") {
+      // The operator symbol (e.g. +, -, ==) immediately follows the 'operator' keyword.
+      let afterOperatorKeyword = false;
+      for (const child of node.children) {
+        if (child.type === "operator") {
+          afterOperatorKeyword = true;
+        } else if (afterOperatorKeyword) {
+          const symbol = this.sourceText.substring(child.startIndex, child.endIndex);
+          const enclosingType = this.getEnclosingTypeName(node);
+          return enclosingType ? `${enclosingType}.operator${symbol}` : `operator${symbol}`;
+        }
+      }
+    }
+
+    if (node.type === "conversion_operator_declaration") {
+      // The conversion kind (implicit/explicit) precedes the 'operator' keyword; the
+      // target type immediately follows it.
+      const kindNode = node.children.find(
+        (c) => c.type === "implicit" || c.type === "explicit"
+      );
+      const kind = kindNode ? kindNode.type : "explicit";
+      let afterOperatorKeyword = false;
+      for (const child of node.children) {
+        if (child.type === "operator") {
+          afterOperatorKeyword = true;
+        } else if (
+          afterOperatorKeyword &&
+          (child.type === "predefined_type" ||
+            child.type === "identifier" ||
+            child.type === "qualified_name" ||
+            child.type === "generic_name")
+        ) {
+          const targetType = this.sourceText.substring(child.startIndex, child.endIndex);
+          const enclosingType = this.getEnclosingTypeName(node);
+          return enclosingType
+            ? `${enclosingType}.${kind} operator ${targetType}`
+            : `${kind} operator ${targetType}`;
+        }
+      }
+    }
+
+    // For regular methods, accessors, and local functions: use the "name" field when
+    // available, falling back to a scan of child nodes for an identifier token.
     const nameNode =
       node.childForFieldName("name") ??
       node.children.find((child) => child.type === "identifier") ??

@@ -2473,4 +2473,185 @@ public class Test {
       assert.ok(switchDetail, "switch statement should add complexity with reason 'switch statement'");
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CSharp Analyzer: Operators, Accessors, Local Functions, and More
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp Analyzer: Operators, Accessors, and Structural Types", () => {
+    it("should qualify overloaded operator with 'operator<symbol>' name", () => {
+      const sourceCode = `
+public class Vec2 {
+    public double X, Y;
+    public static Vec2 operator+(Vec2 a, Vec2 b) {
+        if (a == null || b == null) return new Vec2();
+        return new Vec2 { X = a.X + b.X, Y = a.Y + b.Y };
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Vec2.operator+",
+        "operator declaration should be named 'EnclosingType.operator<symbol>'");
+      assert.ok(results[0].complexity >= 1, "operator body with if should add complexity");
+    });
+
+    it("should qualify conversion operator with 'kind operator type' name", () => {
+      const sourceCode = `
+public class Temperature {
+    public double Celsius;
+    public static explicit operator double(Temperature t) {
+        if (t == null) return 0.0;
+        return t.Celsius;
+    }
+    public static implicit operator string(Temperature t) {
+        return t.Celsius.ToString();
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const explicitOp = results.find((r: UnifiedFunctionMetrics) =>
+        r.name === "Temperature.explicit operator double"
+      );
+      assert.ok(explicitOp, "explicit conversion operator should be named 'T.explicit operator <type>'");
+      assert.ok(explicitOp!.complexity >= 1, "explicit operator with if should add complexity");
+
+      const implicitOp = results.find((r: UnifiedFunctionMetrics) =>
+        r.name === "Temperature.implicit operator string"
+      );
+      assert.ok(implicitOp, "implicit conversion operator should be named 'T.implicit operator <type>'");
+    });
+
+    it("should analyse property accessor declarations (get/set)", () => {
+      const sourceCode = `
+public class Config {
+    private int _value;
+    public int Value {
+        get {
+            if (_value < 0) return 0;
+            return _value;
+        }
+        set {
+            if (value > 100) throw new ArgumentOutOfRangeException();
+            _value = value;
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2, "getter and setter should each be reported");
+      const getter = results.find((r: UnifiedFunctionMetrics) => r.name === "Config.get");
+      const setter = results.find((r: UnifiedFunctionMetrics) => r.name === "Config.set");
+      assert.ok(getter, "getter should be found as Config.get");
+      assert.ok(setter, "setter should be found as Config.set");
+      assert.ok(getter!.complexity >= 1, "getter with if should add complexity");
+      assert.ok(setter!.complexity >= 1, "setter with if should add complexity");
+    });
+
+    it("should detect local function statements and qualify them with enclosing type", () => {
+      const sourceCode = `
+public class Sorter {
+    public void BubbleSort(int[] arr) {
+        void Swap(int[] a, int i, int j) {
+            if (i != j) {
+                int tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+            }
+        }
+        for (int i = 0; i < arr.Length - 1; i++) {
+            if (arr[i] > arr[i + 1]) Swap(arr, i, i + 1);
+        }
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2, "outer method and local function should both be reported");
+      const outer = results.find((r: UnifiedFunctionMetrics) => r.name === "Sorter.BubbleSort");
+      const local = results.find((r: UnifiedFunctionMetrics) => r.name === "Sorter.Swap");
+      assert.ok(outer, "outer method should be named 'Sorter.BubbleSort'");
+      assert.ok(local, "local function should be qualified as 'Sorter.Swap'");
+      assert.ok(local!.complexity >= 1, "local function with if should add complexity");
+    });
+
+    it("should handle expression-bodied methods (arrow body)", () => {
+      const sourceCode = `
+public class Math {
+    public int Square(int n) => n * n;
+    public int Abs(int n) => n >= 0 ? n : -n;
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const square = results.find((r: UnifiedFunctionMetrics) => r.name === "Math.Square");
+      assert.ok(square, "expression-bodied Square should be detected");
+      assert.strictEqual(square!.complexity, 0, "pure expression body has no complexity");
+
+      const abs = results.find((r: UnifiedFunctionMetrics) => r.name === "Math.Abs");
+      assert.ok(abs, "expression-bodied Abs should be detected");
+      assert.ok(abs!.complexity >= 1, "ternary in expression body should add complexity");
+    });
+
+    it("should skip abstract methods (no body)", () => {
+      const sourceCode = `
+public abstract class Shape {
+    public abstract double Area();
+    public abstract string Describe();
+    public virtual double Perimeter() => 0.0;
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      const names = results.map((r: UnifiedFunctionMetrics) => r.name);
+      assert.ok(!names.includes("Shape.Area"), "abstract Area() should be skipped");
+      assert.ok(!names.includes("Shape.Describe"), "abstract Describe() should be skipped");
+      assert.ok(names.includes("Shape.Perimeter"), "virtual with body should be included");
+    });
+
+    it("should skip interface method declarations (no body)", () => {
+      const sourceCode = `
+public interface IRepository<T> {
+    T GetById(int id);
+    void Save(T entity);
+    bool Exists(int id);
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 0, "interface method stubs should produce no results");
+    });
+
+    it("should qualify struct methods with the struct name", () => {
+      const sourceCode = `
+public struct Point {
+    public double X, Y;
+    public double DistanceTo(Point other) {
+        double dx = X - other.X;
+        double dy = Y - other.Y;
+        return System.Math.Sqrt(dx * dx + dy * dy);
+    }
+    public bool IsOrigin() => X == 0 && Y == 0;
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      const distMethod = results.find((r: UnifiedFunctionMetrics) => r.name === "Point.DistanceTo");
+      assert.ok(distMethod, "struct method should be qualified with struct name 'Point.DistanceTo'");
+      const isOrigin = results.find((r: UnifiedFunctionMetrics) => r.name === "Point.IsOrigin");
+      assert.ok(isOrigin, "expression-bodied struct method 'Point.IsOrigin' should be detected");
+      assert.ok(isOrigin!.complexity >= 1, "&& in IsOrigin should add complexity");
+    });
+
+    it("should qualify record methods with the record name", () => {
+      const sourceCode = `
+public record Temperature(double Celsius) {
+    public string Classify() {
+        if (Celsius < 0) return "Freezing";
+        if (Celsius > 100) return "Boiling";
+        return "Normal";
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Temperature.Classify",
+        "record method should be qualified with record name");
+      assert.strictEqual(results[0].complexity, 2, "two if statements → complexity 2");
+    });
+  });
 });
