@@ -137,15 +137,18 @@ export class JavaMetricsAnalyzer {
    * @returns Complexity analysis result or null if no body is found
    */
   private analyzeMethod(node: Parser.SyntaxNode): JavaFunctionMetrics | null {
+    // Check for the body first — abstract/interface methods have no body and can be
+    // skipped without resetting state or performing the O(depth) name resolution walk.
+    const body = node.childForFieldName("body");
+    if (!body) {
+      return null; // Abstract or interface method without body
+    }
+
     this.nesting = 0;
     this.complexity = 0;
     this.details = [];
 
     const methodName = this.getMethodName(node);
-    const body = node.childForFieldName("body");
-    if (!body) {
-      return null; // Abstract or interface method without body
-    }
 
     this.visitBody(body);
 
