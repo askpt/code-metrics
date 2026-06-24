@@ -1,7 +1,6 @@
 import * as assert from "assert";
 import {
   MetricsAnalyzerFactory,
-  UnifiedFunctionMetrics,
   UnifiedMetricsDetail,
   createAnalyzer,
 } from "../../metricsAnalyzer/metricsAnalyzerFactory";
