@@ -349,6 +349,9 @@ export class RustMetricsAnalyzer {
   /**
    * Extracts the binary operator from a binary expression node.
    *
+   * Uses node.type for O(1) operator detection — anonymous tokens in tree-sitter
+   * have their literal text as their type, so no substring allocation is needed.
+   *
    * @param node - The binary expression syntax node
    * @returns The operator string or null if not found
    */
@@ -356,11 +359,8 @@ export class RustMetricsAnalyzer {
     // binary_expression structure: [left, operator, right] — operator always at index 1
     const operatorNode = node.child(1);
     if (!operatorNode) { return null; }
-    const text = this.sourceText.substring(
-      operatorNode.startIndex,
-      operatorNode.endIndex
-    );
-    if (text === "&&" || text === "||") { return text; }
+    const type = operatorNode.type;
+    if (type === "&&" || type === "||") { return type; }
     return null;
   }
 
@@ -375,7 +375,7 @@ export class RustMetricsAnalyzer {
       case "if_expression":
         return "if expression";
       case "else_clause": {
-        const hasNestedIf = node.children.some((child) => child.type === "if_expression");
+        const hasNestedIf = node.firstNamedChild?.type === "if_expression";
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_expression":

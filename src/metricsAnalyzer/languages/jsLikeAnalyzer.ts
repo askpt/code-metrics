@@ -355,16 +355,16 @@ export class JsLikeMetricsAnalyzer {
 
   /**
    * Extracts the operator from a binary or logical expression node.
+   *
+   * Uses node.type for O(1) operator detection — anonymous tokens in tree-sitter
+   * have their literal text as their type, so no substring allocation is needed.
    */
   private getOperator(node: Parser.SyntaxNode): string | null {
     // binary_expression structure: [left, operator, right] — operator always at index 1
     const operatorNode = node.child(1);
     if (!operatorNode) { return null; }
-    const text = this.sourceText.substring(
-      operatorNode.startIndex,
-      operatorNode.endIndex
-    );
-    if (text === "&&" || text === "||" || text === "??") { return text; }
+    const type = operatorNode.type;
+    if (type === "&&" || type === "||" || type === "??") { return type; }
     return null;
   }
 
@@ -379,7 +379,7 @@ export class JsLikeMetricsAnalyzer {
       case "if_statement":
         return "if statement";
       case "else_clause": {
-        const hasNestedIf = node.children.some((c) => c.type === "if_statement");
+        const hasNestedIf = node.firstNamedChild?.type === "if_statement";
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_statement":
