@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-23T19:36:57Z",
-  "last_run_id": "28051821320",
+  "last_run": "2026-06-24T05:16:28Z",
+  "last_run_id": "28076824889",
   "backlog_cursor": {
     "issues": 402,
     "prs": 0
@@ -39,25 +39,24 @@
     "perf-analysis-cache-20260527 (merged as #348)",
     "eng-patch-deps-20260527 (merged as #350)",
     "improve-codelens-cache-20260528 (merged as #352)",
-    "feat-ruby-support-20260601 (blocked by protected files - issue #353)",
     "perf-exclude-result-cache-20260618 (merged as #381)",
     "eng-ci-remove-redundant-compile-20260618 (merged as #382)",
     "perf-visit-loop-dedup-20260620 (merged as #389)",
     "eng-tree-sitter-typescript-20260620 (merged as #391)",
-    "test-csharp-python-js-coverage-20260621 (closed without merge as #393)",
     "perf-operator-child-access-20260621 (merged as #394)",
     "improve-go-haslabel-helper-20260621 (merged as #395)",
     "perf-childForFieldName-20260621 (merged as #397)",
     "eng-patch-deps-20260621 (merged as #399)",
     "improve-csharp-method-qualification-20260622 (merged as #401)",
-    "feat-kotlin-support-20260622 (blocked by protected files - issue #402)",
     "improve-jslike-arrow-method-and-coverage-20260622 (merged as #404)",
     "improve-switch-case-scoping-20260623 (merged as #406)",
     "perf-o1-name-lookup-20260623 (merged as #407)",
-    "eng-noImplicitReturns-20260623 (PR created - build: enable noImplicitReturns in tsconfig)",
-    "test-csharp-edge-cases-20260623 (PR created - feat: fix C# operator naming + 9 edge-case tests; coverage 74.9%->79.4%, 137->146 tests)"
+    "eng-noImplicitReturns-20260623 (merged as #408)",
+    "test-csharp-edge-cases-20260623 (merged as #409)",
+    "fix-python-else-clause-20260624 (PR created - fix: count else_clause in Python cognitive complexity)",
+    "eng-patch-deps-20260624 (PR created - build: update @typescript-eslint 8.62.0 + @vscode/test-cli 0.0.15)"
   ],
-  "notes": "Two new PRs created this run: eng-noImplicitReturns-20260623 (build: enable noImplicitReturns) and test-csharp-edge-cases-20260623 (feat: fix C# operator_declaration naming bug + 9 new tests). Release PR #396 (v0.7.0) still open. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Remaining uncovered C# lines: preprocessor error-node paths (682-702, 771, 774, 776) need #if/#endif test cases.",
+  "notes": "Two new PRs created this run: fix-python-else-clause-20260624 (fix: Python else_clause was scoring 0 instead of +1; 3 new tests, 146->149 tests) and eng-patch-deps-20260624 (build: @typescript-eslint 8.62.0 + @vscode/test-cli 0.0.15). Release PR #396 (v0.7.0) still open. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
