@@ -80,10 +80,11 @@ def classify(x):
 `;
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 2);
+      assert.strictEqual(results[0].complexity, 3);
       const reasons = results[0].details.map((d) => d.reason);
       assert.ok(reasons.includes("if statement"));
       assert.ok(reasons.includes("elif clause"));
+      assert.ok(reasons.includes("else clause"));
     });
 
     test("should handle for loop", () => {

@@ -2135,6 +2135,65 @@ class Calculator:
       assert.strictEqual(addMethod!.complexity, 0);
       assert.strictEqual(divideMethod!.complexity, 1);
     });
+
+    it("should count else clause on if statement", () => {
+      const sourceCode = `
+def sign(x):
+    if x > 0:
+        return 1
+    elif x < 0:
+        return -1
+    else:
+        return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if: +1, elif: +1, else: +1 → complexity 3
+      assert.strictEqual(results[0].complexity, 3, "if/elif/else should each add +1");
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "else clause"
+      );
+      assert.ok(elseDetail, "else clause should be counted");
+      assert.strictEqual(elseDetail!.increment, 1, "else clause adds flat +1");
+    });
+
+    it("should count else clause on for loop (for...else)", () => {
+      const sourceCode = `
+def find_first(items, target):
+    for item in items:
+        if item == target:
+            return item
+    else:
+        return None
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // for: +1, nested if: +2, else: +1 → total 4
+      assert.strictEqual(results[0].complexity, 4, "for/if/else should add correct complexity");
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "else clause"
+      );
+      assert.ok(elseDetail, "for...else should count the else clause");
+    });
+
+    it("should count else clause on while loop (while...else)", () => {
+      const sourceCode = `
+def search(n):
+    i = 0
+    while i < n:
+        i += 1
+    else:
+        return i
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // while: +1, else: +1 → total 2
+      assert.strictEqual(results[0].complexity, 2, "while...else should count both while and else");
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "else clause"
+      );
+      assert.ok(elseDetail, "while...else should count the else clause");
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────

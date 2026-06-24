@@ -272,6 +272,7 @@ export class PythonMetricsAnalyzer {
 
       // Flat increments: +1 regardless of nesting
       case "elif_clause":
+      case "else_clause":
       case "conditional_expression":
         return 1;
 
@@ -316,6 +317,8 @@ export class PythonMetricsAnalyzer {
         return "if statement";
       case "elif_clause":
         return "elif clause";
+      case "else_clause":
+        return "else clause";
       case "for_statement":
         return "for loop";
       case "while_statement":
