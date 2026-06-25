@@ -476,10 +476,9 @@ export class GoMetricsAnalyzer {
       case "goto_statement":
         return "goto statement";
       case "call_expression":
-        if (this.isRecoverCall(node)) {
-          return "recover call";
-        }
-        return "call expression";
+        // `getComplexityIncrement` returns 1 only when `isRecoverCall` is true,
+        // so this path is only reached for recover() calls.
+        return "recover call";
       default:
         return "unknown complexity source";
     }
