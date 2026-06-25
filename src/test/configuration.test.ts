@@ -10,7 +10,6 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import {
   ConfigurationManager,
-  CodeMetricsConfig,
   DEFAULT_CONFIG,
 } from "../configuration";
 
@@ -191,12 +190,8 @@ suite("ConfigurationManager Tests", () => {
   });
 
   test("should create configuration change watcher", () => {
-    let changeEventFired = false;
-
     const watcher = ConfigurationManager.onConfigurationChanged(
-      (e: vscode.ConfigurationChangeEvent) => {
-        changeEventFired = true;
-      }
+      (_e: vscode.ConfigurationChangeEvent) => { /* no-op */ }
     );
 
     // Verify watcher is created
