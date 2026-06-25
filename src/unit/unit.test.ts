@@ -2534,8 +2534,114 @@ public class Test {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CSharp Analyzer: Operators, Accessors, Local Functions, and More
+  // Additional Analyzer Coverage: Python, Rust, and CSharp
   // ──────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
+  // Python Analyzer: try/except and nested function definitions
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Python Analyzer: try/except and nested function scope", () => {
+    it("should apply nesting penalty to except_clause", () => {
+      const sourceCode = `
+def safe_divide(a, b, enabled):
+    if enabled:
+        try:
+            return a / b
+        except ZeroDivisionError:
+            return None
+    return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if: +1, except_clause: +1 + nesting(1) = +2 => total 3
+      assert.strictEqual(results[0].complexity, 3, "except clause should include nesting penalty");
+      const exceptDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "except clause"
+      );
+      assert.ok(exceptDetail, "except clause detail should be present");
+      assert.strictEqual(exceptDetail!.increment, 2, "except clause increment should be 2 at nesting level 1");
+    });
+
+    it("should count else_clause on try...except...else", () => {
+      const sourceCode = `
+def load(path):
+    try:
+        f = open(path)
+    except IOError:
+        return None
+    else:
+        return f.read()
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // except: +1, else: +1 → complexity 2
+      assert.strictEqual(results[0].complexity, 2, "except + else should add 2");
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "else clause"
+      );
+      assert.ok(elseDetail, "else clause after try should be counted");
+      assert.strictEqual(elseDetail!.increment, 1, "else clause adds flat +1");
+    });
+
+    it("should not include nested function complexity in outer function", () => {
+      // Exercises the early-return guard in visit() for function_definition nodes.
+      // Inner function constructs must not bleed into outer's complexity count.
+      const sourceCode = `
+def outer():
+    for i in range(10):
+        if i > 5:
+            pass
+
+    def inner():
+        if True:
+            return 1
+        return 0
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      // Both functions should be analyzed as separate entries
+      assert.strictEqual(results.length, 2, "outer and inner analyzed independently");
+      const outer = results.find((r: UnifiedFunctionMetrics) => r.name === "outer")!;
+      const inner = results.find((r: UnifiedFunctionMetrics) => r.name === "inner")!;
+      assert.ok(outer, "outer function should be found");
+      assert.ok(inner, "inner function should be found");
+      // outer: for(+1 nesting=0) + nested if(+1+1=2) = 3; inner's complexity not counted
+      assert.strictEqual(outer.complexity, 3,
+        "outer complexity should exclude inner function body");
+      // inner: if(+1 nesting=0) = 1
+      assert.strictEqual(inner.complexity, 1,
+        "inner function analyzed with its own nesting context");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Rust Analyzer: scoped type identifier in impl blocks
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Rust Analyzer: scoped type identifier qualification", () => {
+    it("should qualify method with scoped path type (impl Trait for mod::Type)", () => {
+      // Exercises the scoped_type_identifier branch in getFunctionName.
+      const sourceCode = `
+mod animals {
+    pub struct Cat;
+}
+
+trait Speak {
+    fn speak(&self) -> &str;
+}
+
+impl Speak for animals::Cat {
+    fn speak(&self) -> &str {
+        if true { "meow" } else { "..." }
+    }
+}
+`;
+      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.ok(results.length >= 1, "at least one function should be found");
+      const speak = results.find((r: UnifiedFunctionMetrics) => r.name === "animals::Cat::speak");
+      assert.ok(speak, "method should be qualified with implementing type name");
+      // if/else: if +1, else +1 = 2
+      assert.strictEqual(speak!.complexity, 2, "if/else adds 2 complexity");
+    });
+  });
+
   describe("CSharp Analyzer: Operators, Accessors, and Structural Types", () => {
     it("should qualify overloaded operator with 'operator<symbol>' name", () => {
       const sourceCode = `
