@@ -290,6 +290,9 @@ export class PythonMetricsAnalyzer {
   /**
    * Extracts the boolean operator keyword from a boolean_operator node.
    *
+   * Uses node.type for O(1) operator detection — keyword tokens in tree-sitter
+   * have their literal text as their type, so no substring allocation is needed.
+   *
    * @param node - The boolean_operator syntax node
    * @returns The operator text ("and" or "or") or null
    */
@@ -297,11 +300,8 @@ export class PythonMetricsAnalyzer {
     // boolean_operator structure: [left, operator, right] — operator always at index 1
     const operatorNode = node.child(1);
     if (!operatorNode) { return null; }
-    const text = this.sourceText.substring(
-      operatorNode.startIndex,
-      operatorNode.endIndex
-    );
-    if (text === "and" || text === "or") { return text; }
+    const type = operatorNode.type;
+    if (type === "and" || type === "or") { return type; }
     return null;
   }
 

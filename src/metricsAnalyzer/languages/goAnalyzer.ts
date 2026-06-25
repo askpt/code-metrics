@@ -401,19 +401,16 @@ export class GoMetricsAnalyzer {
   /**
    * Checks if a call expression is a recover() call.
    *
+   * Uses childForFieldName for O(1) field access rather than a linear
+   * scan of all children.
+   *
    * @param node - The call expression node to check
    * @returns True if this is a recover() call
    */
   private isRecoverCall(node: Parser.SyntaxNode): boolean {
-    const funcNode = node.children.find((child) => child.type === "identifier");
-    if (funcNode) {
-      const funcName = this.sourceText.substring(
-        funcNode.startIndex,
-        funcNode.endIndex
-      );
-      return funcName === "recover";
-    }
-    return false;
+    const funcNode = node.childForFieldName("function");
+    if (!funcNode || funcNode.type !== "identifier") { return false; }
+    return this.sourceText.substring(funcNode.startIndex, funcNode.endIndex) === "recover";
   }
 
   /**
@@ -426,8 +423,8 @@ export class GoMetricsAnalyzer {
   /**
    * Extracts the binary operator from a binary expression node.
    *
-   * Searches for operator tokens within the binary expression node
-   * to identify logical operators like && and ||.
+   * Uses node.type for O(1) operator detection — anonymous tokens in tree-sitter
+   * have their literal text as their type, so no substring allocation is needed.
    *
    * @param node - The binary expression syntax node
    * @returns The operator string or null if not found
@@ -436,11 +433,8 @@ export class GoMetricsAnalyzer {
     // binary_expression structure: [left, operator, right] — operator always at index 1
     const operatorNode = node.child(1);
     if (!operatorNode) { return null; }
-    const text = this.sourceText.substring(
-      operatorNode.startIndex,
-      operatorNode.endIndex
-    );
-    if (text === "&&" || text === "||") { return text; }
+    const type = operatorNode.type;
+    if (type === "&&" || type === "||") { return type; }
     return null;
   }
 
