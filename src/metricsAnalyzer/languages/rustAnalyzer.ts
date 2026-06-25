@@ -375,7 +375,7 @@ export class RustMetricsAnalyzer {
       case "if_expression":
         return "if expression";
       case "else_clause": {
-        const hasNestedIf = node.firstNamedChild?.type === "if_expression";
+        const hasNestedIf = node.children.some((c) => c.type === "if_expression");
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_expression":

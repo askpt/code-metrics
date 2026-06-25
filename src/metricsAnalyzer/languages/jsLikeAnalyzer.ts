@@ -379,7 +379,7 @@ export class JsLikeMetricsAnalyzer {
       case "if_statement":
         return "if statement";
       case "else_clause": {
-        const hasNestedIf = node.firstNamedChild?.type === "if_statement";
+        const hasNestedIf = node.children.some((c) => c.type === "if_statement");
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_statement":
