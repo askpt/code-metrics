@@ -2534,25 +2534,31 @@ public class Test {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CSharp Analyzer: Operators, Accessors, Local Functions, and More
+  // Additional Analyzer Coverage: Python, Rust, and CSharp
   // ──────────────────────────────────────────────────────────────────────────
   // ──────────────────────────────────────────────────────────────────────────
   // Python Analyzer: try/except and nested function definitions
   // ──────────────────────────────────────────────────────────────────────────
   describe("Python Analyzer: try/except and nested function scope", () => {
-    it("should count except_clause as complexity", () => {
+    it("should apply nesting penalty to except_clause", () => {
       const sourceCode = `
-def safe_divide(a, b):
-    try:
-        return a / b
-    except ZeroDivisionError:
-        return None
+def safe_divide(a, b, enabled):
+    if enabled:
+        try:
+            return a / b
+        except ZeroDivisionError:
+            return None
+    return 0
 `;
       const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      // except_clause: +1 + nesting(0) = 1
-      assert.strictEqual(results[0].complexity, 1, "except clause adds +1");
-      assert.strictEqual(results[0].details[0].reason, "except clause");
+      // if: +1, except_clause: +1 + nesting(1) = +2 => total 3
+      assert.strictEqual(results[0].complexity, 3, "except clause should include nesting penalty");
+      const exceptDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "except clause"
+      );
+      assert.ok(exceptDetail, "except clause detail should be present");
+      assert.strictEqual(exceptDetail!.increment, 2, "except clause increment should be 2 at nesting level 1");
     });
 
     it("should count else_clause on try...except...else", () => {
@@ -2629,15 +2635,10 @@ impl Speak for animals::Cat {
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.ok(results.length >= 1, "at least one function should be found");
-      const speak = results.find((r: UnifiedFunctionMetrics) => r.name.endsWith("::speak"))!;
+      const speak = results.find((r: UnifiedFunctionMetrics) => r.name === "animals::Cat::speak");
       assert.ok(speak, "method should be qualified with implementing type name");
-      // The implementing type is animals::Cat (a scoped_type_identifier)
-      assert.ok(
-        speak.name === "animals::Cat::speak" || speak.name.includes("::speak"),
-        `expected 'animals::Cat::speak', got '${speak.name}'`
-      );
       // if/else: if +1, else +1 = 2
-      assert.strictEqual(speak.complexity, 2, "if/else adds 2 complexity");
+      assert.strictEqual(speak!.complexity, 2, "if/else adds 2 complexity");
     });
   });
 
