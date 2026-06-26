@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.7.0](https://github.com/askpt/code-metrics/compare/v0.6.2...v0.7.0) (2026-06-26)
+
+
+### 🐛 Bug Fixes
+
+* count else_clause in Python cognitive complexity analyzer ([#410](https://github.com/askpt/code-metrics/issues/410)) ([d5d49b9](https://github.com/askpt/code-metrics/commit/d5d49b9dee3a033dc85d421f011d0e7aac69f8a1))
+
+
+### ✨ New Features
+
+* fix C# operator naming and add edge-case test coverage ([#409](https://github.com/askpt/code-metrics/issues/409)) ([3c93a5a](https://github.com/askpt/code-metrics/commit/3c93a5a058fa73b9a1b60838d89867ccaefa9b88))
+* name JS/TS arrow functions used as object methods + expand coverage ([#404](https://github.com/askpt/code-metrics/issues/404)) ([ec952d8](https://github.com/askpt/code-metrics/commit/ec952d8c1e947189bca4a1e0ce6e7c438c9811a6))
+* qualify C# method names with enclosing type and expand test coverage ([#401](https://github.com/askpt/code-metrics/issues/401)) ([fb3b47d](https://github.com/askpt/code-metrics/commit/fb3b47d07e5160b2ff09c3db0012ad3e805362e4))
+
+
+### 🚀 Performance
+
+* O(1) name lookup in jsLikeAnalyzer; defer name resolution in C# and Java analyzers ([#407](https://github.com/askpt/code-metrics/issues/407)) ([e52ffd0](https://github.com/askpt/code-metrics/commit/e52ffd0e57f90eb7fadcecde37856c0d3112db2a))
+* skip redundant outer traversal in Go analyzer after function is found ([#417](https://github.com/askpt/code-metrics/issues/417)) ([bc86b5a](https://github.com/askpt/code-metrics/commit/bc86b5aacc702c5bf6c8ae6bce9436ccc108e572))
+* use childForFieldName() for O(1) field access in Go, Java, Python, Rust analyzers ([#397](https://github.com/askpt/code-metrics/issues/397)) ([37e2bde](https://github.com/askpt/code-metrics/commit/37e2bdef8702a60d62d990e68be7839ab54b5264))
+* use node.type for O(1) operator detection across Go, Rust, Python, JS/TS analyzers ([#412](https://github.com/askpt/code-metrics/issues/412)) ([0aef168](https://github.com/askpt/code-metrics/commit/0aef1681e8c8d7c216c3f6a2f1effc941ba4f85e))
+* use O(1) positional child access for binary operator lookup ([#394](https://github.com/askpt/code-metrics/issues/394)) ([c66228b](https://github.com/askpt/code-metrics/commit/c66228b07a97599435add7299e5db17e0dcc19cc))
+
+
+### 🔄 Refactoring
+
+* extract hasLabel helper in goAnalyzer to eliminate duplication ([#395](https://github.com/askpt/code-metrics/issues/395)) ([ce31296](https://github.com/askpt/code-metrics/commit/ce3129638a1edca3e22017ccb2ce6d712d27bbdf))
+
 ## [0.6.2](https://github.com/askpt/code-metrics/compare/v0.6.1...v0.6.2) (2026-06-20)
 
 
