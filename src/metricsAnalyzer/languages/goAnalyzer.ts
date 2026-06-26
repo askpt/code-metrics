@@ -132,9 +132,11 @@ export class GoMetricsAnalyzer {
         if (result) {
           functions.push(result);
         }
+        // Go does not allow nested function_declaration or method_declaration
+        // inside function bodies, so there is no need to recurse further.
+        return;
       }
 
-      // Continue traversing child nodes
       for (const child of node.children) {
         visit(child);
       }
