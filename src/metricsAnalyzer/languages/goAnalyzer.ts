@@ -278,13 +278,9 @@ export class GoMetricsAnalyzer {
   ): Parser.SyntaxNode | null {
     for (const child of parameterList.children) {
       if (child.type === "parameter_declaration") {
-        // Look for type_identifier or pointer_type
-        const typeNode = child.children.find(
-          (c) =>
-            c.type === "type_identifier" ||
-            c.type === "pointer_type" ||
-            c.type === "qualified_type"
-        );
+        // Use childForFieldName for O(1) field access rather than a linear
+        // scan over the parameter's children.
+        const typeNode = child.childForFieldName("type");
         if (typeNode) {
           return typeNode;
         }
