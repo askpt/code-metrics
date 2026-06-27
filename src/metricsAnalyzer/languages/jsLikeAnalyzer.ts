@@ -343,9 +343,9 @@ export class JsLikeMetricsAnalyzer {
       // Labeled break/continue (+1)
       case "break_statement":
       case "continue_statement": {
-        // In tree-sitter-javascript the label (statement_identifier) is always
-        // the first named child when present — O(1) instead of scanning all children.
-        const hasLabel = node.firstNamedChild?.type === "statement_identifier";
+        const hasLabel = node.children.some(
+          (c) => c.type === "statement_identifier"
+        );
         return hasLabel ? 1 : 0;
       }
 
@@ -380,9 +380,7 @@ export class JsLikeMetricsAnalyzer {
       case "if_statement":
         return "if statement";
       case "else_clause": {
-        // In tree-sitter-javascript, the first named child of an else_clause is
-        // if_statement (for else-if) or statement_block (for plain else) — O(1).
-        const hasNestedIf = node.firstNamedChild?.type === "if_statement";
+        const hasNestedIf = node.children.some((c) => c.type === "if_statement");
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_statement":
