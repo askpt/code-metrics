@@ -211,7 +211,8 @@ export class JsLikeMetricsAnalyzer {
       // Arrow functions may be assigned to a variable - check parent
       const parent = node.parent;
       if (parent && parent.type === "variable_declarator") {
-        const nameNode = parent.children.find((c) => c.type === "identifier");
+        // childForFieldName("name") is O(1) via tree-sitter's field index
+        const nameNode = parent.childForFieldName("name");
         if (nameNode) {
           return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
         }
