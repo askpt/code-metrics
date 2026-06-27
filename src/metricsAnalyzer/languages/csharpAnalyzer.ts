@@ -77,6 +77,15 @@ interface CSharpFunctionMetrics {
  * ```
  */
 export class CSharpMetricsAnalyzer {
+  /** Node types that represent type declarations (class, struct, interface, record, enum). */
+  private static readonly TYPE_DECLARATION_TYPES: ReadonlySet<string> = new Set([
+    "class_declaration",
+    "struct_declaration",
+    "interface_declaration",
+    "record_declaration",
+    "enum_declaration",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -221,16 +230,9 @@ export class CSharpMetricsAnalyzer {
    * @returns The enclosing type name, or null if none found
    */
   private getEnclosingTypeName(node: Parser.SyntaxNode): string | null {
-    const typeDeclarations = new Set([
-      "class_declaration",
-      "struct_declaration",
-      "interface_declaration",
-      "record_declaration",
-      "enum_declaration",
-    ]);
     let parent = node.parent;
     while (parent) {
-      if (typeDeclarations.has(parent.type)) {
+      if (CSharpMetricsAnalyzer.TYPE_DECLARATION_TYPES.has(parent.type)) {
         const nameNode = parent.childForFieldName("name");
         if (nameNode) {
           return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
