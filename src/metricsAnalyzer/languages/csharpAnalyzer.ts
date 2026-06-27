@@ -78,7 +78,7 @@ interface CSharpFunctionMetrics {
  */
 export class CSharpMetricsAnalyzer {
   /** Node types that represent type declarations (class, struct, interface, record, enum). */
-  private static readonly TYPE_DECLARATION_TYPES = new Set([
+  private static readonly TYPE_DECLARATION_TYPES: ReadonlySet<string> = new Set([
     "class_declaration",
     "struct_declaration",
     "interface_declaration",

@@ -268,7 +268,9 @@ export class GoMetricsAnalyzer {
   }
 
   /**
-   * Finds the type identifier within a parameter list (used for method receivers).
+   * Finds the type node within a parameter list (used for method receivers).
+   * Returns the full type node via the tree-sitter "type" field, which correctly
+   * handles any type form the grammar may produce (pointer, qualified, slice, etc.).
    *
    * @param parameterList - The parameter list node to search
    * @returns The type node or null if not found
