@@ -39,7 +39,7 @@ class Stack<T> {
       const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "push");
+      assert.strictEqual(results[0].name, "Stack.push");
       assert.strictEqual(results[0].complexity, 0);
     });
 

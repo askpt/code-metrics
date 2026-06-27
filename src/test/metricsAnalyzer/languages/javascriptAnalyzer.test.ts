@@ -39,7 +39,7 @@ class Calculator {
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].name, "Calculator.add");
       assert.strictEqual(results[0].complexity, 0);
     });
 

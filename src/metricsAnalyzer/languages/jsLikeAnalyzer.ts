@@ -190,7 +190,9 @@ export class JsLikeMetricsAnalyzer {
       // tree-sitter-javascript exposes the "name" field for method_definition nodes
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
-        return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+        const methodName = this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+        const className = this.getEnclosingClassName(node.parent);
+        return className ? `${className}.${methodName}` : methodName;
       }
     }
 
@@ -213,10 +215,45 @@ export class JsLikeMetricsAnalyzer {
           return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
         }
       }
+      if (parent?.type === "field_definition" || parent?.type === "public_field_definition") {
+        // Class field arrow functions: `class Foo { myMethod = () => {} }`
+        // JS uses field_definition with a "property" field key;
+        // TS uses public_field_definition with a "name" field key.
+        const fieldKeyName = parent.type === "public_field_definition" ? "name" : "property";
+        const keyNode = parent.childForFieldName(fieldKeyName);
+        if (keyNode) {
+          const fieldName = this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+          const className = this.getEnclosingClassName(parent.parent);
+          return className ? `${className}.${fieldName}` : fieldName;
+        }
+      }
       return "(arrow function)";
     }
 
     return "(anonymous)";
+  }
+
+  /**
+   * Returns the name of the enclosing class given a class_body node, or null if
+   * the parent of the supplied node is not a named class.
+   *
+   * Callers pass the class_body node (the direct container of methods and field
+   * definitions inside a class).  This method then checks whether that node's
+   * parent is a class_declaration or class expression node and, if so, returns
+   * its name.
+   *
+   * @param classBody - A class_body node whose parent may be a class node
+   * @returns The class name string, or null
+   */
+  private getEnclosingClassName(classBody: Parser.SyntaxNode | null | undefined): string | null {
+    const classNode = classBody?.parent;
+    if (classNode?.type === "class_declaration" || classNode?.type === "class") {
+      const classNameNode = classNode.childForFieldName("name");
+      if (classNameNode) {
+        return this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
+      }
+    }
+    return null;
   }
 
   /**
