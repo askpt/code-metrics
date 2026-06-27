@@ -517,6 +517,21 @@ class Calculator {
       assert.strictEqual(results[0].name, "Calculator.add");
     });
 
+    it("should qualify class arrow-function fields with class name", () => {
+      const sourceCode = `
+class Counter {
+  increment = () => {
+    if (this.value > 0) {
+      this.value++;
+    }
+  };
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Counter.increment");
+    });
+
     it("should handle factory analyzeFile with javascript language id", () => {
       const sourceCode = `
 function hello() {
@@ -574,6 +589,22 @@ class Service {
       assert.strictEqual(results[0].name, "Service.process");
       // for=1, if=2 (nesting=1) → 3
       assert.strictEqual(results[0].complexity, 3);
+    });
+
+    it("should qualify TypeScript class arrow-function fields with class name", () => {
+      const sourceCode = `
+class Validator {
+  check = (x: number): boolean => {
+    if (x > 0) {
+      return true;
+    }
+    return false;
+  };
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Validator.check");
     });
 
     it("should handle factory analyzeFile with typescript language id", () => {
