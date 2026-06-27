@@ -78,7 +78,7 @@ class Foo {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "myMethod");
+      assert.strictEqual(results[0].name, "Foo.myMethod");
     });
   });
 
