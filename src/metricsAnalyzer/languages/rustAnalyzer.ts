@@ -375,7 +375,7 @@ export class RustMetricsAnalyzer {
       case "if_expression":
         return "if expression";
       case "else_clause": {
-        const hasNestedIf = node.children.some((c) => c.type === "if_expression");
+        const hasNestedIf = node.firstNamedChild?.type === "if_expression";
         return hasNestedIf ? "else if clause" : "else clause";
       }
       case "for_expression":
@@ -406,9 +406,10 @@ export class RustMetricsAnalyzer {
   }
 
   private hasLabel(node: Parser.SyntaxNode): boolean {
-    return node.children.some(
-      (child) => child.type === "label" || child.type === "loop_label"
-    );
+    // In tree-sitter-rust, a loop label (e.g. `'outer`) is always the first named
+    // child of break_expression / continue_expression, so firstNamedChild is O(1).
+    const t = node.firstNamedChild?.type;
+    return t === "loop_label" || t === "label";
   }
 
   /**

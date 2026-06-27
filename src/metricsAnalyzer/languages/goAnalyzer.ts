@@ -415,9 +415,12 @@ export class GoMetricsAnalyzer {
 
   /**
    * Returns true if the node has a label_name child (labeled break/continue/goto).
+   *
+   * In tree-sitter-go, the label is always the first named child when present,
+   * so we can use firstNamedChild for an O(1) lookup instead of scanning all children.
    */
   private hasLabel(node: Parser.SyntaxNode): boolean {
-    return node.children.some((child) => child.type === "label_name");
+    return node.firstNamedChild?.type === "label_name";
   }
 
   /**
