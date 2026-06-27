@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-26T06:36:00Z",
-  "last_run_id": "28221248306",
+  "last_run": "2026-06-27T05:56:51Z",
+  "last_run_id": "28280466539",
   "backlog_cursor": {
     "issues": 402,
     "prs": 0
@@ -59,10 +59,12 @@
     "eng-patch-deps-20260624 (issue #411 closed - maintainer applied manually as #415)",
     "perf-operator-type-access-20260624 (merged as #412)",
     "eng-noUnusedLocals-20260624 (merged as #413)",
-    "test-and-improve-20260625 (merged as #414 - Python try/except+nested-fn tests, Rust scoped-type impl test, Go dead-branch cleanup)",
-    "perf-go-outer-traversal-20260626 (PR created this run - branch repo-assist/improve-go-analyzer-20260626)"
+    "test-and-improve-20260625 (merged as #414)",
+    "perf-go-outer-traversal-20260626 (merged as #417)",
+    "perf-static-set-and-fieldfn-20260627 (PR created - C# static Set + Go childForFieldName)",
+    "improve-java-else-merge-20260627 (PR created - merge hasElseBranch+find into single find)"
   ],
-  "notes": "Release PR #396 (v0.7.0) still open. Issues #353 (Ruby), #402 (Kotlin) still open - both blocked by protected files. Kotlin branch on origin is empty (changes were lost). Ruby patch artifact expires ~2026-08-30. Kotlin patch artifact expires ~2026-09-20. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Issue #411 closed by maintainer (dep updates applied manually as PR #415).",
+  "notes": "Release PR #396 (v0.7.0) merged. Issues #353 (Ruby), #402 (Kotlin) still open - both blocked by protected files. Ruby patch artifact expires ~2026-08-30. Kotlin patch artifact expires ~2026-09-20. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
