@@ -182,18 +182,27 @@ export class RustMetricsAnalyzer {
       if (implNode && implNode.type === "impl_item") {
         // For `impl Trait for Type`, prefer the implementing type (after `for`).
         // For inherent `impl Type`, use the only type present.
-        // Direct indexed scan avoids the slice() allocation of .slice(forIndex+1).find().
-        const forIndex = implNode.children.findIndex(
-          (child) => child.type === "for"
-        );
+        let forIndex = -1;
+        for (let childIndex = 0; childIndex < implNode.childCount; childIndex++) {
+          const child = implNode.child(childIndex);
+          if (child?.type === "for") {
+            forIndex = childIndex;
+            break;
+          }
+        }
         const searchStart = forIndex !== -1 ? forIndex + 1 : 0;
         let typeNode: Parser.SyntaxNode | undefined;
-        for (let i = searchStart; i < implNode.childCount; i++) {
-          const child = implNode.children[i];
+        for (
+          let childIndex = searchStart;
+          childIndex < implNode.childCount;
+          childIndex++
+        ) {
+          const child = implNode.child(childIndex);
           if (
-            child.type === "type_identifier" ||
-            child.type === "generic_type" ||
-            child.type === "scoped_type_identifier"
+            child &&
+            (child.type === "type_identifier" ||
+              child.type === "generic_type" ||
+              child.type === "scoped_type_identifier")
           ) {
             typeNode = child;
             break;
