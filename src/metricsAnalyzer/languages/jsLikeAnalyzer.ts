@@ -191,19 +191,8 @@ export class JsLikeMetricsAnalyzer {
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
         const methodName = this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
-        // Qualify with class name (class_body → class_declaration/class_expression)
-        // so CodeLens shows "MyClass.myMethod" rather than just "myMethod",
-        // consistent with C#, Java, Go, Python, and Rust analyzers.
-        const classBody = node.parent;
-        const classNode = classBody?.parent;
-        if (classNode?.type === "class_declaration" || classNode?.type === "class") {
-          const classNameNode = classNode.childForFieldName("name");
-          if (classNameNode) {
-            const className = this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
-            return `${className}.${methodName}`;
-          }
-        }
-        return methodName;
+        const className = this.getEnclosingClassName(node.parent);
+        return className ? `${className}.${methodName}` : methodName;
       }
     }
 
@@ -234,23 +223,37 @@ export class JsLikeMetricsAnalyzer {
         const keyNode = parent.childForFieldName(fieldKeyName);
         if (keyNode) {
           const fieldName = this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
-          // Qualify with the class name if available
-          const classBody = parent.parent;
-          const classNode = classBody?.parent;
-          if (classNode?.type === "class_declaration" || classNode?.type === "class") {
-            const classNameNode = classNode.childForFieldName("name");
-            if (classNameNode) {
-              const className = this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
-              return `${className}.${fieldName}`;
-            }
-          }
-          return fieldName;
+          const className = this.getEnclosingClassName(parent.parent);
+          return className ? `${className}.${fieldName}` : fieldName;
         }
       }
       return "(arrow function)";
     }
 
     return "(anonymous)";
+  }
+
+  /**
+   * Returns the name of the enclosing class given a class_body node, or null if
+   * the parent of the supplied node is not a named class.
+   *
+   * Callers pass the class_body node (the direct container of methods and field
+   * definitions inside a class).  This method then checks whether that node's
+   * parent is a class_declaration or class expression node and, if so, returns
+   * its name.
+   *
+   * @param classBody - A class_body node whose parent may be a class node
+   * @returns The class name string, or null
+   */
+  private getEnclosingClassName(classBody: Parser.SyntaxNode | null | undefined): string | null {
+    const classNode = classBody?.parent;
+    if (classNode?.type === "class_declaration" || classNode?.type === "class") {
+      const classNameNode = classNode.childForFieldName("name");
+      if (classNameNode) {
+        return this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
+      }
+    }
+    return null;
   }
 
   /**
