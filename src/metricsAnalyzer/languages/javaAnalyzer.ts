@@ -231,16 +231,18 @@ export class JavaMetricsAnalyzer {
       );
     }
 
-    if (node.type === "if_statement" && this.hasElseBranch(node)) {
+    if (node.type === "if_statement") {
+      // A single find() serves both as the existence check and the position source,
+      // avoiding the prior double scan (hasElseBranch via .some() + .find()).
       const elseToken = node.children.find((c) => !c.isNamed && c.type === "else");
-      const elseLine = elseToken?.startPosition.row ?? node.startPosition.row;
-      const elseColumn = elseToken?.startPosition.column ?? node.startPosition.column;
-      this.addDetail(
-        1,
-        this.getElseBranchReason(node),
-        elseLine,
-        elseColumn
-      );
+      if (elseToken) {
+        this.addDetail(
+          1,
+          this.getElseBranchReason(node),
+          elseToken.startPosition.row,
+          elseToken.startPosition.column
+        );
+      }
     }
 
     // Conditionally bump nesting, iterate children once, then restore.
@@ -274,14 +276,6 @@ export class JavaMetricsAnalyzer {
       column,
       nesting: this.nesting,
     });
-  }
-
-  /**
-   * Detects whether an if_statement has an else clause in tree-sitter-java AST.
-   * The `else` keyword is represented as an unnamed token child.
-   */
-  private hasElseBranch(node: Parser.SyntaxNode): boolean {
-    return node.children.some((c) => !c.isNamed && c.type === "else");
   }
 
   /**
