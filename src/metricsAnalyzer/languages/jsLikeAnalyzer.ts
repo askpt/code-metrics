@@ -190,7 +190,20 @@ export class JsLikeMetricsAnalyzer {
       // tree-sitter-javascript exposes the "name" field for method_definition nodes
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
-        return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+        const methodName = this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+        // Qualify with class name (class_body → class_declaration/class_expression)
+        // so CodeLens shows "MyClass.myMethod" rather than just "myMethod",
+        // consistent with C#, Java, Go, Python, and Rust analyzers.
+        const classBody = node.parent;
+        const classNode = classBody?.parent;
+        if (classNode?.type === "class_declaration" || classNode?.type === "class") {
+          const classNameNode = classNode.childForFieldName("name");
+          if (classNameNode) {
+            const className = this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
+            return `${className}.${methodName}`;
+          }
+        }
+        return methodName;
       }
     }
 
@@ -210,6 +223,27 @@ export class JsLikeMetricsAnalyzer {
         );
         if (keyNode) {
           return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+        }
+      }
+      if (parent?.type === "field_definition" || parent?.type === "public_field_definition") {
+        // Class field arrow functions: `class Foo { myMethod = () => {} }`
+        // JS uses field_definition with a "property" field key;
+        // TS uses public_field_definition with a "name" field key.
+        const fieldKeyName = parent.type === "public_field_definition" ? "name" : "property";
+        const keyNode = parent.childForFieldName(fieldKeyName);
+        if (keyNode) {
+          const fieldName = this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+          // Qualify with the class name if available
+          const classBody = parent.parent;
+          const classNode = classBody?.parent;
+          if (classNode?.type === "class_declaration" || classNode?.type === "class") {
+            const classNameNode = classNode.childForFieldName("name");
+            if (classNameNode) {
+              const className = this.sourceText.substring(classNameNode.startIndex, classNameNode.endIndex);
+              return `${className}.${fieldName}`;
+            }
+          }
+          return fieldName;
         }
       }
       return "(arrow function)";

@@ -514,7 +514,7 @@ class Calculator {
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "add");
+      assert.strictEqual(results[0].name, "Calculator.add");
     });
 
     it("should handle factory analyzeFile with javascript language id", () => {
@@ -571,7 +571,7 @@ class Service {
 `;
       const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "process");
+      assert.strictEqual(results[0].name, "Service.process");
       // for=1, if=2 (nesting=1) → 3
       assert.strictEqual(results[0].complexity, 3);
     });
