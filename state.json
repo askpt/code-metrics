@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-28T08:37:29Z",
-  "last_run_id": "28316675817",
+  "last_run": "2026-06-28T13:38:00Z",
+  "last_run_id": "28323993163",
   "backlog_cursor": {
     "issues": 402,
     "prs": 0
@@ -67,9 +67,11 @@
     "improve-slice-fieldfn-20260627 (merged as #423)",
     "improve-js-method-qualification-20260627 (merged as #421)",
     "test-java-python-coverage-20260628 (PR created - list comp + abstract method tests)",
-    "eng-patch-deps-20260628 (PR created - @types/node 26.0.1, eslint 10.6.0)"
+    "eng-patch-deps-20260628 (merged)",
+    "improve-o1-child-scans-20260628 (PR created - O(1) firstNamedChild/childForFieldName in Go/Rust/JS analyzers)",
+    "eng-update-types-vscode-20260628 (PR created - @types/vscode 1.106.1→1.125.0)"
   ],
-  "notes": "Release PR #420 (v0.8.0) still open - needs maintainer merge. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Ruby patch artifact expires ~2026-08-30, Kotlin ~2026-09-20. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Task 2 skipped this run - no new human activity on open issues.",
+  "notes": "Release PR #420 (v0.8.0) still open - needs maintainer merge. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Ruby patch artifact expires ~2026-08-30, Kotlin ~2026-09-20. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Task 2 skipped this run - no new human activity on open issues. Two new PRs open: improve-o1-child-scans-20260628 and eng-update-types-vscode-20260628.",
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 355
