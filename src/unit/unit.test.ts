@@ -2915,10 +2915,13 @@ public abstract class Shape {
 }
 `;
       const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
-      const names = results.map((r: UnifiedFunctionMetrics) => r.name);
-      assert.ok(!names.includes("Shape.area"), "abstract area() should be skipped");
-      assert.ok(!names.includes("Shape.describe"), "abstract describe() should be skipped");
-      assert.ok(names.includes("Shape.toString"), "concrete toString() should be included");
+      assert.strictEqual(
+        results.length,
+        1,
+        "abstract methods should be skipped; only concrete methods should be reported"
+      );
+      assert.strictEqual(results[0].name, "Shape.toString");
+      assert.strictEqual(results[0].complexity, 0, "toString has no control flow");
     });
   });
 });
