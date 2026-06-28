@@ -227,11 +227,11 @@ export class GoMetricsAnalyzer {
         if (typeNode) {
           if (typeNode.type === "pointer_type") {
             // For pointer receivers (*T), display just the base type name T
-            // so CodeLens shows "MyStruct.Method" rather than "*MyStruct.Method"
-            const innerType = typeNode.children.find(
-              (c) => c.type === "type_identifier"
-            );
-            receiverType = innerType
+            // so CodeLens shows "MyStruct.Method" rather than "*MyStruct.Method".
+            // pointer_type has one named child: the inner type. Use firstNamedChild
+            // for O(1) access; fall back to string trimming for non-identifier types.
+            const innerType = typeNode.firstNamedChild;
+            receiverType = innerType?.type === "type_identifier"
               ? this.sourceText.substring(innerType.startIndex, innerType.endIndex)
               : this.sourceText
                   .substring(typeNode.startIndex, typeNode.endIndex)
@@ -415,9 +415,11 @@ export class GoMetricsAnalyzer {
 
   /**
    * Returns true if the node has a label_name child (labeled break/continue/goto).
+   * In Go's AST, label_name is always the first (and only) named child of a labeled
+   * break/continue statement, so firstNamedChild gives an O(1) membership test.
    */
   private hasLabel(node: Parser.SyntaxNode): boolean {
-    return node.children.some((child) => child.type === "label_name");
+    return node.firstNamedChild?.type === "label_name";
   }
 
   /**

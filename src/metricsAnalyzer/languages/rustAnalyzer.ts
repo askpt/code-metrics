@@ -381,10 +381,10 @@ export class RustMetricsAnalyzer {
     switch (node.type) {
       case "if_expression":
         return "if expression";
-      case "else_clause": {
-        const hasNestedIf = node.children.some((c) => c.type === "if_expression");
-        return hasNestedIf ? "else if clause" : "else clause";
-      }
+      case "else_clause":
+        // In Rust's AST, the first named child of else_clause is the if_expression
+        // for an else-if chain, or a block for a plain else. O(1) via firstNamedChild.
+        return node.firstNamedChild?.type === "if_expression" ? "else if clause" : "else clause";
       case "for_expression":
         return "for loop";
       case "while_expression":
@@ -412,10 +412,14 @@ export class RustMetricsAnalyzer {
     }
   }
 
+  /**
+   * Returns true if the node has a loop label child (labeled break/continue).
+   * In Rust's AST, the loop label is always the first named child of break_expression
+   * and continue_expression nodes. Using firstNamedChild avoids an O(n) linear scan.
+   */
   private hasLabel(node: Parser.SyntaxNode): boolean {
-    return node.children.some(
-      (child) => child.type === "label" || child.type === "loop_label"
-    );
+    const childType = node.firstNamedChild?.type;
+    return childType === "label" || childType === "loop_label";
   }
 
   /**
