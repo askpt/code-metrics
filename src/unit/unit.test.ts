@@ -2850,4 +2850,78 @@ public record Temperature(double Celsius) {
       assert.strictEqual(results[0].complexity, 2, "two if statements → complexity 2");
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Python: list comprehension coverage
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Python: list comprehension coverage", () => {
+    it("should count list comprehension as complexity", () => {
+      const sourceCode = `
+def get_evens(numbers):
+    return [x for x in numbers if x % 2 == 0]
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.ok(results[0].complexity >= 1);
+      const listCompDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "list comprehension"
+      );
+      assert.ok(listCompDetail, "list comprehension should add complexity");
+    });
+
+    it("should count nested list comprehension with extra nesting", () => {
+      const sourceCode = `
+def matrix_positives(matrix):
+    for row in matrix:
+        positives = [x for x in row if x > 0]
+    return positives
+`;
+      const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // for: +1 (nesting→1), list_comprehension inside for: +1+1=2
+      assert.strictEqual(results[0].complexity, 3, "for(+1) + nested list comp(+2) = 3");
+      const listCompDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "list comprehension"
+      );
+      assert.ok(listCompDetail, "list comprehension inside for should add complexity");
+      assert.strictEqual(listCompDetail!.nesting, 1, "list comp inside for has nesting=1");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Java: abstract and interface method handling
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Java: abstract and interface method handling", () => {
+    it("should skip interface method declarations (no body)", () => {
+      const sourceCode = `
+public interface Drawable {
+    void draw();
+    double area();
+    String describe();
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 0, "interface method stubs should produce no results");
+    });
+
+    it("should skip abstract class method declarations", () => {
+      const sourceCode = `
+public abstract class Shape {
+    public abstract double area();
+    public abstract String describe();
+    public String toString() {
+        return describe();
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(
+        results.length,
+        1,
+        "abstract methods should be skipped; only concrete methods should be reported"
+      );
+      assert.strictEqual(results[0].name, "Shape.toString");
+      assert.strictEqual(results[0].complexity, 0, "toString has no control flow");
+    });
+  });
 });
