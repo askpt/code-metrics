@@ -208,10 +208,10 @@ export class JsLikeMetricsAnalyzer {
       }
       if (parent && parent.type === "pair") {
         // Arrow function as an object property value: { myMethod: () => {} }
-        const keyNode = parent.children.find(
-          (c) => c.type === "property_identifier" || c.type === "identifier"
-        );
-        if (keyNode) {
+        // Use childForFieldName("key") for O(1) field access; only use the name
+        // when it is a bare identifier/property_identifier (not a string literal etc.).
+        const keyNode = parent.childForFieldName("key");
+        if (keyNode?.type === "property_identifier" || keyNode?.type === "identifier") {
           return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
         }
       }
@@ -379,12 +379,10 @@ export class JsLikeMetricsAnalyzer {
 
       // Labeled break/continue (+1)
       case "break_statement":
-      case "continue_statement": {
-        const hasLabel = node.children.some(
-          (c) => c.type === "statement_identifier"
-        );
-        return hasLabel ? 1 : 0;
-      }
+      case "continue_statement":
+        // In JS/TS, a labeled break/continue has a statement_identifier as its first
+        // (and only) named child. Use firstNamedChild for O(1) instead of a linear scan.
+        return node.firstNamedChild?.type === "statement_identifier" ? 1 : 0;
 
       default:
         return 0;
@@ -416,10 +414,10 @@ export class JsLikeMetricsAnalyzer {
     switch (node.type) {
       case "if_statement":
         return "if statement";
-      case "else_clause": {
-        const hasNestedIf = node.children.some((c) => c.type === "if_statement");
-        return hasNestedIf ? "else if clause" : "else clause";
-      }
+      case "else_clause":
+        // The first named child of else_clause is the if_statement for else-if,
+        // or a statement_block for a plain else. O(1) via firstNamedChild.
+        return node.firstNamedChild?.type === "if_statement" ? "else if clause" : "else clause";
       case "for_statement":
         return "for loop";
       case "for_in_statement": {
