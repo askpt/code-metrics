@@ -115,6 +115,8 @@ export class JsLikeMetricsAnalyzer {
     const isFunctionNode =
       node.type === "function_declaration" ||
       node.type === "function_expression" ||
+      node.type === "generator_function_declaration" ||
+      node.type === "generator_function" ||
       node.type === "method_definition" ||
       node.type === "arrow_function";
 
@@ -164,6 +166,8 @@ export class JsLikeMetricsAnalyzer {
         return "arrow function (nested)";
       case "function_expression":
         return "function expression (nested)";
+      case "generator_function":
+        return "generator function expression (nested)";
       case "method_definition":
         return "method (nested)";
       default:
@@ -178,7 +182,8 @@ export class JsLikeMetricsAnalyzer {
    * @returns The function name or a descriptive placeholder
    */
   private getFunctionName(node: Parser.SyntaxNode): string {
-    if (node.type === "function_declaration" || node.type === "function_expression") {
+    if (node.type === "function_declaration" || node.type === "function_expression" ||
+        node.type === "generator_function_declaration" || node.type === "generator_function") {
       // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for both node types)
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
@@ -325,6 +330,7 @@ export class JsLikeMetricsAnalyzer {
   private isNestedFunction(node: Parser.SyntaxNode): boolean {
     return (
       node.type === "function_expression" ||
+      node.type === "generator_function" ||
       node.type === "arrow_function" ||
       node.type === "method_definition"
     );
