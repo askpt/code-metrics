@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.8.0](https://github.com/askpt/code-metrics/compare/v0.7.0...v0.8.0) (2026-07-02)
+
+
+### ✨ New Features
+
+* qualify JS/TS class method names with class name in CodeLens ([#421](https://github.com/askpt/code-metrics/issues/421)) ([d53fbea](https://github.com/askpt/code-metrics/commit/d53fbea7107b467ffb8d9c088db5f02ac7aa7f28))
+
+
+### 🚀 Performance
+
+* hoist C# type-declaration Set to static readonly and use childForFieldName in Go receiver lookup ([#419](https://github.com/askpt/code-metrics/issues/419)) ([70ea90b](https://github.com/askpt/code-metrics/commit/70ea90bea409b4bf1f2dfdc38960eda6951fec5e))
+
+
+### 🔄 Refactoring
+
+* merge hasElseBranch into a single find() in Java analyzer visit() ([#418](https://github.com/askpt/code-metrics/issues/418)) ([3144f62](https://github.com/askpt/code-metrics/commit/3144f62035f0530e9335cf815beb9a10a98877ac))
+* remove slice() allocation and use childForFieldName ([#423](https://github.com/askpt/code-metrics/issues/423)) ([d4e2940](https://github.com/askpt/code-metrics/commit/d4e294072d9ca3b165a5d2ffdd80f6cb7cb2bd14))
+* replace O(n) children scans with O(1) firstNamedChild/childForFieldName lookups ([#427](https://github.com/askpt/code-metrics/issues/427)) ([09c078a](https://github.com/askpt/code-metrics/commit/09c078a31a2551000d4ce85802fa0eb6596b0668))
+
 ## [0.7.0](https://github.com/askpt/code-metrics/compare/v0.6.2...v0.7.0) (2026-06-26)
 
 
