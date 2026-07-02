@@ -86,6 +86,30 @@ export class CSharpMetricsAnalyzer {
     "enum_declaration",
   ]);
 
+  /** Node types that represent function/method declarations — used for O(1) type checks during traversal. */
+  private static readonly FUNCTION_DECLARATION_TYPES: ReadonlySet<string> = new Set([
+    "method_declaration",
+    "constructor_declaration",
+    "destructor_declaration",
+    "operator_declaration",
+    "conversion_operator_declaration",
+    "accessor_declaration",
+    "local_function_statement",
+  ]);
+
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_statement",
+    "while_statement",
+    "for_statement",
+    "foreach_statement",
+    "switch_statement",
+    "try_statement",
+    "catch_clause",
+    "lambda_expression",
+    "anonymous_method_expression",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -168,15 +192,7 @@ export class CSharpMetricsAnalyzer {
    * @returns True if the node represents a function declaration
    */
   private isFunctionDeclaration(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "method_declaration" ||
-      node.type === "constructor_declaration" ||
-      node.type === "destructor_declaration" ||
-      node.type === "operator_declaration" ||
-      node.type === "conversion_operator_declaration" ||
-      node.type === "accessor_declaration" ||
-      node.type === "local_function_statement"
-    );
+    return CSharpMetricsAnalyzer.FUNCTION_DECLARATION_TYPES.has(node.type);
   }
 
   /**
@@ -829,17 +845,7 @@ export class CSharpMetricsAnalyzer {
    * @returns True if the node increases nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "if_statement" ||
-      node.type === "while_statement" ||
-      node.type === "for_statement" ||
-      node.type === "foreach_statement" ||
-      node.type === "switch_statement" ||
-      node.type === "try_statement" ||
-      node.type === "catch_clause" ||
-      node.type === "lambda_expression" ||
-      node.type === "anonymous_method_expression"
-    );
+    return CSharpMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 
   /**

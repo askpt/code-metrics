@@ -71,6 +71,19 @@ interface PythonFunctionMetrics {
  * including the exact location and reason for each complexity increment.
  */
 export class PythonMetricsAnalyzer {
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_statement",
+    "for_statement",
+    "while_statement",
+    "except_clause",
+    "match_statement",
+    "list_comprehension",
+    "set_comprehension",
+    "dictionary_comprehension",
+    "generator_expression",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -353,20 +366,7 @@ export class PythonMetricsAnalyzer {
    * @returns True if traversing into this node's children should use an increased nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    switch (node.type) {
-      case "if_statement":
-      case "for_statement":
-      case "while_statement":
-      case "except_clause":
-      case "match_statement":
-      case "list_comprehension":
-      case "set_comprehension":
-      case "dictionary_comprehension":
-      case "generator_expression":
-        return true;
-      default:
-        return false;
-    }
+    return PythonMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 
   /**
