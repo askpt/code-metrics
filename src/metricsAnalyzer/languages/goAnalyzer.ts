@@ -77,6 +77,16 @@ interface GoFunctionMetrics {
  * ```
  */
 export class GoMetricsAnalyzer {
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_statement",
+    "for_statement",
+    "expression_switch_statement",
+    "type_switch_statement",
+    "select_statement",
+    "func_literal",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -496,14 +506,7 @@ export class GoMetricsAnalyzer {
    * @returns True if the node increases nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "if_statement" ||
-      node.type === "for_statement" ||
-      node.type === "expression_switch_statement" ||
-      node.type === "type_switch_statement" ||
-      node.type === "select_statement" ||
-      node.type === "func_literal"
-    );
+    return GoMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 
   /**

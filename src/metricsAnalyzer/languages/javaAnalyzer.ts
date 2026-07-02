@@ -78,6 +78,24 @@ interface JavaFunctionMetrics {
 export class JavaMetricsAnalyzer {
   private static readonly ELSE_BRANCH_INDEX = 2;
 
+  /** Node types that represent method or constructor declarations. */
+  private static readonly METHOD_DECLARATION_TYPES: ReadonlySet<string> = new Set([
+    "method_declaration",
+    "constructor_declaration",
+  ]);
+
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_statement",
+    "while_statement",
+    "for_statement",
+    "enhanced_for_statement",
+    "do_statement",
+    "catch_clause",
+    "switch_expression",
+    "lambda_expression",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -124,10 +142,7 @@ export class JavaMetricsAnalyzer {
    * Determines if a syntax node represents a method or constructor declaration.
    */
   private isMethodDeclaration(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "method_declaration" ||
-      node.type === "constructor_declaration"
-    );
+    return JavaMetricsAnalyzer.METHOD_DECLARATION_TYPES.has(node.type);
   }
 
   /**
@@ -409,16 +424,7 @@ export class JavaMetricsAnalyzer {
    * @returns True if the node increases nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "if_statement" ||
-      node.type === "while_statement" ||
-      node.type === "for_statement" ||
-      node.type === "enhanced_for_statement" ||
-      node.type === "do_statement" ||
-      node.type === "catch_clause" ||
-      node.type === "switch_expression" ||
-      node.type === "lambda_expression"
-    );
+    return JavaMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 
   /**
