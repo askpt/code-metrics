@@ -64,7 +64,7 @@ export interface JsLikeFunctionMetrics {
  * a pre-initialised `Parser` instance to the constructor.
  */
 export class JsLikeMetricsAnalyzer {
-  /** Node types that represent top-level function declarations eligible for independent analysis. */
+  /** Node types that represent top-level function-like nodes eligible for independent analysis. */
   private static readonly FUNCTION_NODE_TYPES: ReadonlySet<string> = new Set([
     "function_declaration",
     "function_expression",
