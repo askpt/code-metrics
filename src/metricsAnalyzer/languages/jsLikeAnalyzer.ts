@@ -68,6 +68,8 @@ export class JsLikeMetricsAnalyzer {
   private static readonly FUNCTION_NODE_TYPES: ReadonlySet<string> = new Set([
     "function_declaration",
     "function_expression",
+    "generator_function_declaration",
+    "generator_function",
     "method_definition",
     "arrow_function",
   ]);
@@ -75,6 +77,7 @@ export class JsLikeMetricsAnalyzer {
   /** Node types that represent nested function expressions subject to a nesting-level increment. */
   private static readonly NESTED_FUNCTION_TYPES: ReadonlySet<string> = new Set([
     "function_expression",
+    "generator_function",
     "arrow_function",
     "method_definition",
   ]);
@@ -186,6 +189,8 @@ export class JsLikeMetricsAnalyzer {
         return "arrow function (nested)";
       case "function_expression":
         return "function expression (nested)";
+      case "generator_function":
+        return "generator function expression (nested)";
       case "method_definition":
         return "method (nested)";
       default:
@@ -200,8 +205,9 @@ export class JsLikeMetricsAnalyzer {
    * @returns The function name or a descriptive placeholder
    */
   private getFunctionName(node: Parser.SyntaxNode): string {
-    if (node.type === "function_declaration" || node.type === "function_expression") {
-      // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for both node types)
+    if (node.type === "function_declaration" || node.type === "function_expression" ||
+        node.type === "generator_function_declaration" || node.type === "generator_function") {
+      // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for all four node types)
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
