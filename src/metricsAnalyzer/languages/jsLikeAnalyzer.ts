@@ -64,6 +64,35 @@ export interface JsLikeFunctionMetrics {
  * a pre-initialised `Parser` instance to the constructor.
  */
 export class JsLikeMetricsAnalyzer {
+  /** Node types that represent top-level function-like nodes eligible for independent analysis. */
+  private static readonly FUNCTION_NODE_TYPES: ReadonlySet<string> = new Set([
+    "function_declaration",
+    "function_expression",
+    "generator_function_declaration",
+    "generator_function",
+    "method_definition",
+    "arrow_function",
+  ]);
+
+  /** Node types that represent nested function expressions subject to a nesting-level increment. */
+  private static readonly NESTED_FUNCTION_TYPES: ReadonlySet<string> = new Set([
+    "function_expression",
+    "generator_function",
+    "arrow_function",
+    "method_definition",
+  ]);
+
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_statement",
+    "for_statement",
+    "for_in_statement",
+    "while_statement",
+    "do_statement",
+    "switch_statement",
+    "catch_clause",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -112,13 +141,7 @@ export class JsLikeMetricsAnalyzer {
     node: Parser.SyntaxNode,
     functions: JsLikeFunctionMetrics[]
   ): void {
-    const isFunctionNode =
-      node.type === "function_declaration" ||
-      node.type === "function_expression" ||
-      node.type === "generator_function_declaration" ||
-      node.type === "generator_function" ||
-      node.type === "method_definition" ||
-      node.type === "arrow_function";
+    const isFunctionNode = JsLikeMetricsAnalyzer.FUNCTION_NODE_TYPES.has(node.type);
 
     if (isFunctionNode) {
       // Save current state before analyzing this function
@@ -328,12 +351,7 @@ export class JsLikeMetricsAnalyzer {
    * Checks if a node is a nested function definition.
    */
   private isNestedFunction(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "function_expression" ||
-      node.type === "generator_function" ||
-      node.type === "arrow_function" ||
-      node.type === "method_definition"
-    );
+    return JsLikeMetricsAnalyzer.NESTED_FUNCTION_TYPES.has(node.type);
   }
 
   /**
@@ -462,14 +480,6 @@ export class JsLikeMetricsAnalyzer {
    * @returns True if the node increases nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "if_statement" ||
-      node.type === "for_statement" ||
-      node.type === "for_in_statement" ||
-      node.type === "while_statement" ||
-      node.type === "do_statement" ||
-      node.type === "switch_statement" ||
-      node.type === "catch_clause"
-    );
+    return JsLikeMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 }

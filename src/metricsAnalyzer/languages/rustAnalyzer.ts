@@ -77,6 +77,16 @@ interface RustFunctionMetrics {
  * ```
  */
 export class RustMetricsAnalyzer {
+  /** Node types that increase the nesting level for cognitive complexity analysis. */
+  private static readonly NESTING_TYPES: ReadonlySet<string> = new Set([
+    "if_expression",
+    "for_expression",
+    "while_expression",
+    "loop_expression",
+    "match_expression",
+    "closure_expression",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -429,14 +439,7 @@ export class RustMetricsAnalyzer {
    * @returns True if the node increases nesting level
    */
   private increasesNesting(node: Parser.SyntaxNode): boolean {
-    return (
-      node.type === "if_expression" ||
-      node.type === "for_expression" ||
-      node.type === "while_expression" ||
-      node.type === "loop_expression" ||
-      node.type === "match_expression" ||
-      node.type === "closure_expression"
-    );
+    return RustMetricsAnalyzer.NESTING_TYPES.has(node.type);
   }
 
   /**
