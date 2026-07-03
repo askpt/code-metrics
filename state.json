@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-02T09:47:00Z",
-  "last_run_id": "28580037268",
+  "last_run": "2026-07-03T17:28:00Z",
+  "last_run_id": "28675046109",
   "backlog_cursor": {
-    "issues": 402,
+    "issues": 436,
     "prs": 0
   },
   "comments_made": {
@@ -66,17 +66,19 @@
     "perf-firstnamedchild-20260627 (merged as #422 or similar)",
     "improve-slice-fieldfn-20260627 (merged as #423)",
     "improve-js-method-qualification-20260627 (merged as #421)",
-    "test-java-python-coverage-20260628 (PR created - list comp + abstract method tests)",
+    "test-java-python-coverage-20260628 (merged)",
     "eng-patch-deps-20260628 (merged)",
     "improve-o1-child-scans-20260628 (merged as #427)",
     "eng-update-types-vscode-20260628 (merged as #432)",
-    "perf-static-type-sets-20260702 (PR created - static Sets in 6 analyzers)",
-    "feat-generator-functions-20260702 (PR created - generator function support in JS/TS)"
+    "perf-static-type-sets-20260702 (merged as #434)",
+    "feat-generator-functions-20260702 (merged as #435)",
+    "perf-avoid-spread-and-o1-body-20260703 (PR created - details spread removal + O(1) body/sibling lookups)",
+    "eng-patch-deps-20260703 (PR created - @types/node 26.1.0, @typescript-eslint 8.62.1)"
   ],
-  "notes": "Release PR #420 (v0.8.0) still open - needs maintainer merge. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Ruby patch artifact expires ~2026-08-30, Kotlin ~2026-09-20. Tree-sitter ecosystem upgrade still blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Task 2 skipped this run - no new human activity on open issues. Two new PRs: perf-static-type-sets-20260702 (static Sets in 6 analyzers, 159 tests) and feat-generator-functions-20260702 (generator fn support, 165 tests).",
+  "notes": "Release PR #420 (v0.8.0) still open - needs maintainer merge. Issues #353 (Ruby) and #402 (Kotlin) still open - blocked by protected files. Tree-sitter ecosystem upgrade blocked: rust@0.24.0 needs ^0.22.x, c-sharp/go/js/python@latest need ^0.25.x. Task 3 fell back to Task 2 this run - no new human activity on open issues.",
   "monthly_activity_issue": {
     "month": "2026-07",
-    "number": "aw_monthly_jul26"
+    "number": 436
   },
   "checked_off_items": []
 }
