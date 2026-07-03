@@ -2924,4 +2924,90 @@ public abstract class Shape {
       assert.strictEqual(results[0].complexity, 0, "toString has no control flow");
     });
   });
+
+  describe("JS/TS Generator Function Coverage", () => {
+    it("should collect a top-level generator function declaration", () => {
+      const sourceCode = `
+function* counter() {
+  let i = 0;
+  while (true) {
+    yield i++;
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "generator function should be collected");
+      assert.strictEqual(results[0].name, "counter");
+      assert.strictEqual(results[0].complexity, 1, "while loop adds 1");
+    });
+
+    it("should collect an async generator function declaration", () => {
+      const sourceCode = `
+async function* asyncCounter() {
+  if (true) {
+    yield 1;
+  }
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "async generator should be collected");
+      assert.strictEqual(results[0].name, "asyncCounter");
+      assert.strictEqual(results[0].complexity, 1, "if adds 1");
+    });
+
+    it("should collect a named generator function expression", () => {
+      const sourceCode = `
+const myGen = function* namedGen() {
+  if (true) { yield 1; }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "named generator expression should be collected");
+      assert.strictEqual(results[0].name, "namedGen");
+    });
+
+    it("should collect an anonymous generator function expression", () => {
+      const sourceCode = `
+const gen = function* () {
+  yield 1;
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "anonymous generator expression should be collected");
+      assert.ok(
+        results[0].name === "(anonymous)" || results[0].name === "gen",
+        "anonymous generator should have a placeholder name"
+      );
+    });
+
+    it("should apply nesting penalty to a generator function expression nested inside another function", () => {
+      const sourceCode = `
+function outer() {
+  const gen = function* () {
+    if (true) { yield 1; }
+  };
+}
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "only outer should be top-level");
+      // nested generator adds +1 (for the nesting penalty)
+      // the if inside the generator adds +1 base + 1 nesting = 2
+      // total outer = 1 (nested generator) + 2 (if inside) = 3
+      assert.strictEqual(results[0].complexity, 3, "nested generator should contribute complexity to outer");
+    });
+
+    it("should collect a TypeScript generator function", () => {
+      const sourceCode = `
+function* tsGen(): Generator<number> {
+  for (let i = 0; i < 3; i++) {
+    yield i;
+  }
+}
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "TS generator should be collected");
+      assert.strictEqual(results[0].name, "tsGen");
+      assert.strictEqual(results[0].complexity, 1, "for loop adds 1");
+    });
+  });
 });
