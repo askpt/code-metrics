@@ -2993,7 +2993,7 @@ function outer() {
       // nested generator adds +1 (for the nesting penalty)
       // the if inside the generator adds +1 base + 1 nesting = 2
       // total outer = 1 (nested generator) + 2 (if inside) = 3
-      assert.ok(results[0].complexity >= 1, "nested generator should contribute complexity to outer");
+      assert.strictEqual(results[0].complexity, 3, "nested generator should contribute complexity to outer");
     });
 
     it("should collect a TypeScript generator function", () => {

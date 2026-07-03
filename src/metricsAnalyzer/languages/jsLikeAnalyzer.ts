@@ -184,7 +184,7 @@ export class JsLikeMetricsAnalyzer {
   private getFunctionName(node: Parser.SyntaxNode): string {
     if (node.type === "function_declaration" || node.type === "function_expression" ||
         node.type === "generator_function_declaration" || node.type === "generator_function") {
-      // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for both node types)
+      // Use childForFieldName for O(1) field lookup (tree-sitter exposes "name" for all four node types)
       const nameNode = node.childForFieldName("name");
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
