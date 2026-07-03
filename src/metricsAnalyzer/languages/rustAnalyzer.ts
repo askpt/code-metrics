@@ -256,7 +256,7 @@ export class RustMetricsAnalyzer {
     return {
       name: functionName,
       complexity: this.complexity,
-      details: [...this.details],
+      details: this.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
