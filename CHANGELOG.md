@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/askpt/code-metrics/compare/v0.8.0...v0.8.1) (2026-07-04)
+
+
+### 🐛 Bug Fixes
+
+* downgrade @types/vscode from 1.125.0 to 1.106.0 ([#440](https://github.com/askpt/code-metrics/issues/440)) ([b4c6a31](https://github.com/askpt/code-metrics/commit/b4c6a310263bb8fdee7471c76e7d5bb53942d795))
+
 ## [0.8.0](https://github.com/askpt/code-metrics/compare/v0.7.0...v0.8.0) (2026-07-04)
 
 
