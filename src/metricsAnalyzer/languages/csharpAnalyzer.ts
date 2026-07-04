@@ -229,7 +229,7 @@ export class CSharpMetricsAnalyzer {
     return {
       name: functionName,
       complexity: this.complexity,
-      details: [...this.details],
+      details: this.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -363,11 +363,8 @@ export class CSharpMetricsAnalyzer {
    * @returns The body node or null if no body is found (abstract/interface methods)
    */
   private getFunctionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-    // First, try to find body in immediate children (normal case)
-    const directBody = node.children.find(
-      (child) =>
-        child.type === "block" || child.type === "arrow_expression_clause"
-    );
+    // O(1) field lookup — tree-sitter-c-sharp exposes "body" for all function-like node types.
+    const directBody = node.childForFieldName("body");
 
     if (directBody) {
       return directBody;

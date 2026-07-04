@@ -445,9 +445,10 @@ export class JsLikeMetricsAnalyzer {
       case "for_statement":
         return "for loop";
       case "for_in_statement": {
-        // tree-sitter uses for_in_statement for both for...in and for...of
-        const hasOf = node.children.some((c) => !c.isNamed && c.type === "of");
-        return hasOf ? "for...of loop" : "for...in loop";
+        // The keyword ("in" or "of") immediately follows the "left" field node in
+        // tree-sitter-javascript — use nextSibling (O(1)) to avoid scanning all children.
+        const leftNode = node.childForFieldName("left");
+        return leftNode?.nextSibling?.type === "of" ? "for...of loop" : "for...in loop";
       }
       case "while_statement":
         return "while loop";
