@@ -195,7 +195,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
 
   public resolveCodeLens(
     codeLens: vscode.CodeLens,
-    token: vscode.CancellationToken
+    _token: vscode.CancellationToken
   ): vscode.CodeLens | Thenable<vscode.CodeLens> {
     // CodeLens is already resolved in provideCodeLenses
     return codeLens;
@@ -331,7 +331,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
   });
 
   // Refresh code lenses when configuration changes
-  const configWatcher = ConfigurationManager.onConfigurationChanged((e) => {
+  const configWatcher = ConfigurationManager.onConfigurationChanged((_e) => {
     excludeRegexCache.clear();
     provider.clearConfigCache();
     setTimeout(() => provider.refresh(), 100);

@@ -11,8 +11,8 @@
     "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
     /* Additional Checks */
     "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
-    "noUnusedLocals": true /* Report errors on unused local variables. */
-    // "noUnusedParameters": true,  /* Report errors on unused parameters. */
+    "noUnusedLocals": true, /* Report errors on unused local variables. */
+    "noUnusedParameters": true /* Report errors on unused parameters. */
   },
   "exclude": ["samples"]
 }

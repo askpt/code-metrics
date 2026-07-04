@@ -190,34 +190,10 @@ export class RustMetricsAnalyzer {
     if (parent && parent.type === "declaration_list") {
       const implNode = parent.parent;
       if (implNode && implNode.type === "impl_item") {
-        // For `impl Trait for Type`, prefer the implementing type (after `for`).
-        // For inherent `impl Type`, use the only type present.
-        let forIndex = -1;
-        for (let childIndex = 0; childIndex < implNode.childCount; childIndex++) {
-          const child = implNode.child(childIndex);
-          if (child?.type === "for") {
-            forIndex = childIndex;
-            break;
-          }
-        }
-        const searchStart = forIndex !== -1 ? forIndex + 1 : 0;
-        let typeNode: Parser.SyntaxNode | undefined;
-        for (
-          let childIndex = searchStart;
-          childIndex < implNode.childCount;
-          childIndex++
-        ) {
-          const child = implNode.child(childIndex);
-          if (
-            child &&
-            (child.type === "type_identifier" ||
-              child.type === "generic_type" ||
-              child.type === "scoped_type_identifier")
-          ) {
-            typeNode = child;
-            break;
-          }
-        }
+        // tree-sitter-rust exposes a "type" field on impl_item that always points to
+        // the implementing type — for both `impl Type {}` and `impl Trait for Type {}`.
+        // This O(1) field lookup replaces two O(n) linear scans over the node's children.
+        const typeNode = implNode.childForFieldName("type");
         if (typeNode) {
           const typeName = this.sourceText.substring(
             typeNode.startIndex,
