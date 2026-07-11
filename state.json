@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-04",
-  "last_run_id": "28708273697",
+  "last_run": "2026-07-11",
+  "last_run_id": "29157555447",
   "monthly_activity_issue": 436,
   "monthly_activity_month": "2026-07",
   "backlog_cursor": {
@@ -12,26 +12,29 @@
   },
   "open_prs": [
     {
-      "pr_temp_id": "#aw_pr_perf01",
-      "title": "perf: O(1) impl type lookup, TS/TSX singletons, enable noUnusedParameters",
-      "branch": "repo-assist/perf-and-improve-20260704",
-      "created_run": "28708273697",
-      "tasks": ["8", "5", "4"]
+      "title": "perf: O(1) operator field lookup in C# analyzer + branch coverage tests",
+      "branch": "repo-assist/perf-and-test-20260711",
+      "created_run": "29157555447",
+      "tasks": ["8", "9"]
     }
   ],
   "improvement_attempts": [
-    { "desc": "Rust analyzer getFunctionName O(1) childForFieldName", "run": "28708273697", "pr_temp": "#aw_pr_perf01" },
-    { "desc": "TypeScript/TSX module-level singleton instances", "run": "28708273697", "pr_temp": "#aw_pr_perf01" },
-    { "desc": "Enable noUnusedParameters tsconfig + fix codeLensProvider", "run": "28708273697", "pr_temp": "#aw_pr_perf01" },
+    { "desc": "Rust analyzer getFunctionName O(1) childForFieldName", "run": "28708273697", "pr": 442, "merged": true },
+    { "desc": "TypeScript/TSX module-level singleton instances", "run": "28708273697", "pr": 442, "merged": true },
+    { "desc": "Enable noUnusedParameters tsconfig + fix codeLensProvider", "run": "28708273697", "pr": 442, "merged": true },
     { "desc": "perf: avoid details array spread copies and O(1) body/sibling lookups", "run": "28675046109", "pr": 437, "merged": true },
     { "desc": "build: bump @types/node 26.1.0 and @typescript-eslint 8.62.1", "run": "28675046109", "pr": 439, "merged": true },
     { "desc": "perf: replace multi-comparison type chains with static readonly Sets", "run": "28580037268", "pr": 434, "merged": true },
-    { "desc": "feat: analyze generator functions in JS/TS", "run": "28580037268", "pr": 435, "merged": true }
+    { "desc": "feat: analyze generator functions in JS/TS", "run": "28580037268", "pr": 435, "merged": true },
+    { "desc": "perf: O(1) childForFieldName for C# operator_declaration and conversion_operator_declaration", "run": "29157555447", "pr_branch": "repo-assist/perf-and-test-20260711" },
+    { "desc": "test: 7 new branch-coverage tests (unlabeled break/continue, anon class, Rust closure nesting)", "run": "29157555447", "pr_branch": "repo-assist/perf-and-test-20260711" }
   ],
   "notes": {
     "tree_sitter_upgrade_blocked": "tree-sitter core 0.21.1; grammars need ^0.22.x or ^0.25.x; wait for aligned versions",
     "types_vscode_pinned": "@types/vscode pinned at 1.106.0 (PR #440 reverted upgrade); do not upgrade",
     "issues_353_402": "Ruby (#353) and Kotlin (#402) issues open; implementations exist as patch files on issue comments; blocked by protected files in workflow",
-    "csharp_try_statement": "C# analyzer counts try_statement as +1 (possible spec deviation); changing would be behavioral, leave for human review"
+    "csharp_try_statement": "C# analyzer counts try_statement as +1 (possible spec deviation); changing would be behavioral, leave for human review",
+    "release_please_443": "release-please PR #443 open for v0.8.2; needs maintainer merge",
+    "coverage_remaining_gaps": "goAnalyzer 276-278,301-302,495 and rustAnalyzer 181-182,227-228,397 are defensive defaults unreachable with valid code; low value to test"
   }
 }
