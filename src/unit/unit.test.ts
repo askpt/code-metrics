@@ -3179,7 +3179,7 @@ fn sum_positives(items: &[i32]) -> i32 {
     it("should detect a catch clause isolated in a preprocessor #else ERROR node", () => {
       // When a method body is split across #if / #else, tree-sitter emits ERROR nodes.
       // This covers getComplexityReasonFromErrorNode's "catch clause (in preprocessor block)"
-      // branch (line ~714) and the getComplexityReason "ERROR" case (line ~816).
+      // branch and the getComplexityReason "ERROR" case.
       const sourceCode = `
 public class Foo {
     public void Bar()
@@ -3207,8 +3207,8 @@ public class Foo {
     it("should detect a ternary operator in a field_declaration inside a preprocessor #if block", () => {
       // When the method body opening brace is inside #if, a local declaration with a
       // ternary gets parsed as a field_declaration by tree-sitter.
-      // Covers getComplexityReasonFromMalformedDeclaration's ternary branch (~line 739-740)
-      // and the getComplexityReason "field_declaration" / "variable_declaration" case (~line 819).
+      // Covers getComplexityReasonFromMalformedDeclaration's ternary branch
+      // and the getComplexityReason "field_declaration" / "variable_declaration" case.
       const sourceCode = `
 public class Foo {
     public void Ternary()
@@ -3225,8 +3225,7 @@ public class Foo {
       assert.strictEqual(results.length, 1, "one method expected");
       const ternaryDetail = results[0].details.find(
         (d: UnifiedMetricsDetail) =>
-          d.reason === "ternary operator (in preprocessor block)" ||
-          d.reason === "ternary operator"
+          d.reason === "ternary operator (in preprocessor block)"
       );
       assert.ok(
         ternaryDetail !== undefined,
@@ -3235,7 +3234,7 @@ public class Foo {
     });
 
     it("should detect logical operators in a field_declaration inside a preprocessor #if block", () => {
-      // Covers getComplexityReasonFromMalformedDeclaration's logical-operator branch (~line 742-744).
+      // Covers getComplexityReasonFromMalformedDeclaration's logical-operator branch.
       const sourceCode = `
 public class Foo {
     public void Logic()
@@ -3252,9 +3251,7 @@ public class Foo {
       assert.strictEqual(results.length, 1, "one method expected");
       const logicDetail = results[0].details.find(
         (d: UnifiedMetricsDetail) =>
-          d.reason === "logical operator (in preprocessor block)" ||
-          d.reason.startsWith("logical") ||
-          d.reason.startsWith("binary")
+          d.reason === "logical operator (in preprocessor block)"
       );
       assert.ok(
         logicDetail !== undefined,
