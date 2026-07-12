@@ -3170,4 +3170,93 @@ fn sum_positives(items: &[i32]) -> i32 {
       assert.strictEqual(continueDetails.length, 0, "unlabeled continue should not add complexity");
     });
   });
+
+  // CSharp preprocessor-block coverage
+  // These tests exercise heuristic paths in the C# analyzer that handle method bodies
+  // fragmented by #if/#else preprocessor directives (tree-sitter emits ERROR nodes for
+  // code that spans directive boundaries).
+  describe("CSharp: preprocessor-block ERROR and malformed-declaration paths", () => {
+    it("should detect a catch clause isolated in a preprocessor #else ERROR node", () => {
+      // When a method body is split across #if / #else, tree-sitter emits ERROR nodes.
+      // This covers getComplexityReasonFromErrorNode's "catch clause (in preprocessor block)"
+      // branch and the getComplexityReason "ERROR" case.
+      const sourceCode = `
+public class Foo {
+    public void Bar()
+#if DEBUG
+    { }
+#else
+    {
+        catch (Exception e) { }
+    }
+#endif
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      const catchDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "catch clause (in preprocessor block)"
+      );
+      assert.ok(
+        catchDetail !== undefined,
+        "catch clause in a preprocessor ERROR node should be reported"
+      );
+      assert.ok(results[0].complexity >= 1, "complexity should be at least 1");
+    });
+
+    it("should detect a ternary operator in a field_declaration inside a preprocessor #if block", () => {
+      // When the method body opening brace is inside #if, a local declaration with a
+      // ternary gets parsed as a field_declaration by tree-sitter.
+      // Covers getComplexityReasonFromMalformedDeclaration's ternary branch
+      // and the getComplexityReason "field_declaration" / "variable_declaration" case.
+      const sourceCode = `
+public class Foo {
+    public void Ternary()
+#if DEBUG
+    {
+        int result = x > 0 ? 1 : 0;
+    }
+#else
+    { }
+#endif
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      const ternaryDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) =>
+          d.reason === "ternary operator (in preprocessor block)"
+      );
+      assert.ok(
+        ternaryDetail !== undefined,
+        "ternary operator inside a preprocessor-fragmented body should be detected"
+      );
+    });
+
+    it("should detect logical operators in a field_declaration inside a preprocessor #if block", () => {
+      // Covers getComplexityReasonFromMalformedDeclaration's logical-operator branch.
+      const sourceCode = `
+public class Foo {
+    public void Logic()
+#if DEBUG
+    {
+        bool v = a && b || c;
+    }
+#else
+    { }
+#endif
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      const logicDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) =>
+          d.reason === "logical operator (in preprocessor block)"
+      );
+      assert.ok(
+        logicDetail !== undefined,
+        "logical operator inside a preprocessor-fragmented body should be detected"
+      );
+    });
+  });
 });
