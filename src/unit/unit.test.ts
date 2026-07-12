@@ -3116,8 +3116,9 @@ fn transform(items: Vec<i32>) -> Vec<i32> {
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1, "one function expected");
-      // if: +1; else clause: +1; closure |x| inside else (nesting=1): +1
-      assert.ok(results[0].complexity >= 2, "if and else add complexity");
+      // if: +1 (structural); else_clause: +1 (flat, per rustAnalyzer getComplexityIncrement);
+      // closure |x| inside else block runs at nesting=1, so closure_expression: +1
+      assert.ok(results[0].complexity >= 2, "if, else, and nested closure add complexity");
       const closureDetail = results[0].details.find(
         (d: UnifiedMetricsDetail) => d.reason === "closure (nested)"
       );
