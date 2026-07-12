@@ -293,43 +293,33 @@ export class CSharpMetricsAnalyzer {
     }
 
     if (node.type === "operator_declaration") {
-      // The operator symbol (e.g. +, -, ==) immediately follows the 'operator' keyword.
-      let afterOperatorKeyword = false;
-      for (const child of node.children) {
-        if (child.type === "operator") {
-          afterOperatorKeyword = true;
-        } else if (afterOperatorKeyword) {
-          const symbol = this.sourceText.substring(child.startIndex, child.endIndex);
-          const enclosingType = this.getEnclosingTypeName(node);
-          return enclosingType ? `${enclosingType}.operator${symbol}` : `operator${symbol}`;
-        }
+      // tree-sitter-c-sharp exposes an "operator" field that points directly to the
+      // operator symbol token (e.g. +, -, ==), so O(1) field access replaces the
+      // previous O(n) linear scan over children.
+      const operatorNode = node.childForFieldName("operator");
+      if (operatorNode) {
+        const symbol = this.sourceText.substring(operatorNode.startIndex, operatorNode.endIndex);
+        const enclosingType = this.getEnclosingTypeName(node);
+        return enclosingType ? `${enclosingType}.operator${symbol}` : `operator${symbol}`;
       }
     }
 
     if (node.type === "conversion_operator_declaration") {
-      // The conversion kind (implicit/explicit) precedes the 'operator' keyword; the
-      // target type immediately follows it.
+      // tree-sitter-c-sharp exposes a "type" field that points directly to the conversion
+      // target type, replacing a previous O(n) linear scan over children.
+      // The implicit/explicit keyword is not a named field, so a short prefix scan is still
+      // needed, but it stops at the first matching token rather than scanning all children.
       const kindNode = node.children.find(
         (c) => c.type === "implicit" || c.type === "explicit"
       );
       const kind = kindNode ? kindNode.type : "explicit";
-      let afterOperatorKeyword = false;
-      for (const child of node.children) {
-        if (child.type === "operator") {
-          afterOperatorKeyword = true;
-        } else if (
-          afterOperatorKeyword &&
-          (child.type === "predefined_type" ||
-            child.type === "identifier" ||
-            child.type === "qualified_name" ||
-            child.type === "generic_name")
-        ) {
-          const targetType = this.sourceText.substring(child.startIndex, child.endIndex);
-          const enclosingType = this.getEnclosingTypeName(node);
-          return enclosingType
-            ? `${enclosingType}.${kind} operator ${targetType}`
-            : `${kind} operator ${targetType}`;
-        }
+      const typeNode = node.childForFieldName("type");
+      if (typeNode) {
+        const targetType = this.sourceText.substring(typeNode.startIndex, typeNode.endIndex);
+        const enclosingType = this.getEnclosingTypeName(node);
+        return enclosingType
+          ? `${enclosingType}.${kind} operator ${targetType}`
+          : `${kind} operator ${targetType}`;
       }
     }
 
