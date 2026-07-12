@@ -3089,13 +3089,18 @@ const instance = new (class {
     it("should not add complexity for a closure at nesting level 0", () => {
       // Exercises the branch: this.nesting > 0 ? 1 : 0 for closure_expression → 0
       const sourceCode = `
-fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 {
-    f(x)
+fn apply() -> i32 {
+    let double = |x: i32| x * 2;
+    double(5)
 }
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1, "one function expected");
-      assert.strictEqual(results[0].complexity, 0, "no complexity: no control flow or nested closure");
+      assert.strictEqual(results[0].complexity, 0, "no complexity: top-level closure does not add complexity");
+      const closureDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "closure (nested)"
+      );
+      assert.strictEqual(closureDetail, undefined, "top-level closure should not produce a complexity detail");
     });
 
     it("should add complexity for a closure nested inside a control flow", () => {
@@ -3103,20 +3108,20 @@ fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 {
       const sourceCode = `
 fn transform(items: Vec<i32>) -> Vec<i32> {
     if items.is_empty() {
-        return vec![];
+        vec![]
+    } else {
+        items.iter().map(|x| x * 2).collect()
     }
-    items.iter().map(|x| x * 2).collect()
 }
 `;
       const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1, "one function expected");
-      // if: +1; closure |x| inside map is at nesting=0 (not inside a nesting construct), so 0
-      // Only the if adds complexity here
-      assert.ok(results[0].complexity >= 1, "if statement adds complexity");
-      const ifDetail = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason === "if expression"
+      // if: +1; else clause: +1; closure |x| inside else (nesting=1): +1
+      assert.ok(results[0].complexity >= 2, "if and else add complexity");
+      const closureDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "closure (nested)"
       );
-      assert.ok(ifDetail, "if expression should be a complexity source");
+      assert.ok(closureDetail, "closure nested inside else should produce a 'closure (nested)' detail");
     });
   });
 
