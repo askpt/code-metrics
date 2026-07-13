@@ -1,13 +1,14 @@
 {
-  "last_run": "2026-05-22T08:26:02Z",
-  "last_run_id": "26276950674",
+  "last_run": "2026-07-13T11:41:00Z",
+  "last_run_id": "29247022157",
   "backlog_cursor": {
     "issues": 292,
     "prs": 0
   },
   "comments_made": {
     "237": "2026-04-14",
-    "238": "2026-05-12"
+    "238": "2026-05-12",
+    "455": "2026-07-13"
   },
   "fix_attempts": {},
   "improvement_attempts": [
@@ -37,12 +38,16 @@
     "test-rust-analyzer-20260521 (merged as #328 or similar)",
     "improve-rust-trait-impl-naming-20260521 (merged as #329)",
     "eng-patch-deps-20260522 (PR created - @typescript-eslint 8.59.4, mocha 11.7.6)",
-    "perf-cache-config-20260522 (PR created - cache CodeMetricsConfig per workspace folder)"
+    "perf-cache-config-20260522 (PR created - cache CodeMetricsConfig per workspace folder)",
+    "eng-patch-deps-20260712 (blocked by protected files - artifact issue #449)",
+    "test-csharp-cov-20260712 (PR created - C# preprocessor branch coverage)",
+    "improve-nesting-types-increment-20260713 (PR created - javaAnalyzer/pythonAnalyzer getComplexityIncrement refactor)",
+    "eng-coverage-thresholds-20260713 (PR created - .c8rc.json coverage thresholds)"
   ],
-  "notes": "PR #325 (release-please v0.5.0) is open - needs maintainer merge. Two new PRs created this run: eng-patch-deps-20260522 and perf-cache-config-20260522. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1, conflicts with current 0.21.1).",
+  "notes": "PR #443 (release-please v0.8.2) is open - needs maintainer merge. PR #455 (TypeScript 7 bump) is open - Repo Assist commented with compatibility analysis. Issue #449 = dep_bump blocked artifact. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1, conflicts with current 0.21.1).",
   "monthly_activity_issue": {
-    "month": "2026-05",
-    "number": 286
+    "month": "2026-07",
+    "number": 436
   },
   "checked_off_items": []
 }
