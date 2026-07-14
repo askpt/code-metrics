@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-13T11:41:00Z",
-  "last_run_id": "29247022157",
+  "last_run": "2026-07-14T07:51:00Z",
+  "last_run_id": "29315867354",
   "backlog_cursor": {
-    "issues": 292,
+    "issues": 402,
     "prs": 0
   },
   "comments_made": {
@@ -28,8 +28,6 @@
     "feat-tsx-jsx-samples (merged as #302)",
     "test-tsx-unit-coverage (merged as #304)",
     "improve-is-supported-language (merged as #305)",
-    "eng-patch-deps-20260515 (not pushed as actual PR - branch only)",
-    "docs-supported-languages-20260515 (not pushed as actual PR - branch only)",
     "test-factory-and-java-coverage (merged as #310)",
     "eng-patch-deps-20260516 (merged as #312)",
     "feat-rust-support-20260517 (merged as #327)",
@@ -37,17 +35,27 @@
     "improve-go-pointer-receiver-and-tests-20260520 (merged as #324)",
     "test-rust-analyzer-20260521 (merged as #328 or similar)",
     "improve-rust-trait-impl-naming-20260521 (merged as #329)",
-    "eng-patch-deps-20260522 (PR created - @typescript-eslint 8.59.4, mocha 11.7.6)",
-    "perf-cache-config-20260522 (PR created - cache CodeMetricsConfig per workspace folder)",
-    "eng-patch-deps-20260712 (blocked by protected files - artifact issue #449)",
-    "test-csharp-cov-20260712 (PR created - C# preprocessor branch coverage)",
-    "improve-nesting-types-increment-20260713 (PR created - javaAnalyzer/pythonAnalyzer getComplexityIncrement refactor)",
-    "eng-coverage-thresholds-20260713 (PR created - .c8rc.json coverage thresholds)"
+    "perf-cache-config-20260522 (PR created)",
+    "feat-generator-functions-js-ts (merged as #435)",
+    "perf-set-types-20260702 (merged as #434)",
+    "perf-avoid-spread-copies (merged as #437)",
+    "eng-patch-deps-20260703 (merged as #439)",
+    "perf-ts-tsx-singletons (merged as #442)",
+    "perf-csharp-O1-operator (merged as #447)",
+    "test-csharp-preprocessor-coverage (PR created)",
+    "refactor-nesting-types-increment-20260713 (PR #458 - open)",
+    "eng-coverage-thresholds-20260713 (PR #457 - open)",
+    "fix-java-record-method-name-20260714 (PR created - record_declaration + compact_constructor_declaration)"
   ],
-  "notes": "PR #443 (release-please v0.8.2) is open - needs maintainer merge. PR #455 (TypeScript 7 bump) is open - Repo Assist commented with compatibility analysis. Issue #449 = dep_bump blocked artifact. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1, conflicts with current 0.21.1).",
+  "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1, conflicts with current 0.21.1).",
   "monthly_activity_issue": {
     "month": "2026-07",
     "number": 436
   },
+  "open_repo_assist_prs": [
+    {"number": "aw_java_record_fix", "branch": "repo-assist/fix-java-record-method-name-20260714", "title": "fix: qualify Java record method names and analyze compact constructors"},
+    {"number": 458, "branch": "repo-assist/improve-nesting-types-increment-20260713", "title": "refactor: use NESTING_TYPES.has() in getComplexityIncrement"},
+    {"number": 457, "branch": "repo-assist/eng-coverage-thresholds-20260713", "title": "build: add minimum coverage thresholds to .c8rc.json"}
+  ],
   "checked_off_items": []
 }
