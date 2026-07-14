@@ -82,6 +82,7 @@ export class JavaMetricsAnalyzer {
   private static readonly METHOD_DECLARATION_TYPES: ReadonlySet<string> = new Set([
     "method_declaration",
     "constructor_declaration",
+    "compact_constructor_declaration",
   ]);
 
   /** Node types that increase the nesting level for cognitive complexity analysis. */
@@ -190,13 +191,14 @@ export class JavaMetricsAnalyzer {
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";
 
-    // Walk up the AST to find the enclosing class or interface name
+    // Walk up the AST to find the enclosing class, interface, enum, or record name
     let parent = node.parent;
     while (parent) {
       if (
         parent.type === "class_declaration" ||
         parent.type === "interface_declaration" ||
-        parent.type === "enum_declaration"
+        parent.type === "enum_declaration" ||
+        parent.type === "record_declaration"
       ) {
         const classNameNode = parent.childForFieldName("name");
         if (classNameNode) {

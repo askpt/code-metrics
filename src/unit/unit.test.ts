@@ -1257,6 +1257,53 @@ public class Test {
       assert.strictEqual(simple!.complexity, 0);
       assert.strictEqual(conditional!.complexity, 1);
     });
+
+    it("should qualify method names in Java record declarations", () => {
+      const sourceCode = `
+record Point(int x, int y) {
+    public int sum() {
+        if (x > 0) {
+            return x + y;
+        }
+        return y;
+    }
+    public boolean isOrigin() {
+        return x == 0 && y == 0;
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const sum = results.find((r) => r.name === "Point.sum");
+      const isOrigin = results.find((r) => r.name === "Point.isOrigin");
+      assert.ok(sum, "Expected Point.sum method — record method names must be qualified");
+      assert.ok(isOrigin, "Expected Point.isOrigin method — record method names must be qualified");
+      assert.strictEqual(sum!.complexity, 1);
+      assert.strictEqual(isOrigin!.complexity, 1);
+    });
+
+    it("should analyze compact record constructors", () => {
+      const sourceCode = `
+record Range(int start, int end) {
+    Range {
+        if (start > end) {
+            throw new IllegalArgumentException("start must be <= end");
+        }
+    }
+    public boolean contains(int n) {
+        return n >= start && n <= end;
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const ctor = results.find((r) => r.name === "Range.Range");
+      const contains = results.find((r) => r.name === "Range.contains");
+      assert.ok(ctor, "Expected Range.Range compact constructor");
+      assert.ok(contains, "Expected Range.contains method");
+      assert.strictEqual(ctor!.complexity, 1);
+      assert.strictEqual(contains!.complexity, 1); // && operator contributes 1
+    });
   });
 
   describe("TSX Analyzer Core Logic", () => {
