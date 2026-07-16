@@ -239,6 +239,85 @@ func Subtract(a, b int) int {
       assert.strictEqual(results[1].name, "Subtract");
       assert.strictEqual(results[1].complexity, 1);
     });
+
+    it("should count else clause as flat +1 with no nesting penalty", () => {
+      const sourceCode = `
+package main
+
+func Classify(x int) string {
+    if x > 0 {
+        return "positive"
+    } else {
+        return "non-positive"
+    }
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2); // if(+1) + else(+1)
+      assert.strictEqual(results[0].details.length, 2);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else clause"]);
+      // else clause must have no nesting penalty
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) => d.reason === "else clause");
+      assert.ok(elseDetail);
+      assert.strictEqual(elseDetail.increment, 1);
+    });
+
+    it("should count else-if chain with flat increments and correct nesting", () => {
+      const sourceCode = `
+package main
+
+func Grade(score int) string {
+    if score >= 90 {
+        return "A"
+    } else if score >= 80 {
+        return "B"
+    } else if score >= 70 {
+        return "C"
+    } else {
+        return "F"
+    }
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if(+1) + else-if(+1) + else-if(+1) + else(+1) = 4
+      assert.strictEqual(results[0].complexity, 4);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else if clause", "else if clause", "else clause"]);
+      // All increments must be 1 (flat — no nesting penalty for else/else-if)
+      for (const d of results[0].details) {
+        assert.strictEqual(d.increment, 1, `${d.reason} should be flat +1`);
+      }
+    });
+
+    it("should apply correct nesting to statements inside else-if body", () => {
+      const sourceCode = `
+package main
+
+func Complex(x, y int) int {
+    if x > 0 {
+        if y > 0 { return x + y }
+    } else if x < 0 {
+        if y < 0 { return x - y }
+    }
+    return 0
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if x>0 (+1, nesting=0), if y>0 (+2, nesting=1),
+      // else-if x<0 (+1 flat), if y<0 (+2, nesting=1 — same as inside main if body)
+      assert.strictEqual(results[0].complexity, 6);
+      const innerIfInElse = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "if statement" && d.nesting === 1 &&
+          d.line > results[0].details.find((dd: UnifiedMetricsDetail) => dd.reason === "else if clause")!.line
+      );
+      assert.ok(innerIfInElse, "if inside else-if body should have nesting=1, not 2");
+      assert.strictEqual(innerIfInElse.increment, 2);
+    });
+
   });
 
   describe("CSharp Analyzer Core Logic", () => {
