@@ -724,11 +724,8 @@ func ProcessData(items []int, includeNegatives bool) []int {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      // for(1) + if(2) + else if(3) + &&(4) + continue(4) + if(1) + else if(2) = 17
-      assert.ok(
-        results[0].complexity >= 15,
-        "Should have significant complexity"
-      );
+      // for(1) + if(2) + else if(1) + &&(3) + else(1) + continue(3) + if(1) + else if(1) = 13
+      assert.strictEqual(results[0].complexity, 13);
     });
   });
 

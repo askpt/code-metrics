@@ -239,6 +239,85 @@ func Subtract(a, b int) int {
       assert.strictEqual(results[1].name, "Subtract");
       assert.strictEqual(results[1].complexity, 1);
     });
+
+    it("should count else clause as flat +1 with no nesting penalty", () => {
+      const sourceCode = `
+package main
+
+func Classify(x int) string {
+    if x > 0 {
+        return "positive"
+    } else {
+        return "non-positive"
+    }
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2); // if(+1) + else(+1)
+      assert.strictEqual(results[0].details.length, 2);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else clause"]);
+      // else clause must have no nesting penalty
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) => d.reason === "else clause");
+      assert.ok(elseDetail);
+      assert.strictEqual(elseDetail.increment, 1);
+    });
+
+    it("should count else-if chain with flat increments and correct nesting", () => {
+      const sourceCode = `
+package main
+
+func Grade(score int) string {
+    if score >= 90 {
+        return "A"
+    } else if score >= 80 {
+        return "B"
+    } else if score >= 70 {
+        return "C"
+    } else {
+        return "F"
+    }
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if(+1) + else-if(+1) + else-if(+1) + else(+1) = 4
+      assert.strictEqual(results[0].complexity, 4);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else if clause", "else if clause", "else clause"]);
+      // All increments must be 1 (flat — no nesting penalty for else/else-if)
+      for (const d of results[0].details) {
+        assert.strictEqual(d.increment, 1, `${d.reason} should be flat +1`);
+      }
+    });
+
+    it("should apply correct nesting to statements inside else-if body", () => {
+      const sourceCode = `
+package main
+
+func Complex(x, y int) int {
+    if x > 0 {
+        if y > 0 { return x + y }
+    } else if x < 0 {
+        if y < 0 { return x - y }
+    }
+    return 0
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      // if x>0 (+1, nesting=0), if y>0 (+2, nesting=1),
+      // else-if x<0 (+1 flat), if y<0 (+2, nesting=1 — same as inside main if body)
+      assert.strictEqual(results[0].complexity, 6);
+      const innerIfInElse = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "if statement" && d.nesting === 1 &&
+          d.line > results[0].details.find((dd: UnifiedMetricsDetail) => dd.reason === "else if clause")!.line
+      );
+      assert.ok(innerIfInElse, "if inside else-if body should have nesting=1, not 2");
+      assert.strictEqual(innerIfInElse.increment, 2);
+    });
+
   });
 
   describe("CSharp Analyzer Core Logic", () => {
@@ -1256,6 +1335,53 @@ public class Test {
       assert.ok(conditional, "Expected Test.conditional method");
       assert.strictEqual(simple!.complexity, 0);
       assert.strictEqual(conditional!.complexity, 1);
+    });
+
+    it("should qualify method names in Java record declarations", () => {
+      const sourceCode = `
+record Point(int x, int y) {
+    public int sum() {
+        if (x > 0) {
+            return x + y;
+        }
+        return y;
+    }
+    public boolean isOrigin() {
+        return x == 0 && y == 0;
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const sum = results.find((r) => r.name === "Point.sum");
+      const isOrigin = results.find((r) => r.name === "Point.isOrigin");
+      assert.ok(sum, "Expected Point.sum method — record method names must be qualified");
+      assert.ok(isOrigin, "Expected Point.isOrigin method — record method names must be qualified");
+      assert.strictEqual(sum!.complexity, 1);
+      assert.strictEqual(isOrigin!.complexity, 1);
+    });
+
+    it("should analyze compact record constructors", () => {
+      const sourceCode = `
+record Range(int start, int end) {
+    Range {
+        if (start > end) {
+            throw new IllegalArgumentException("start must be <= end");
+        }
+    }
+    public boolean contains(int n) {
+        return n >= start && n <= end;
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2);
+      const ctor = results.find((r) => r.name === "Range.Range");
+      const contains = results.find((r) => r.name === "Range.contains");
+      assert.ok(ctor, "Expected Range.Range compact constructor");
+      assert.ok(contains, "Expected Range.contains method");
+      assert.strictEqual(ctor!.complexity, 1);
+      assert.strictEqual(contains!.complexity, 1); // && operator contributes 1
     });
   });
 
