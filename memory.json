@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-16T13:39:00Z",
-  "last_run_id": "29503051079",
+  "last_run": "2026-07-17T12:13:00Z",
+  "last_run_id": "29579403098",
   "backlog_cursor": {
     "issues": 402,
     "prs": 0
@@ -42,22 +42,20 @@
     "eng-patch-deps-20260703 (merged as #439)",
     "perf-ts-tsx-singletons (merged as #442)",
     "perf-csharp-O1-operator (merged as #447)",
-    "test-csharp-preprocessor-coverage (PR created)",
-    "refactor-nesting-types-increment-20260713 (PR #458 - open)",
-    "eng-coverage-thresholds-20260713 (PR #457 - open)",
-    "fix-java-record-method-name-20260714 (PR #459 - open)",
-    "fix-go-else-clause-handling-20260716 (PR #460 - open)"
+    "test-csharp-preprocessor-coverage (merged as #448)",
+    "refactor-nesting-types-increment-20260713 (merged as #458)",
+    "eng-coverage-thresholds-20260713 (merged as #457)",
+    "fix-java-record-method-name-20260714 (merged as #459)",
+    "fix-go-else-clause-handling-20260716 (merged as #460)",
+    "test-generics-and-enums-20260717 (PR created)"
   ],
-  "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1, conflicts with current 0.21.1).",
+  "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1).",
   "monthly_activity_issue": {
     "month": "2026-07",
     "number": 436
   },
   "open_repo_assist_prs": [
-    {"number": 459, "branch": "repo-assist/fix-java-record-method-name-20260714-07b945d2455d0b26", "title": "fix: qualify Java record method names and analyze compact constructors"},
-    {"number": 458, "branch": "repo-assist/improve-nesting-types-increment-20260713-5678cf1bebee9248", "title": "refactor: use NESTING_TYPES.has() in getComplexityIncrement for Java and Python"},
-    {"number": 457, "branch": "repo-assist/eng-coverage-thresholds-20260713-ad2a24c1d51b2398", "title": "build: add minimum coverage thresholds to .c8rc.json"},
-    {"number": 460, "branch": "repo-assist/fix-go-else-clause-handling-20260716", "title": "fix: Go else/else-if branches now count as flat +1 increments"}
+    {"branch": "repo-assist/test-generics-and-enums-20260717", "title": "test: add Go generics and Java enum method coverage tests"}
   ],
   "checked_off_items": []
 }
