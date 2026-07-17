@@ -3551,11 +3551,19 @@ public enum Operation {
 }
 `;
       const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
-      // Only concrete implementations should appear; abstract method skipped
-      const multiplyImpl = results.find((r: UnifiedFunctionMetrics) => r.complexity > 0);
-      assert.ok(multiplyImpl, "MULTIPLY.apply should have complexity > 0");
-      // if (+1) + || (+1) = 2
-      assert.strictEqual(multiplyImpl!.complexity, 2, "if + || operator = 2");
+      // Only concrete implementations (ADD and MULTIPLY) should appear; abstract method skipped
+      assert.strictEqual(results.length, 2, "abstract method should be skipped; only 2 concrete implementations");
+      // Both concrete methods are qualified with the enclosing enum name
+      assert.ok(
+        results.every((r: UnifiedFunctionMetrics) => r.name === "Operation.apply"),
+        "all results should be qualified as Operation.apply"
+      );
+      // ADD.apply has no control flow
+      const addImpl = results.find((r: UnifiedFunctionMetrics) => r.complexity === 0);
+      assert.ok(addImpl, "ADD.apply should have complexity 0");
+      // MULTIPLY.apply: if (+1) + || (+1) = 2
+      const multiplyImpl = results.find((r: UnifiedFunctionMetrics) => r.complexity === 2);
+      assert.ok(multiplyImpl, "MULTIPLY.apply should have complexity 2 (if + || operator)");
     });
   });
 });
