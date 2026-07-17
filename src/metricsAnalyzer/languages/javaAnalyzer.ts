@@ -320,8 +320,8 @@ export class JavaMetricsAnalyzer {
    * Calculates the complexity increment for a specific syntax node type.
    *
    * Structural increments (1 + nesting):
-   *   if_statement, while_statement, for_statement, enhanced_for_statement,
-   *   do_statement, catch_clause, switch_expression, lambda_expression
+   *   All node types in NESTING_TYPES (if_statement, while_statement, for_statement,
+   *   enhanced_for_statement, do_statement, catch_clause, switch_expression, lambda_expression)
    *
    * Flat increments (+1):
    *   ternary_expression, binary && / ||
@@ -330,20 +330,13 @@ export class JavaMetricsAnalyzer {
    * @returns The complexity increment (0 or positive integer)
    */
   private getComplexityIncrement(node: Parser.SyntaxNode): number {
+    // All NESTING_TYPES nodes produce a structural increment (1 + current nesting).
+    // NESTING_TYPES is the single source of truth for structural-increment node types.
+    if (JavaMetricsAnalyzer.NESTING_TYPES.has(node.type)) {
+      return 1 + this.nesting;
+    }
+
     switch (node.type) {
-      case "if_statement":
-      case "while_statement":
-      case "for_statement":
-      case "enhanced_for_statement":
-      case "do_statement":
-      case "catch_clause":
-      case "switch_expression":
-        return 1 + this.nesting;
-
-      case "lambda_expression":
-        // Lambdas are a structural increment, always at least +1
-        return 1 + this.nesting;
-
       case "ternary_expression":
         return 1;
 

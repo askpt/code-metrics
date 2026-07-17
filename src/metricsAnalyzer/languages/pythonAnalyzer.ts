@@ -263,26 +263,22 @@ export class PythonMetricsAnalyzer {
    * Calculates the base complexity increment for a syntax node.
    *
    * Based on SonarSource cognitive complexity rules for Python:
-   * - Structural increments (1 + nesting): if, for, while, except, match, comprehensions
-   * - Flat increments (+1 only): elif, boolean operators (and/or), conditional expression
+   * - Structural increments (1 + nesting): all node types in NESTING_TYPES
+   *   (if, for, while, except, match, comprehensions)
+   * - Flat increments (+1 only): elif, else, conditional expression
+   * - Boolean operators (and/or): 1 + nesting penalty
    *
    * @param node - The syntax node to evaluate
    * @returns The complexity increment (0 or positive integer)
    */
   private getComplexityIncrement(node: Parser.SyntaxNode): number {
-    switch (node.type) {
-      // Structural increments: 1 + nesting
-      case "if_statement":
-      case "for_statement":
-      case "while_statement":
-      case "except_clause":
-      case "match_statement":
-      case "list_comprehension":
-      case "set_comprehension":
-      case "dictionary_comprehension":
-      case "generator_expression":
-        return 1 + this.nesting;
+    // All NESTING_TYPES nodes produce a structural increment (1 + current nesting).
+    // NESTING_TYPES is the single source of truth for structural-increment node types.
+    if (PythonMetricsAnalyzer.NESTING_TYPES.has(node.type)) {
+      return 1 + this.nesting;
+    }
 
+    switch (node.type) {
       // Flat increments: +1 regardless of nesting
       case "elif_clause":
       case "else_clause":
