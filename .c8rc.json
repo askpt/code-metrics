@@ -13,5 +13,10 @@
     "html"
   ],
   "reports-dir": "./coverage",
-  "clean": true
+  "clean": true,
+  "check-coverage": true,
+  "lines": 75,
+  "statements": 75,
+  "branches": 85,
+  "functions": 90
 }

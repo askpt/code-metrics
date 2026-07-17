@@ -340,12 +340,73 @@ export class GoMetricsAnalyzer {
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
     if (nests) { this.nesting++; }
+
+    // In Go, if_statement carries its else/else-if branch as the "alternative" field
+    // (a direct if_statement or block child, with no wrapping else_clause node).
+    // We handle it via visitAlternative so else/else-if get a flat +1 and the
+    // else-if's body is visited at the current nesting level without an extra bump.
+    const alternative = node.type === "if_statement"
+      ? node.childForFieldName("alternative")
+      : null;
+
     for (const child of node.children) {
-      if (!this.isFunctionDeclaration(child)) {
+      if (this.isFunctionDeclaration(child)) { continue; }
+      if (alternative && child === alternative) {
+        this.visitAlternative(child);
+      } else {
         this.visit(child);
       }
     }
+
     if (nests) { this.nesting--; }
+  }
+
+  /**
+   * Visits the alternative branch of a Go `if_statement` (the else / else-if part).
+   *
+   * In Go's AST there is no wrapping `else_clause` node; the alternative is either
+   * a plain `block` (else) or another `if_statement` (else-if) directly under the
+   * parent `if_statement`.
+   *
+   * This method adds the flat +1 increment required by the cognitive complexity spec
+   * for each else/else-if branch and, for else-if, processes the inner if_statement's
+   * body at the *current* nesting level without bumping nesting a second time
+   * (the outer if_statement already bumped it once).
+   *
+   * @param node - The alternative node: either an `if_statement` (else-if) or a `block` (else)
+   */
+  private visitAlternative(node: Parser.SyntaxNode): void {
+    const isElseIf = node.type === "if_statement";
+    const reason = isElseIf ? "else if clause" : "else clause";
+
+    // Flat +1 for else/else-if — no nesting penalty.
+    this.complexity += 1;
+    this.details.push({
+      increment: 1,
+      reason,
+      line: node.startPosition.row,
+      column: node.startPosition.column,
+      nesting: this.nesting,
+    });
+
+    if (isElseIf) {
+      // else-if: visit the inner if_statement's children at the CURRENT nesting level
+      // (do NOT bump nesting again — the outer if already did).
+      // We must also intercept any nested alternative (further else-if/else chains).
+      const innerAlt = node.childForFieldName("alternative");
+      for (const child of node.children) {
+        if (this.isFunctionDeclaration(child)) { continue; }
+        if (child.type === "else") { continue; } // skip the 'else' keyword token
+        if (innerAlt && child === innerAlt) {
+          this.visitAlternative(child);
+        } else {
+          this.visit(child);
+        }
+      }
+    } else {
+      // plain else: just visit the block normally at the current nesting level.
+      this.visit(node);
+    }
   }
 
   /**
