@@ -1,4 +1,51 @@
 import java.util.List;
+import java.util.function.Predicate;
+
+// ── Records (Java 16+) ──────────────────────────────────────────────────────
+// Records automatically generate equals, hashCode, toString, and accessors.
+// Compact constructors are also analysed (complexity: 1 for the if).
+record Range(int start, int end) {
+    Range {
+        if (start > end) {
+            throw new IllegalArgumentException("start must be <= end");
+        }
+    }
+
+    boolean contains(int value) {
+        return value >= start && value <= end;
+    }
+}
+
+// ── Enums with methods ──────────────────────────────────────────────────────
+// Enum methods are shown as <EnumName>.<methodName> in CodeLens.
+enum Direction {
+    NORTH, SOUTH, EAST, WEST;
+
+    public boolean isOpposite(Direction other) {
+        if (this == NORTH && other == SOUTH) { return true; }
+        if (this == SOUTH && other == NORTH) { return true; }
+        if (this == EAST  && other == WEST)  { return true; }
+        if (this == WEST  && other == EAST)  { return true; }
+        return false;
+    }
+}
+
+// ── Generic class ───────────────────────────────────────────────────────────
+// Generic type parameters are handled transparently — complexity is the same
+// as for a non-generic equivalent method.
+class Container<T> {
+    private final T value;
+
+    Container(T value) { this.value = value; }
+
+    public <U extends Comparable<U>> U max(U a, U b) {
+        return a.compareTo(b) >= 0 ? a : b;
+    }
+
+    public static <T> List<T> filterList(List<T> list, Predicate<T> pred) {
+        return list.stream().filter(pred).toList();
+    }
+}
 
 public class SampleJava {
 

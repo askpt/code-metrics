@@ -3385,4 +3385,185 @@ public class Foo {
       );
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Go Analyzer: Generic functions (Go 1.18+)
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Go Analyzer: Generic functions", () => {
+    it("should analyze a generic function with a for-range loop", () => {
+      const sourceCode = `
+package main
+
+func Map[T, U any](slice []T, f func(T) U) []U {
+    result := make([]U, len(slice))
+    for i, v := range slice {
+        result[i] = f(v)
+    }
+    return result
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "should detect one generic function");
+      assert.strictEqual(results[0].name, "Map", "function name should be 'Map'");
+      assert.strictEqual(results[0].complexity, 1, "for-range loop adds 1");
+      const forDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for loop"
+      );
+      assert.ok(forDetail, "for loop detail should be present");
+    });
+
+    it("should analyze a generic function with for-range and nested if", () => {
+      const sourceCode = `
+package main
+
+func Filter[T any](slice []T, pred func(T) bool) []T {
+    var result []T
+    for _, v := range slice {
+        if pred(v) {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "should detect one generic function");
+      assert.strictEqual(results[0].name, "Filter", "function name should be 'Filter'");
+      // for-range (+1) + if nested inside (+2) = 3
+      assert.strictEqual(results[0].complexity, 3, "for + nested if = complexity 3");
+      const forDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "for loop"
+      );
+      const ifDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "if statement"
+      );
+      assert.ok(forDetail, "for-range loop detail should be present");
+      assert.ok(ifDetail, "if statement detail should be present");
+      assert.strictEqual(ifDetail!.nesting, 1, "if inside for-range has nesting 1");
+      assert.strictEqual(ifDetail!.increment, 2, "if at nesting 1 increments by 2");
+    });
+
+    it("should handle multiple generic functions in the same file", () => {
+      const sourceCode = `
+package main
+
+func Identity[T any](v T) T {
+    return v
+}
+
+func Contains[T comparable](slice []T, item T) bool {
+    for _, v := range slice {
+        if v == item {
+            return true
+        }
+    }
+    return false
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2, "should detect two generic functions");
+      const identity = results.find((r: UnifiedFunctionMetrics) => r.name === "Identity");
+      const contains = results.find((r: UnifiedFunctionMetrics) => r.name === "Contains");
+      assert.ok(identity, "Identity function should be detected");
+      assert.ok(contains, "Contains function should be detected");
+      assert.strictEqual(identity!.complexity, 0, "Identity has no control flow");
+      assert.strictEqual(contains!.complexity, 3, "Contains: for(+1) + nested if(+2) = 3");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Java Analyzer: Enum methods
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Java Analyzer: Enum methods", () => {
+    it("should qualify enum method names with the enum name", () => {
+      const sourceCode = `
+public enum Direction {
+    NORTH, SOUTH, EAST, WEST;
+
+    public boolean isOpposite(Direction other) {
+        if (this == NORTH && other == SOUTH) {
+            return true;
+        } else if (this == SOUTH && other == NORTH) {
+            return true;
+        }
+        return false;
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "should detect one enum method");
+      assert.strictEqual(
+        results[0].name, "Direction.isOpposite",
+        "enum method name must be qualified with enum name"
+      );
+      // if (+1) + && (+1) + else-if (+1) + && (+1) = 4
+      assert.strictEqual(results[0].complexity, 4, "if + && + else-if + && = 4");
+    });
+
+    it("should analyze enum constructor complexity", () => {
+      const sourceCode = `
+public enum Planet {
+    MERCURY(3.303e+23, 2.4397e6),
+    EARTH(5.976e+24, 6.37814e6);
+
+    private final double mass;
+    private final double radius;
+
+    Planet(double mass, double radius) {
+        this.mass = mass;
+        this.radius = radius;
+    }
+
+    double surfaceGravity() {
+        final double G = 6.67300E-11;
+        return G * mass / (radius * radius);
+    }
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 2, "should detect constructor and method");
+      const ctor = results.find((r: UnifiedFunctionMetrics) => r.name === "Planet.Planet");
+      const gravity = results.find((r: UnifiedFunctionMetrics) => r.name === "Planet.surfaceGravity");
+      assert.ok(ctor, "enum constructor should be qualified as Planet.Planet");
+      assert.ok(gravity, "enum method should be qualified as Planet.surfaceGravity");
+      assert.strictEqual(ctor!.complexity, 0, "trivial constructor has no control flow");
+      assert.strictEqual(gravity!.complexity, 0, "simple arithmetic has no control flow");
+    });
+
+    it("should analyze enum with abstract method implementations", () => {
+      const sourceCode = `
+public enum Operation {
+    ADD {
+        public int apply(int x, int y) {
+            return x + y;
+        }
+    },
+    MULTIPLY {
+        public int apply(int x, int y) {
+            if (x == 0 || y == 0) {
+                return 0;
+            }
+            return x * y;
+        }
+    };
+
+    public abstract int apply(int x, int y);
+}
+`;
+      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
+      // Only concrete implementations (ADD and MULTIPLY) should appear; abstract method skipped
+      assert.strictEqual(results.length, 2, "abstract method should be skipped; only 2 concrete implementations");
+      // Both concrete methods are qualified with the enclosing enum name
+      assert.ok(
+        results.every((r: UnifiedFunctionMetrics) => r.name === "Operation.apply"),
+        "all results should be qualified as Operation.apply"
+      );
+      // ADD.apply has no control flow
+      const addImpl = results.find((r: UnifiedFunctionMetrics) => r.complexity === 0);
+      assert.ok(addImpl, "ADD.apply should have complexity 0");
+      // MULTIPLY.apply: if (+1) + || (+1) = 2
+      const multiplyImpl = results.find((r: UnifiedFunctionMetrics) => r.complexity === 2);
+      assert.ok(multiplyImpl, "MULTIPLY.apply should have complexity 2 (if + || operator)");
+    });
+  });
 });
