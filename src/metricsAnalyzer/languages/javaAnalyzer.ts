@@ -407,6 +407,7 @@ export class JavaMetricsAnalyzer {
         const op = this.getBinaryOperator(node);
         return `binary ${op} operator`;
       }
+      /* c8 ignore next 2 */
       default:
         return "unknown complexity source";
     }

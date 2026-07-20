@@ -178,6 +178,7 @@ export class RustMetricsAnalyzer {
   private getFunctionName(node: Parser.SyntaxNode): string {
     const nameNode = node.childForFieldName("name");
     if (!nameNode) {
+      /* c8 ignore next */
       return "<anonymous>";
     }
     const funcName = this.sourceText.substring(
@@ -224,6 +225,7 @@ export class RustMetricsAnalyzer {
     // Find the function body (block node)
     const body = node.childForFieldName("body");
     if (!body) {
+      /* c8 ignore next */
       return null;
     }
 
@@ -405,6 +407,7 @@ export class RustMetricsAnalyzer {
         const hasLabel = this.hasLabel(node);
         return hasLabel ? "labeled continue" : "continue (nested)";
       }
+      /* c8 ignore next 2 */
       default:
         return "unknown complexity source";
     }

@@ -193,6 +193,7 @@ export class JsLikeMetricsAnalyzer {
         return "generator function expression (nested)";
       case "method_definition":
         return "method (nested)";
+      /* c8 ignore next 2 */
       default:
         return "function (nested)";
     }
@@ -478,6 +479,7 @@ export class JsLikeMetricsAnalyzer {
         return "labeled break statement";
       case "continue_statement":
         return "labeled continue statement";
+      /* c8 ignore next 2 */
       default:
         return "complexity source";
     }

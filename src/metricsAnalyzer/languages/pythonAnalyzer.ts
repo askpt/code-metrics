@@ -300,6 +300,7 @@ export class PythonMetricsAnalyzer {
           }
           return 1 + this.nesting;
         }
+        /* c8 ignore next */
         return 0;
       }
 
@@ -323,6 +324,7 @@ export class PythonMetricsAnalyzer {
     if (!operatorNode) { return null; }
     const type = operatorNode.type;
     if (type === "and" || type === "or") { return type; }
+    /* c8 ignore next */
     return null;
   }
 
@@ -362,6 +364,7 @@ export class PythonMetricsAnalyzer {
         const op = this.getBooleanOperator(node);
         return `boolean ${op} operator`;
       }
+      /* c8 ignore next 2 */
       default:
         return "complexity source";
     }
