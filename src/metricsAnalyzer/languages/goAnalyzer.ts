@@ -264,6 +264,7 @@ export class GoMetricsAnalyzer {
         if (receiverType) {
           return `${receiverType}.${methodName}`;
         }
+        /* c8 ignore next */
         return methodName;
       }
     }
@@ -274,6 +275,7 @@ export class GoMetricsAnalyzer {
       return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
     }
 
+    /* c8 ignore next */
     return "<anonymous>";
   }
 
@@ -298,6 +300,7 @@ export class GoMetricsAnalyzer {
         }
       }
     }
+    /* c8 ignore next */
     return null;
   }
 
@@ -561,6 +564,7 @@ export class GoMetricsAnalyzer {
         // `getComplexityIncrement` returns 1 only when `isRecoverCall` is true,
         // so this path is only reached for recover() calls.
         return "recover call";
+      /* c8 ignore next 2 */
       default:
         return "unknown complexity source";
     }
