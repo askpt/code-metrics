@@ -3576,6 +3576,7 @@ public enum Operation {
         "function foo(a, b, c) { return a && b && c; }",
         "javascript"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one JS function");
       assert.strictEqual(results[0].complexity, 1, "a && b && c should count as 1");
     });
 
@@ -3584,7 +3585,17 @@ public enum Operation {
         "function foo(a, b, c) { return a || b || c; }",
         "javascript"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one JS function");
       assert.strictEqual(results[0].complexity, 1, "a || b || c should count as 1");
+    });
+
+    it("JS: chained ?? counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "function foo(a, b, c) { return a ?? b ?? c; }",
+        "javascript"
+      );
+      assert.strictEqual(results.length, 1, "should analyze exactly one JS function");
+      assert.strictEqual(results[0].complexity, 1, "a ?? b ?? c should count as 1");
     });
 
     it("JS: mixed && and || counts each sequence separately", () => {
@@ -3592,6 +3603,7 @@ public enum Operation {
         "function foo(a, b, c) { return a && b || c; }",
         "javascript"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one JS function");
       assert.strictEqual(results[0].complexity, 2, "a && b || c should count as 2 (one && seq, one || seq)");
     });
 
@@ -3600,6 +3612,7 @@ public enum Operation {
         "function foo(a: boolean, b: boolean, c: boolean): boolean { return a && b && c; }",
         "typescript"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one TS function");
       assert.strictEqual(results[0].complexity, 1, "TS chained && should count as 1");
     });
 
@@ -3608,6 +3621,7 @@ public enum Operation {
         "package main\nfunc foo(a, b, c bool) bool { return a && b && c }",
         "go"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Go function");
       assert.strictEqual(results[0].complexity, 1, "Go chained && should count as 1");
     });
 
@@ -3616,6 +3630,7 @@ public enum Operation {
         "package main\nfunc foo(a, b, c bool) bool { return a && b || c }",
         "go"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Go function");
       assert.strictEqual(results[0].complexity, 2, "Go a&&b||c should count as 2");
     });
 
@@ -3624,6 +3639,7 @@ public enum Operation {
         "def foo(a, b, c):\n    return a and b and c",
         "python"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Python function");
       assert.strictEqual(results[0].complexity, 1, "Python chained `and` should count as 1");
     });
 
@@ -3632,6 +3648,7 @@ public enum Operation {
         "def foo(a, b, c):\n    return a or b or c",
         "python"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Python function");
       assert.strictEqual(results[0].complexity, 1, "Python chained `or` should count as 1");
     });
 
@@ -3640,6 +3657,7 @@ public enum Operation {
         "def foo(a, b, c):\n    return a and b or c",
         "python"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Python function");
       assert.strictEqual(results[0].complexity, 2, "Python `a and b or c` should count as 2");
     });
 
@@ -3648,6 +3666,7 @@ public enum Operation {
         "fn foo(a: bool, b: bool, c: bool) -> bool { a && b && c }",
         "rust"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Rust function");
       assert.strictEqual(results[0].complexity, 1, "Rust chained && should count as 1");
     });
 
@@ -3656,6 +3675,7 @@ public enum Operation {
         "fn foo(a: bool, b: bool, c: bool) -> bool { a && b || c }",
         "rust"
       );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Rust function");
       assert.strictEqual(results[0].complexity, 2, "Rust a&&b||c should count as 2");
     });
   });
