@@ -391,11 +391,20 @@ export class JsLikeMetricsAnalyzer {
       case "ternary_expression":
         return 1;
 
-      // Logical operators (+1 each)
+      // Logical operators (+1 per distinct sequence)
       case "binary_expression":
       case "logical_expression": {
         const op = this.getOperator(node);
         if (op === "&&" || op === "||" || op === "??") {
+          // Only count the outermost node in a same-operator chain.
+          // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
+          const parent = node.parent;
+          if (parent && (parent.type === "binary_expression" || parent.type === "logical_expression")) {
+            const parentOp = this.getOperator(parent);
+            if (parentOp === op) {
+              return 0; // inner node of a same-operator chain — already counted by parent
+            }
+          }
           return 1;
         }
         return 0;

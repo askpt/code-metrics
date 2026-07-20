@@ -285,10 +285,22 @@ export class PythonMetricsAnalyzer {
       case "conditional_expression":
         return 1;
 
-      // Boolean operators: +1 per operator, plus nesting penalty
+      // Boolean operators: +1 per distinct same-operator sequence, plus nesting penalty
       case "boolean_operator": {
         const op = this.getBooleanOperator(node);
-        return op === "and" || op === "or" ? 1 + this.nesting : 0;
+        if (op === "and" || op === "or") {
+          // Only count the outermost node in a same-operator chain.
+          // e.g. `a and b and c` has two boolean_operators, but counts once.
+          const parent = node.parent;
+          if (parent && parent.type === "boolean_operator") {
+            const parentOp = this.getBooleanOperator(parent);
+            if (parentOp === op) {
+              return 0; // inner node of a same-operator chain — already counted by parent
+            }
+          }
+          return 1 + this.nesting;
+        }
+        return 0;
       }
 
       default:

@@ -3566,4 +3566,97 @@ public enum Operation {
       assert.ok(multiplyImpl, "MULTIPLY.apply should have complexity 2 (if + || operator)");
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Logical operator deduplication (SonarSource spec: same-operator chain = 1)
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("Logical operator chain deduplication", () => {
+    it("JS: chained && counts once, not per pair", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "function foo(a, b, c) { return a && b && c; }",
+        "javascript"
+      );
+      assert.strictEqual(results[0].complexity, 1, "a && b && c should count as 1");
+    });
+
+    it("JS: chained || counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "function foo(a, b, c) { return a || b || c; }",
+        "javascript"
+      );
+      assert.strictEqual(results[0].complexity, 1, "a || b || c should count as 1");
+    });
+
+    it("JS: mixed && and || counts each sequence separately", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "function foo(a, b, c) { return a && b || c; }",
+        "javascript"
+      );
+      assert.strictEqual(results[0].complexity, 2, "a && b || c should count as 2 (one && seq, one || seq)");
+    });
+
+    it("TS: chained && counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "function foo(a: boolean, b: boolean, c: boolean): boolean { return a && b && c; }",
+        "typescript"
+      );
+      assert.strictEqual(results[0].complexity, 1, "TS chained && should count as 1");
+    });
+
+    it("Go: chained && counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "package main\nfunc foo(a, b, c bool) bool { return a && b && c }",
+        "go"
+      );
+      assert.strictEqual(results[0].complexity, 1, "Go chained && should count as 1");
+    });
+
+    it("Go: mixed && and || counts each sequence separately", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "package main\nfunc foo(a, b, c bool) bool { return a && b || c }",
+        "go"
+      );
+      assert.strictEqual(results[0].complexity, 2, "Go a&&b||c should count as 2");
+    });
+
+    it("Python: chained `and` counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "def foo(a, b, c):\n    return a and b and c",
+        "python"
+      );
+      assert.strictEqual(results[0].complexity, 1, "Python chained `and` should count as 1");
+    });
+
+    it("Python: chained `or` counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "def foo(a, b, c):\n    return a or b or c",
+        "python"
+      );
+      assert.strictEqual(results[0].complexity, 1, "Python chained `or` should count as 1");
+    });
+
+    it("Python: mixed `and` and `or` counts each sequence", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "def foo(a, b, c):\n    return a and b or c",
+        "python"
+      );
+      assert.strictEqual(results[0].complexity, 2, "Python `a and b or c` should count as 2");
+    });
+
+    it("Rust: chained && counts once", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "fn foo(a: bool, b: bool, c: bool) -> bool { a && b && c }",
+        "rust"
+      );
+      assert.strictEqual(results[0].complexity, 1, "Rust chained && should count as 1");
+    });
+
+    it("Rust: mixed && and || counts each sequence separately", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "fn foo(a: bool, b: bool, c: bool) -> bool { a && b || c }",
+        "rust"
+      );
+      assert.strictEqual(results[0].complexity, 2, "Rust a&&b||c should count as 2");
+    });
+  });
 });
