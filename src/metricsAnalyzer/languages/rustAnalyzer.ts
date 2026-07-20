@@ -321,7 +321,19 @@ export class RustMetricsAnalyzer {
 
       case "binary_expression": {
         const op = this.getBinaryOperator(node);
-        return op === "&&" || op === "||" ? 1 : 0;
+        if (op === "&&" || op === "||") {
+          // Only count the outermost node in a same-operator chain.
+          // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
+          const parent = node.parent;
+          if (parent && parent.type === "binary_expression") {
+            const parentOp = this.getBinaryOperator(parent);
+            if (parentOp === op) {
+              return 0; // inner node of a same-operator chain — already counted by parent
+            }
+          }
+          return 1;
+        }
+        return 0;
       }
 
       case "closure_expression":

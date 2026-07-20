@@ -433,10 +433,19 @@ export class GoMetricsAnalyzer {
       case "select_statement":
         return 1;
 
-      // Logical operators (+1 for each)
+      // Logical operators (+1 per distinct sequence)
       case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         if (operator === "&&" || operator === "||") {
+          // Only count the outermost node in a same-operator chain.
+          // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
+          const parent = node.parent;
+          if (parent && parent.type === "binary_expression") {
+            const parentOp = this.getBinaryOperator(parent);
+            if (parentOp === operator) {
+              return 0; // inner node of a same-operator chain — already counted by parent
+            }
+          }
           return 1;
         }
         return 0;
