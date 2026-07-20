@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-17T12:13:00Z",
-  "last_run_id": "29579403098",
+  "last_run": "2026-07-20T08:06:23Z",
+  "last_run_id": "29726652045",
   "backlog_cursor": {
-    "issues": 402,
+    "issues": 436,
     "prs": 0
   },
   "comments_made": {
@@ -13,11 +13,9 @@
   "fix_attempts": {},
   "improvement_attempts": [
     "perf-lru-cache (merged as #246)",
-    "test-cache-and-operators (merged)",
     "fix-escape-regex (merged as #235)",
     "refactor-jslike-base (merged as #266)",
     "test-jslike-comprehensive (merged as #267)",
-    "fix-wildcard-glob (#270 - superseded)",
     "improve-codelens-config-passthrough (merged as #285)",
     "feat-python-support-issue-237 (merged as #297)",
     "feat-java-support-issue-238 (merged as #296)",
@@ -33,9 +31,8 @@
     "feat-rust-support-20260517 (merged as #327)",
     "eng-patch-deps-20260517 (merged as #316)",
     "improve-go-pointer-receiver-and-tests-20260520 (merged as #324)",
-    "test-rust-analyzer-20260521 (merged as #328 or similar)",
+    "test-rust-analyzer-20260521 (merged)",
     "improve-rust-trait-impl-naming-20260521 (merged as #329)",
-    "perf-cache-config-20260522 (PR created)",
     "feat-generator-functions-js-ts (merged as #435)",
     "perf-set-types-20260702 (merged as #434)",
     "perf-avoid-spread-copies (merged as #437)",
@@ -47,7 +44,9 @@
     "eng-coverage-thresholds-20260713 (merged as #457)",
     "fix-java-record-method-name-20260714 (merged as #459)",
     "fix-go-else-clause-handling-20260716 (merged as #460)",
-    "test-generics-and-enums-20260717 (PR created)"
+    "test-generics-and-enums-20260717 (merged)",
+    "fix-logical-operator-dedup-20260720 (PR created)",
+    "eng-patch-deps-20260720 (PR created)"
   ],
   "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1).",
   "monthly_activity_issue": {
@@ -55,7 +54,8 @@
     "number": 436
   },
   "open_repo_assist_prs": [
-    {"branch": "repo-assist/test-generics-and-enums-20260717", "title": "test: add Go generics and Java enum method coverage tests"}
+    {"branch": "repo-assist/fix-logical-operator-dedup-20260720", "title": "fix: deduplicate logical operator chains in JS/TS/Go/Python/Rust analyzers"},
+    {"branch": "repo-assist/eng-patch-deps-20260720", "title": "build: bump @typescript-eslint to 8.64.0"}
   ],
   "checked_off_items": []
 }
