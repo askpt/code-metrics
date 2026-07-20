@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-20T08:06:23Z",
-  "last_run_id": "29726652045",
+  "last_run": "2026-07-20T11:45:52Z",
+  "last_run_id": "29739616007",
   "backlog_cursor": {
     "issues": 436,
     "prs": 0
@@ -45,17 +45,19 @@
     "fix-java-record-method-name-20260714 (merged as #459)",
     "fix-go-else-clause-handling-20260716 (merged as #460)",
     "test-generics-and-enums-20260717 (merged)",
-    "fix-logical-operator-dedup-20260720 (PR created)",
-    "eng-patch-deps-20260720 (PR created)"
+    "fix-logical-operator-dedup-20260720 (merged as #462)",
+    "eng-patch-deps-20260720 (blocked by protected files, issue #463 opened - already resolved by Dependabot)",
+    "improve-c8-ignore-annotations-20260720 (PR created)",
+    "eng-coverage-thresholds-20260720b (PR created)"
   ],
-  "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1).",
+  "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1). Issue #463 (@typescript-eslint bump) already resolved by Dependabot - can be closed. After c8-ignore PR merges, raise branches threshold to 90%.",
   "monthly_activity_issue": {
     "month": "2026-07",
     "number": 436
   },
   "open_repo_assist_prs": [
-    {"branch": "repo-assist/fix-logical-operator-dedup-20260720", "title": "fix: deduplicate logical operator chains in JS/TS/Go/Python/Rust analyzers"},
-    {"branch": "repo-assist/eng-patch-deps-20260720", "title": "build: bump @typescript-eslint to 8.64.0"}
+    {"branch": "repo-assist/improve-c8-ignore-annotations-20260720", "title": "style: annotate unreachable defensive fallbacks with c8 ignore"},
+    {"branch": "repo-assist/eng-coverage-thresholds-20260720b", "title": "build: tighten coverage thresholds in .c8rc.json"}
   ],
   "checked_off_items": []
 }
