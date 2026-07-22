@@ -255,15 +255,14 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
   ): vscode.CodeLens[] {
     return functions
       .filter((func) => func.complexity > 0)
-      .map((func) => this.createCodeLens(func, document, config))
-      .filter((lens): lens is vscode.CodeLens => lens !== undefined);
+      .map((func) => this.createCodeLens(func, document, config));
   }
 
   private createCodeLens(
     func: UnifiedFunctionMetrics,
     document: vscode.TextDocument,
     config: CodeMetricsConfig
-  ): vscode.CodeLens | undefined {
+  ): vscode.CodeLens {
     const complexity = func.complexity;
 
     // Create range for the code lens (above the function)
