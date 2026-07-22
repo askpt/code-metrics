@@ -248,17 +248,19 @@ export class JavaMetricsAnalyzer {
       );
     }
 
-    if (node.type === "if_statement") {
-      // A single find() serves both as the existence check and the position source,
-      // avoiding the prior double scan (hasElseBranch via .some() + .find()).
+    // Compute elseBranchNode once for if_statement nodes and reuse it below for
+    // both the else-detail reason string and the children-loop skip-increment
+    // check — eliminating the previous double getElseBranchNode() call.
+    const elseBranchNode =
+      node.type === "if_statement" ? this.getElseBranchNode(node) : null;
+
+    if (elseBranchNode !== null) {
+      // find() runs only when an else branch is present, so the scan is skipped
+      // entirely for the common case of if_statements without an else clause.
       const elseToken = node.children.find((c) => !c.isNamed && c.type === "else");
       if (elseToken) {
-        this.addDetail(
-          1,
-          this.getElseBranchReason(node),
-          elseToken.startPosition.row,
-          elseToken.startPosition.column
-        );
+        const reason = elseBranchNode.type === "if_statement" ? "else if clause" : "else clause";
+        this.addDetail(1, reason, elseToken.startPosition.row, elseToken.startPosition.column);
       }
     }
 
@@ -267,13 +269,9 @@ export class JavaMetricsAnalyzer {
     // to avoid double-counting (the else_clause +1 already accounts for it).
     const nests = this.increasesNesting(node);
     if (nests) { this.nesting++; }
-    const elseBranchNode =
-      nests && node.type === "if_statement"
-        ? this.getElseBranchNode(node)
-        : undefined;
     for (const child of node.children) {
       if (!this.isMethodDeclaration(child)) {
-        this.visit(child, elseBranchNode !== undefined && child === elseBranchNode);
+        this.visit(child, elseBranchNode !== null && child === elseBranchNode);
       }
     }
     if (nests) { this.nesting--; }
@@ -293,16 +291,6 @@ export class JavaMetricsAnalyzer {
       column,
       nesting: this.nesting,
     });
-  }
-
-  /**
-   * Returns the reason label for an if-statement else branch.
-   * Distinguishes between `else if` (nested if_statement as else branch)
-   * and plain `else` (block or single statement branch).
-   */
-  private getElseBranchReason(node: Parser.SyntaxNode): string {
-    const elseBranch = this.getElseBranchNode(node);
-    return elseBranch?.type === "if_statement" ? "else if clause" : "else clause";
   }
 
   /**
