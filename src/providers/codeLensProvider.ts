@@ -121,6 +121,21 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    */
   private readonly excludeResultCache = new Map<string, boolean>();
 
+  /**
+   * Cache of rendered CodeLens arrays keyed by `"<analysisKey>#<configKey>"`.
+   *
+   * `createCodeLenses` allocates a `vscode.Range`, `vscode.Command`, and `vscode.CodeLens`
+   * object for every function on every call. When neither the document content nor the
+   * workspace-folder config has changed, the rendered output is identical — caching it avoids
+   * all those short-lived allocations on cursor movements, scroll events, and focus switches.
+   *
+   * Invalidated by `clearConfigCache()` (threshold changes alter icon/text) and
+   * `clearAnalysisCache()` (language-mode switches). Entries for closed documents are
+   * pruned proactively by `pruneAnalysisCacheForDocument()`.
+   * Bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
+   */
+  private readonly codeLensCache = new Map<string, vscode.CodeLens[]>();
+
   public async provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
@@ -186,7 +201,22 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
         this.analysisCache.delete(analysisKey);
         this.analysisCache.set(analysisKey, functions);
       }
-      return this.createCodeLenses(functions, document, config);
+
+      // Return a cached CodeLens array when both the document content and config are unchanged,
+      // avoiding per-call allocation of Range/Command/CodeLens objects for every function.
+      const codeLensKey = `${analysisKey}#${configKey}`;
+      let lenses = this.codeLensCache.get(codeLensKey);
+      if (!lenses) {
+        lenses = this.createCodeLenses(functions, document, config);
+        if (this.codeLensCache.size >= ANALYSIS_CACHE_MAX_SIZE) {
+          this.codeLensCache.delete(this.codeLensCache.keys().next().value!);
+        }
+        this.codeLensCache.set(codeLensKey, lenses);
+      } else {
+        this.codeLensCache.delete(codeLensKey);
+        this.codeLensCache.set(codeLensKey, lenses);
+      }
+      return lenses;
     } catch (error) {
       console.error("Error creating code lenses:", error);
       return [];
@@ -296,22 +326,30 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     this.configCache.clear();
     // Exclude patterns are part of config; invalidate path-level exclusion results too.
     this.excludeResultCache.clear();
+    // Threshold changes alter icon/text in every CodeLens — discard the rendered cache.
+    this.codeLensCache.clear();
   }
 
   public clearAnalysisCache(): void {
     this.analysisCache.clear();
+    this.codeLensCache.clear();
   }
 
   /**
-   * Removes all analysis-cache entries whose key starts with the given document URI.
-   * Called when a document is closed so stale per-version entries don't occupy memory
-   * until the cache fills up and LRU eviction takes over.
+   * Removes all analysis-cache and codeLens-cache entries whose key starts with the given
+   * document URI. Called when a document is closed so stale per-version entries don't
+   * occupy memory until the cache fills up and LRU eviction takes over.
    */
   public pruneAnalysisCacheForDocument(uriString: string): void {
     const prefix = `${uriString}#`;
     for (const key of this.analysisCache.keys()) {
       if (key.startsWith(prefix)) {
         this.analysisCache.delete(key);
+      }
+    }
+    for (const key of this.codeLensCache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.codeLensCache.delete(key);
       }
     }
   }
