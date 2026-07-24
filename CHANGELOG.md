@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.8.2](https://github.com/askpt/code-metrics/compare/v0.8.1...v0.8.2) (2026-07-24)
+
+
+### 🐛 Bug Fixes
+
+* deduplicate logical operator chains in JS/TS/Go/Python/Rust analyzers ([#462](https://github.com/askpt/code-metrics/issues/462)) ([ed64f8c](https://github.com/askpt/code-metrics/commit/ed64f8c24c0f3cb0e0330a664b852d88b83ad067))
+* Go else/else-if branches now count as flat +1 increments ([#460](https://github.com/askpt/code-metrics/issues/460)) ([e7eea3b](https://github.com/askpt/code-metrics/commit/e7eea3b76dad512acdd57a43393952851ccde95c))
+* qualify Java record method names and analyze compact constructors ([#459](https://github.com/askpt/code-metrics/issues/459)) ([a91c6b9](https://github.com/askpt/code-metrics/commit/a91c6b9d3979b0cd67e29008ca096663a6b08dab))
+
+
+### 🚀 Performance
+
+* cache rendered CodeLens array to skip per-call object allocation ([#474](https://github.com/askpt/code-metrics/issues/474)) ([b6e75a3](https://github.com/askpt/code-metrics/commit/b6e75a32c81eb203924ae40e12a4dfcc6423d8e3))
+* eliminate duplicate getElseBranchNode call in Java analyzer and redundant filter in codeLensProvider ([#472](https://github.com/askpt/code-metrics/issues/472)) ([e3bdcc2](https://github.com/askpt/code-metrics/commit/e3bdcc24850dae0ca87a538a4d78cd39548a66f9))
+* O(1) impl type lookup, TS/TSX singletons, enable noUnusedParameters ([#442](https://github.com/askpt/code-metrics/issues/442)) ([978b5c5](https://github.com/askpt/code-metrics/commit/978b5c5d157b8c7520704f6f39386997d047afb2))
+* O(1) operator field lookup in C# analyzer + branch coverage tests ([#447](https://github.com/askpt/code-metrics/issues/447)) ([ace8969](https://github.com/askpt/code-metrics/commit/ace8969d2e49eedb9448f3b696110e4633026f3d))
+
+
+### 🔄 Refactoring
+
+* use NESTING_TYPES.has() in getComplexityIncrement for Java and Python ([#458](https://github.com/askpt/code-metrics/issues/458)) ([c7da834](https://github.com/askpt/code-metrics/commit/c7da834b0d2a0cd03c70db252d2bc6527ed875be))
+
 ## [0.8.1](https://github.com/askpt/code-metrics/compare/v0.8.0...v0.8.1) (2026-07-04)
 
 
