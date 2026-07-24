@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-22T10:58:34Z",
-  "last_run_id": "29913870682",
+  "last_run": "2026-07-24T07:53:55Z",
+  "last_run_id": "30076904972",
   "backlog_cursor": {
     "issues": 436,
     "prs": 0
@@ -50,7 +50,9 @@
     "eng-patch-deps-20260720 (blocked by protected files, issue #463 opened - already resolved by Dependabot)",
     "improve-c8-ignore-annotations-20260720 (merged)",
     "eng-coverage-thresholds-20260720b (merged)",
-    "perf-java-else-codeLens-20260722 (PR created as #aw_perf_java)"
+    "perf-java-else-codeLens-20260722 (merged as #472)",
+    "perf-codelens-rendered-cache-20260724 (PR created as #aw_perf_lens)",
+    "feat-diagnostics-provider-20260724 (PR created as #aw_diag_pr)"
   ],
   "notes": "PR #443 (release-please v0.8.2) open - needs maintainer merge. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1). Issue #463 (@typescript-eslint bump) already resolved by Dependabot - RA commented, can be closed.",
   "monthly_activity_issue": {
@@ -58,7 +60,8 @@
     "number": 436
   },
   "open_repo_assist_prs": [
-    {"branch": "repo-assist/perf-java-else-codeLens-20260722", "title": "perf: eliminate duplicate getElseBranchNode call in Java analyzer and redundant filter in codeLensProvider"}
+    {"branch": "repo-assist/perf-codelens-rendered-cache-20260724", "title": "perf: cache rendered CodeLens array to skip per-call object allocation"},
+    {"branch": "repo-assist/feat-diagnostics-provider-20260724", "title": "feat: add cognitive complexity diagnostics provider"}
   ],
   "checked_off_items": []
 }
