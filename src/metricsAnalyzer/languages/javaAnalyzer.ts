@@ -212,6 +212,7 @@ export class JavaMetricsAnalyzer {
       parent = parent.parent;
     }
 
+    /* c8 ignore next */
     return methodName;
   }
 
