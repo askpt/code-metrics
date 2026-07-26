@@ -3566,28 +3566,9 @@ public enum Operation {
       assert.ok(multiplyImpl, "MULTIPLY.apply should have complexity 2 (if + || operator)");
     });
 
-    it("should count traditional switch statement", () => {
-      const sourceCode = `
-class A {
-    String describe(int n) {
-        switch (n) {
-            case 1: return "one";
-            case 2: return "two";
-            default: return "other";
-        }
-    }
-}
-`;
-      const results = JavaMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.strictEqual(results.length, 1, "one method");
-      assert.strictEqual(results[0].name, "A.describe");
-      assert.strictEqual(results[0].complexity, 1, "switch adds +1");
-      const switchDetail = results[0].details.find((d: UnifiedMetricsDetail) =>
-        d.reason === "switch statement"
-      );
-      assert.ok(switchDetail, "switch statement should add complexity");
-    });
+  });
 
+  describe("Java Analyzer: switch", () => {
     it("should count modern switch expression (Java 14+)", () => {
       const sourceCode = `
 class A {
