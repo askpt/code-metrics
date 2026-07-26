@@ -256,10 +256,11 @@ export class JavaMetricsAnalyzer {
       node.type === "if_statement" ? this.getElseBranchNode(node) : null;
 
     if (elseBranchNode !== null) {
-      // find() runs only when an else branch is present, so the scan is skipped
-      // entirely for the common case of if_statements without an else clause.
-      const elseToken = node.children.find((c) => !c.isNamed && c.type === "else");
-      if (elseToken) {
+      // In Java's AST an if_statement with an else clause always has exactly this structure:
+      //   [0] "if" keyword, [1] condition, [2] then-body, [3] "else" keyword, [4] else-body
+      // child(3) is an O(1) indexed lookup — no allocation, no linear scan.
+      const elseToken = node.child(3);
+      if (elseToken && elseToken.type === "else") {
         const reason = elseBranchNode.type === "if_statement" ? "else if clause" : "else clause";
         this.addDetail(1, reason, elseToken.startPosition.row, elseToken.startPosition.column);
       }
