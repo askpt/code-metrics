@@ -212,7 +212,9 @@ export class JavaMetricsAnalyzer {
       parent = parent.parent;
     }
 
+    /* c8 ignore start -- unreachable with valid Java; all methods live inside a class/interface/enum/record */
     return methodName;
+    /* c8 ignore stop */
   }
 
   /**
