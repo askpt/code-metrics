@@ -756,15 +756,14 @@ export class CSharpMetricsAnalyzer {
    * @returns The operator string or null if not found
    */
   private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // binary_expression structure: [left, operator, right] — operator always at index 1
+    // binary_expression structure: [left, operator, right] — operator always at index 1.
+    // In tree-sitter-c-sharp, anonymous operator tokens use their literal text as their node
+    // type (e.g. type === "&&"), so reading `.type` avoids a sourceText.substring allocation.
     const operatorNode = node.child(1);
     if (!operatorNode) { return null; }
     const type = operatorNode.type;
-    if (type === "&&" || type === "||" || type === "binary_operator") {
-      return this.sourceText.substring(
-        operatorNode.startIndex,
-        operatorNode.endIndex
-      );
+    if (type === "&&" || type === "||") {
+      return type;
     }
     return null;
   }
