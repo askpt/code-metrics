@@ -20,6 +20,6 @@ jobs:
         with:
           node-version: 22.x
       - name: Install gh-aw extension
-        uses: github/gh-aw-actions/setup-cli@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
+        uses: github/gh-aw-actions/setup-cli@6f8e8ef27dc666d7945cf450b3a16b8872092c94 # v0.83.3
         with:
           version: v0.83.1
