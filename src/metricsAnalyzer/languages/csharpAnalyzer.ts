@@ -495,7 +495,7 @@ export class CSharpMetricsAnalyzer {
       case "conditional_expression":
         return 1;
 
-      // Lambda expressions and anonymous methods (nested: +1 when inside any other construct)
+      // Lambda expressions and anonymous methods (nested: +1 + nesting level when inside any other construct)
       case "lambda_expression":
       case "anonymous_method_expression":
         return this.nesting > 0 ? 1 + this.nesting : 0;
