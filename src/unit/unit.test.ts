@@ -374,8 +374,9 @@ func Complex(x, y int) int {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      // 2 ifs (+1 each) + '&&' (+2 at nest 1) + '||' (+2 at nest 1) = 6
-      assert.strictEqual(results[0].complexity, 6);
+      // 2 ifs (+1 each at nesting=0) + '&&' (+1 flat) + '||' (+1 flat) = 4
+      // Logical operators are flat per the cognitive complexity spec — no nesting penalty.
+      assert.strictEqual(results[0].complexity, 4);
     });
 
     it("should handle loops correctly", () => {

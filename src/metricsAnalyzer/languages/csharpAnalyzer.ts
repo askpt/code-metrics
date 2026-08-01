@@ -418,10 +418,8 @@ export class CSharpMetricsAnalyzer {
    * @param node - The current syntax node being visited
    */
   private visit(node: Parser.SyntaxNode): void {
-    const baseIncrement = this.getComplexityIncrement(node);
-    if (baseIncrement > 0) {
-      // Add nesting level to the increment for cognitive complexity
-      const increment = baseIncrement + this.nesting;
+    const increment = this.getComplexityIncrement(node);
+    if (increment > 0) {
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
 
@@ -449,56 +447,65 @@ export class CSharpMetricsAnalyzer {
    * Calculates the complexity increment for a specific syntax node type.
    *
    * Based on cognitive complexity rules:
-   * - Control flow statements (if, while, for, switch): +1
-   * - Exception handling (try, catch): +1
-   * - Logical operators (&&, ||): +1 each
-   * - Conditional expressions (ternary): +1
-   * - Nested constructs (lambdas in loops): +1 for nesting
-   * - Jump statements in nested contexts: +1
+   * - Control flow statements (if, while, for, switch): +1 + nesting level
+   * - Exception handling (try, catch): +1 + nesting level
+   * - Logical operators (&&, ||): +1 flat (no nesting penalty), deduplicated per chain
+   * - Conditional expressions (ternary): +1 flat
+   * - Nested constructs (lambdas in loops): +1 + nesting level
+   * - Jump statements in nested contexts: +1 flat
    *
    * @param node - The syntax node to evaluate
    * @returns The complexity increment (0 or positive integer)
    */
   private getComplexityIncrement(node: Parser.SyntaxNode): number {
     switch (node.type) {
-      // Control flow statements (+1)
+      // Control flow statements (structural: +1 + nesting level)
       case "if_statement":
       case "while_statement":
       case "for_statement":
       case "foreach_statement":
       case "switch_statement":
       case "switch_expression":
-        return 1;
+        return 1 + this.nesting;
 
-      // Exception handling (+1)
+      // Exception handling (structural: +1 + nesting level)
       case "try_statement":
       case "catch_clause":
-        return 1;
+        return 1 + this.nesting;
 
-      // Logical operators (+1 for each)
+      // Logical operators (+1 per distinct same-operator sequence, flat — no nesting penalty)
       case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         if (operator === "&&" || operator === "||") {
+          // Only count the outermost node in a same-operator chain.
+          // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
+          const parent = node.parent;
+          if (parent && parent.type === "binary_expression") {
+            const parentOp = this.getBinaryOperator(parent);
+            if (parentOp === operator) {
+              return 0; // inner node of a same-operator chain — already counted by parent
+            }
+          }
           return 1;
         }
         return 0;
       }
 
-      // Conditional expressions (+1)
+      // Conditional expressions (flat +1)
       case "conditional_expression":
         return 1;
 
-      // Lambda expressions and anonymous methods (+1 for nesting)
+      // Lambda expressions and anonymous methods (nested: +1 when inside any other construct)
       case "lambda_expression":
       case "anonymous_method_expression":
-        return this.nesting > 0 ? 1 : 0;
+        return this.nesting > 0 ? 1 + this.nesting : 0;
 
-      // Continue and break in nested structures
+      // Continue and break in nested structures (flat +1)
       case "continue_statement":
       case "break_statement":
         return this.nesting > 0 ? 1 : 0;
 
-      // Goto statements
+      // Goto statements (flat +1)
       case "goto_statement":
         return 1;
 
