@@ -68,8 +68,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Test.Process");
-      // Expected complexity: if(1) + for(2) + nested if(3) + nested continue(4) = 10
-      assert.strictEqual(results[0].complexity, 10);
+      // Expected complexity: if(1) + for(+1+1=2) + nested if(+1+2=3) + continue(flat+1) = 7
+      assert.strictEqual(results[0].complexity, 7);
       assert.strictEqual(results[0].details.length, 4);
     });
   });
@@ -88,7 +88,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      assert.strictEqual(results[0].complexity, 3);
+      assert.strictEqual(results[0].complexity, 2);
       assert.strictEqual(results[0].details[0].reason, "while loop");
       assert.strictEqual(
         results[0].details[1].reason,
@@ -369,8 +369,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for (1) + nested if (2) + nested continue (3) = 6
-      assert.strictEqual(results[0].complexity, 6);
+      // for (1) + nested if (+1+1=2) + continue (flat+1) = 4
+      assert.strictEqual(results[0].complexity, 4);
     });
 
     test("should handle break in nested context", () => {
@@ -388,8 +388,8 @@ suite("CSharp Metrics Analyzer Tests", () => {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // while (1) + nested if (2) + nested break (3) = 6
-      assert.strictEqual(results[0].complexity, 6);
+      // while (1) + nested if (+1+1=2) + break (flat+1) = 4
+      assert.strictEqual(results[0].complexity, 4);
     });
   });
 
@@ -473,7 +473,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 3); // if (1) + || nested in if condition (2)
+      assert.strictEqual(results[0].complexity, 2); // if (1) + || flat (1)
     });
 
     test("should analyze local functions", () => {
@@ -590,7 +590,7 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.ok(outerMethod);
       assert.ok(innerMethod);
       assert.strictEqual(outerMethod.complexity, 1);
-      assert.strictEqual(innerMethod.complexity, 3); // while loop (1) + nested break (2)
+      assert.strictEqual(innerMethod.complexity, 2); // while loop (1) + break flat (1)
     });
   });
 
