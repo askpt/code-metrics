@@ -108,7 +108,7 @@ suite("Metrics Analyzer Factory Tests", () => {
 
       assert.strictEqual(addFunction.complexity, 0);
       assert.strictEqual(divideFunction.complexity, 1); // if statement
-      assert.strictEqual(processFunction.complexity, 9); // if(1) + ||(2) + foreach(1) + nested if(2) + nested continue(3)
+      assert.strictEqual(processFunction.complexity, 6); // if(1) + ||(flat+1) + foreach(1) + nested if(+1+1=2) + continue(flat+1)
     });
 
     test("should handle C# code with logical operators", () => {
