@@ -108,7 +108,7 @@ func Method(a, b, c bool) {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].complexity, 6); // 2 ifs + && (nested +2) + || (nested +2)
+      assert.strictEqual(results[0].complexity, 4); // 2 ifs (+1 each) + && (+1 flat) + || (+1 flat)
     });
 
     it("should handle loops correctly", () => {
@@ -3659,6 +3659,26 @@ class A {
       );
       assert.strictEqual(results.length, 1, "should analyze exactly one Go function");
       assert.strictEqual(results[0].complexity, 2, "Go a&&b||c should count as 2");
+    });
+
+    it("Go: logical operators inside nested if are flat (+1 each, no nesting penalty)", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "package main\nfunc foo(a, b bool) bool {\n  if a {\n    return a && b\n  }\n  return false\n}",
+        "go"
+      );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Go function");
+      // if(+1) + &&(+1 flat) = 2, NOT if(+1) + &&(+2 with nesting)
+      assert.strictEqual(results[0].complexity, 2, "Go && inside if should be flat +1, total 2");
+    });
+
+    it("Go: logical operators inside doubly-nested ifs are still flat +1", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "package main\nfunc foo(a, b bool) bool {\n  if a {\n    if b {\n      return a && b\n    }\n  }\n  return false\n}",
+        "go"
+      );
+      assert.strictEqual(results.length, 1, "should analyze exactly one Go function");
+      // outer if(+1) + inner if(+2) + &&(+1 flat) = 4
+      assert.strictEqual(results[0].complexity, 4, "Go doubly-nested if + && should total 4");
     });
 
     it("Python: chained `and` counts once", () => {
