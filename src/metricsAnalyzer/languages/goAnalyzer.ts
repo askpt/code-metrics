@@ -128,7 +128,7 @@ export class GoMetricsAnalyzer {
    *   return a + b
    * }`;
    * const results = analyzer.analyzeFunctions(sourceCode);
-   * // results[0].complexity would be 2 (if statement + logical OR)
+   * // results[0].complexity would be 3 (if statement + logical OR nested in if)
    * ```
    */
   public analyzeFunctions(sourceText: string): GoFunctionMetrics[] {
@@ -417,9 +417,10 @@ export class GoMetricsAnalyzer {
    * Based on cognitive complexity rules:
    * - Control flow statements (if, for, switch, select): +1 + nesting level (structural)
    * - Recover calls (similar to catch): +1 flat
-   * - Logical operators (&&, ||): +1 flat each (no nesting penalty)
-   * - Nested closures (func literals in nested context): +1 flat
-   * - Jump statements with labels: +1 flat
+   * - Logical operators (&&, ||): +1 flat per distinct sequence (no nesting penalty)
+   * - Nested closures (func literals in nested context): +1 + nesting level
+   * - Jump statements with labels: +1 + nesting level
+   * - Non-labeled break/continue when nested: +1 + nesting level
    * - Goto statements: +1 flat
    *
    * @param node - The syntax node to evaluate
@@ -453,19 +454,19 @@ export class GoMetricsAnalyzer {
         return 0;
       }
 
-      // Func literals (closures) - add +1 flat when nested
+      // Func literals (closures) - add +1 + nesting when nested
       case "func_literal":
-        return this.nesting > 0 ? 1 : 0;
+        return this.nesting > 0 ? 1 + this.nesting : 0;
 
-      // Labeled statements with break/continue (+1 flat)
+      // Break/continue statements (+1 + nesting when nested)
       case "break_statement":
       case "continue_statement":
         // Check if it has a label (labeled break/continue add complexity)
         if (this.hasLabel(node)) {
-          return 1;
+          return 1 + this.nesting;
         }
-        // Non-labeled break/continue in nested structures (+1 flat)
-        return this.nesting > 0 ? 1 : 0;
+        // Non-labeled break/continue in nested structures (+1 + nesting)
+        return this.nesting > 0 ? 1 + this.nesting : 0;
 
       // Goto statements (+1 flat)
       case "goto_statement":

@@ -600,8 +600,8 @@ func ProcessNumbers(numbers []int) string {
 
       assert.strictEqual(addFunction.complexity, 0);
       assert.strictEqual(divideFunction.complexity, 1); // if statement
-      // if(1) + ||(2) + for(1) + nested if(2) + nested continue(3) = 9
-      assert.strictEqual(processFunction.complexity, 9);
+      // if(1) + ||(1 flat) + for(1) + nested if(2) + nested continue(3) = 8
+      assert.strictEqual(processFunction.complexity, 8);
     });
 
     test("should handle Go code with logical operators", () => {
@@ -657,7 +657,7 @@ func (c *Calculator) MultiplyWithCheck(a, b int) int {
       assert.ok(multiplyMethod);
 
       assert.strictEqual(addMethod.complexity, 0);
-      assert.strictEqual(multiplyMethod.complexity, 3); // if(1) + ||(2 nested in if)
+      assert.strictEqual(multiplyMethod.complexity, 2); // if(1) + ||(1 flat)
     });
 
     test("should handle Go switch statements", () => {
