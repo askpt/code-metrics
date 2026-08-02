@@ -315,8 +315,8 @@ func ConditionalLogic(a, b int) bool {
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // if(1) + &&(2 nested in if) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // if(1) + &&(1 flat) = 2
+      assert.strictEqual(results[0].complexity, 2);
     });
   });
 
@@ -724,8 +724,8 @@ func ProcessData(items []int, includeNegatives bool) []int {
       const results = analyzer.analyzeFunctions(sourceCode);
 
       assert.strictEqual(results.length, 1);
-      // for(1) + if(2) + else if(1) + &&(3) + else(1) + continue(3) + if(1) + else if(1) = 13
-      assert.strictEqual(results[0].complexity, 13);
+      // for(1) + if(2) + else if(1) + &&(1 flat) + else(1) + continue(3) + if(1) + else if(1) = 11
+      assert.strictEqual(results[0].complexity, 11);
     });
   });
 
@@ -784,8 +784,8 @@ func Add(a, b int) int {
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "Add");
-      // if(1) + ||(2 nested in if) = 3
-      assert.strictEqual(results[0].complexity, 3);
+      // if(1) + ||(1 flat) = 2
+      assert.strictEqual(results[0].complexity, 2);
     });
   });
 
