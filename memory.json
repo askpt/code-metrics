@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-26T11:39:32Z",
-  "last_run_id": "30200494759",
+  "last_run": "2026-08-02T01:21:30Z",
+  "last_run_id": "30726850944",
   "backlog_cursor": {
-    "issues": 436,
+    "issues": 490,
     "prs": 0
   },
   "comments_made": {
@@ -47,24 +47,24 @@
     "fix-go-else-clause-handling-20260716 (merged as #460)",
     "test-generics-and-enums-20260717 (merged)",
     "fix-logical-operator-dedup-20260720 (merged as #462)",
-    "eng-patch-deps-20260720 (blocked by protected files, issue #463 opened - already resolved by Dependabot)",
+    "eng-patch-deps-20260720 (blocked by protected files)",
     "improve-c8-ignore-annotations-20260720 (merged)",
     "eng-coverage-thresholds-20260720b (merged)",
     "perf-java-else-codeLens-20260722 (merged as #472)",
     "perf-codelens-rendered-cache-20260724 (merged as #474)",
     "feat-diagnostics-provider-20260724 (PR #473, still open)",
-    "perf-java-else-token-O1-20260726 (PR created as #aw_perf_java2)",
-    "improve-java-coverage-20260726 (PR created as #aw_java_tests)"
+    "perf-java-else-token-O1-20260726 (merged as #477)",
+    "improve-java-coverage-20260726 (merged as #478)",
+    "perf-go-csharp-O1-recover-20260802 (PR created 2026-08-02)"
   ],
-  "notes": "PR #443 (release-please v0.8.2) merged 2026-07-25. PR #455 (TypeScript 7 bump) open - RA commented with compatibility analysis. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. tree-sitter-rust 0.24 and tree-sitter-c-sharp 0.23.5 deferred (require tree-sitter@^0.22.1/^0.25.0, conflicts with current 0.21.1). Issue #463 (@typescript-eslint bump) already resolved by Dependabot - RA commented, can be closed. PR #474 merged (CodeLens cache). PR #473 (diagnostics provider) still open.",
+  "notes": "PR #443 (release-please v0.8.2) merged. PR #479 (release-please 0.8.3) open. PR #455 (TypeScript 7 bump) open - RA commented. Issues #353 (Ruby) and #402 (Kotlin) blocked by protected files. PR #473 (diagnostics provider) open/draft. Issue #490 (protected files warning) open. Monthly activity 2026-07 is #436 (superseded). Monthly activity 2026-08 created as #aw_aug_monthly.",
   "monthly_activity_issue": {
-    "month": "2026-07",
-    "number": 436
+    "month": "2026-08",
+    "number": "aw_aug_monthly"
   },
   "open_repo_assist_prs": [
     {"branch": "repo-assist/feat-diagnostics-provider-20260724", "number": 473, "title": "feat: add cognitive complexity diagnostics provider"},
-    {"branch": "repo-assist/perf-java-else-token-O1-20260726", "title": "perf: O(1) else-token lookup in Java analyzer via child(3) instead of find()"},
-    {"branch": "repo-assist/improve-java-coverage-20260726", "title": "test: add Java switch tests and mark unreachable getMethodName fallback with c8 ignore"}
+    {"branch": "repo-assist/perf-go-csharp-O1-recover-20260802", "title": "perf: avoid array allocation in C# operator name lookup and substring in Go recover check"}
   ],
   "checked_off_items": []
 }
