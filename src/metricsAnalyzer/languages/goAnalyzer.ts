@@ -493,7 +493,10 @@ export class GoMetricsAnalyzer {
   private isRecoverCall(node: Parser.SyntaxNode): boolean {
     const funcNode = node.childForFieldName("function");
     if (!funcNode || funcNode.type !== "identifier") { return false; }
-    return this.sourceText.substring(funcNode.startIndex, funcNode.endIndex) === "recover";
+   // Short-circuit before substring allocation when the identifier length does not match.
+   // This avoids a string allocation for the vast majority of call_expression nodes.
+   if (funcNode.endIndex - funcNode.startIndex !== "recover".length) { return false; }
+   return this.sourceText.substring(funcNode.startIndex, funcNode.endIndex) === "recover";
   }
 
   /**
