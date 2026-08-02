@@ -128,7 +128,7 @@ export class GoMetricsAnalyzer {
    *   return a + b
    * }`;
    * const results = analyzer.analyzeFunctions(sourceCode);
-   * // results[0].complexity would be 3 (if statement + logical OR nested in if)
+   * // results[0].complexity would be 2 (if statement + logical OR)
    * ```
    */
   public analyzeFunctions(sourceText: string): GoFunctionMetrics[] {
@@ -419,7 +419,7 @@ export class GoMetricsAnalyzer {
    * - Recover calls (similar to catch): +1 flat
    * - Logical operators (&&, ||): +1 flat per distinct sequence (no nesting penalty)
    * - Nested closures (func literals in nested context): +1 + nesting level
-   * - Jump statements with labels: +1 + nesting level
+   * - Labeled break/continue statements: +1 + nesting level
    * - Non-labeled break/continue when nested: +1 + nesting level
    * - Goto statements: +1 flat
    *
