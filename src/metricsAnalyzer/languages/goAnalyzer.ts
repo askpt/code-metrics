@@ -493,9 +493,9 @@ export class GoMetricsAnalyzer {
   private isRecoverCall(node: Parser.SyntaxNode): boolean {
     const funcNode = node.childForFieldName("function");
     if (!funcNode || funcNode.type !== "identifier") { return false; }
-   // "recover" is exactly 7 characters — short-circuit before substring allocation.
+   // Short-circuit before substring allocation when the identifier length does not match.
    // This avoids a string allocation for the vast majority of call_expression nodes.
-   if (funcNode.endIndex - funcNode.startIndex !== 7) { return false; }
+   if (funcNode.endIndex - funcNode.startIndex !== "recover".length) { return false; }
    return this.sourceText.substring(funcNode.startIndex, funcNode.endIndex) === "recover";
   }
 

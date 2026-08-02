@@ -307,11 +307,11 @@ export class CSharpMetricsAnalyzer {
     if (node.type === "conversion_operator_declaration") {
       // tree-sitter-c-sharp exposes a "type" field that points directly to the conversion
       // target type, replacing a previous O(n) linear scan over children.
-      // The implicit/explicit keyword is not a named field; it appears after the modifier
-      // nodes (public, static, etc.), which number at most 3. Scan the first 4 children
-      // with direct index access to avoid the array allocation from node.children.
+      // The implicit/explicit keyword is not a named field; it appears somewhere after
+      // the modifier nodes (public, static, etc.). Scan all children with direct index
+      // access to avoid the array allocation from node.children, breaking early when found.
       let kind = "explicit";
-      for (let i = 0; i < 4 && i < node.childCount; i++) {
+      for (let i = 0; i < node.childCount; i++) {
         const c = node.child(i);
         if (c?.type === "implicit" || c?.type === "explicit") {
           kind = c.type;
