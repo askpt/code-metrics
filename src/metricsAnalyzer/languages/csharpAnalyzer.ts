@@ -307,12 +307,17 @@ export class CSharpMetricsAnalyzer {
     if (node.type === "conversion_operator_declaration") {
       // tree-sitter-c-sharp exposes a "type" field that points directly to the conversion
       // target type, replacing a previous O(n) linear scan over children.
-      // The implicit/explicit keyword is not a named field, so a short prefix scan is still
-      // needed, but it stops at the first matching token rather than scanning all children.
-      const kindNode = node.children.find(
-        (c) => c.type === "implicit" || c.type === "explicit"
-      );
-      const kind = kindNode ? kindNode.type : "explicit";
+      // The implicit/explicit keyword is not a named field; it appears after the modifier
+      // nodes (public, static, etc.), which number at most 3. Scan the first 4 children
+      // with direct index access to avoid the array allocation from node.children.
+      let kind = "explicit";
+      for (let i = 0; i < 4 && i < node.childCount; i++) {
+        const c = node.child(i);
+        if (c?.type === "implicit" || c?.type === "explicit") {
+          kind = c.type;
+          break;
+        }
+      }
       const typeNode = node.childForFieldName("type");
       if (typeNode) {
         const targetType = this.sourceText.substring(typeNode.startIndex, typeNode.endIndex);
@@ -325,10 +330,15 @@ export class CSharpMetricsAnalyzer {
 
     // For regular methods, accessors, and local functions: use the "name" field when
     // available, falling back to a scan of child nodes for an identifier token.
-    const nameNode =
-      node.childForFieldName("name") ??
-      node.children.find((child) => child.type === "identifier") ??
-      null;
+    // Use direct child(i) access (O(1) per child) rather than node.children.find(...)
+    // to avoid the array allocation that node.children creates on each call.
+    let nameNode = node.childForFieldName("name");
+    if (!nameNode) {
+      for (let i = 0; i < node.childCount; i++) {
+        const c = node.child(i);
+        if (c?.type === "identifier") { nameNode = c; break; }
+      }
+    }
     const methodName = nameNode
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";
