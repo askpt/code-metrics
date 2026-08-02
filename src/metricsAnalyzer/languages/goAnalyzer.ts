@@ -324,10 +324,8 @@ export class GoMetricsAnalyzer {
    * @param node - The current syntax node being visited
    */
   private visit(node: Parser.SyntaxNode): void {
-    const baseIncrement = this.getComplexityIncrement(node);
-    if (baseIncrement > 0) {
-      // Add nesting level to the increment for cognitive complexity
-      const increment = baseIncrement + this.nesting;
+    const increment = this.getComplexityIncrement(node);
+    if (increment > 0) {
       const reason = this.getComplexityReason(node);
       this.complexity += increment;
 
@@ -413,30 +411,31 @@ export class GoMetricsAnalyzer {
   }
 
   /**
-   * Calculates the complexity increment for a specific syntax node type.
+   * Calculates the full complexity increment for a specific syntax node type,
+   * including any nesting penalty.
    *
    * Based on cognitive complexity rules:
-   * - Control flow statements (if, for, switch, select): +1
-   * - Recover calls (similar to catch): +1
-   * - Logical operators (&&, ||): +1 each
-   * - Nested closures (func literals in nested context): +1
-   * - Jump statements with labels: +1
-   * - Goto statements: +1
+   * - Control flow statements (if, for, switch, select): +1 + nesting level (structural)
+   * - Recover calls (similar to catch): +1 flat
+   * - Logical operators (&&, ||): +1 flat each (no nesting penalty)
+   * - Nested closures (func literals in nested context): +1 flat
+   * - Jump statements with labels: +1 flat
+   * - Goto statements: +1 flat
    *
    * @param node - The syntax node to evaluate
-   * @returns The complexity increment (0 or positive integer)
+   * @returns The full complexity increment (0 or positive integer)
    */
   private getComplexityIncrement(node: Parser.SyntaxNode): number {
     switch (node.type) {
-      // Control flow statements (+1)
+      // Structural control flow (+1 + nesting)
       case "if_statement":
       case "for_statement":
       case "expression_switch_statement":
       case "type_switch_statement":
       case "select_statement":
-        return 1;
+        return 1 + this.nesting;
 
-      // Logical operators (+1 per distinct sequence)
+      // Logical operators (+1 flat per distinct sequence — no nesting penalty)
       case "binary_expression": {
         const operator = this.getBinaryOperator(node);
         if (operator === "&&" || operator === "||") {
@@ -454,25 +453,25 @@ export class GoMetricsAnalyzer {
         return 0;
       }
 
-      // Func literals (closures) - add complexity only when nested
+      // Func literals (closures) - add +1 flat when nested
       case "func_literal":
         return this.nesting > 0 ? 1 : 0;
 
-      // Labeled statements with break/continue
+      // Labeled statements with break/continue (+1 flat)
       case "break_statement":
       case "continue_statement":
         // Check if it has a label (labeled break/continue add complexity)
         if (this.hasLabel(node)) {
           return 1;
         }
-        // Non-labeled break/continue in nested structures
+        // Non-labeled break/continue in nested structures (+1 flat)
         return this.nesting > 0 ? 1 : 0;
 
-      // Goto statements
+      // Goto statements (+1 flat)
       case "goto_statement":
         return 1;
 
-      // Recover calls (similar to catch)
+      // Recover calls (similar to catch, +1 flat)
       case "call_expression":
         return this.isRecoverCall(node) ? 1 : 0;
 
