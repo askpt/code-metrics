@@ -374,29 +374,25 @@ export class CSharpMetricsAnalyzer {
     // Check if this method ends with a semicolon (indicating it's incomplete due to preprocessing)
     const lastChild = node.children[node.children.length - 1];
     if (lastChild && lastChild.type === ";") {
-      // This looks like a method signature split by preprocessor - try to find body in siblings
-      const parent = node.parent;
-      if (parent) {
-        // Look for preprocessor blocks that immediately follow this method
-        const methodIndex = parent.children.indexOf(node);
-        for (let i = methodIndex + 1; i < parent.children.length; i++) {
-          const sibling = parent.children[i];
-
-          // If we find a preproc_if, look inside it for method body content
-          if (sibling.type === "preproc_if") {
-            // Create a synthetic body by analyzing the content within the preprocessor block
-            return this.createSyntheticBodyFromPreprocessor(sibling);
-          }
-
-          // Stop searching if we hit another method or major declaration
-          if (
-            this.isFunctionDeclaration(sibling) ||
-            sibling.type === "class_declaration" ||
-            sibling.type === "interface_declaration"
-          ) {
-            break;
-          }
+      // This looks like a method signature split by preprocessor - try to find body in siblings.
+      // Use nextSibling traversal (O(1) per step) instead of indexOf + index loop (O(n) scan).
+      let sibling = node.nextSibling;
+      while (sibling) {
+        // If we find a preproc_if, look inside it for method body content
+        if (sibling.type === "preproc_if") {
+          // Create a synthetic body by analyzing the content within the preprocessor block
+          return this.createSyntheticBodyFromPreprocessor(sibling);
         }
+
+        // Stop searching if we hit another method or major declaration
+        if (
+          this.isFunctionDeclaration(sibling) ||
+          sibling.type === "class_declaration" ||
+          sibling.type === "interface_declaration"
+        ) {
+          break;
+        }
+        sibling = sibling.nextSibling;
       }
     }
 
@@ -607,20 +603,14 @@ export class CSharpMetricsAnalyzer {
    * @returns True if a matching colon is found in nearby nodes
    */
   private hasMatchingColonInSiblings(errorNode: Parser.SyntaxNode): boolean {
-    const parent = errorNode.parent;
-    if (!parent) {
+    if (!errorNode.parent) {
       return false;
     }
 
-    const errorIndex = parent.children.indexOf(errorNode);
-
-    // Look in the next few sibling nodes for a colon
-    for (
-      let i = errorIndex + 1;
-      i < Math.min(errorIndex + 3, parent.children.length);
-      i++
-    ) {
-      const sibling = parent.children[i];
+    // Walk up to 2 next siblings using O(1) nextSibling traversal (avoids the previous
+    // O(n) indexOf scan over parent.children).
+    let sibling = errorNode.nextSibling;
+    for (let steps = 0; sibling && steps < 2; steps++, sibling = sibling.nextSibling) {
       const siblingText = this.sourceText.substring(
         sibling.startIndex,
         sibling.endIndex
