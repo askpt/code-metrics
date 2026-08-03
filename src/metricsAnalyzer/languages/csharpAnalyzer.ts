@@ -384,11 +384,9 @@ export class CSharpMetricsAnalyzer {
           return this.createSyntheticBodyFromPreprocessor(sibling);
         }
 
-        // Stop searching if we hit another method or major declaration
         if (
           this.isFunctionDeclaration(sibling) ||
-          sibling.type === "class_declaration" ||
-          sibling.type === "interface_declaration"
+          CSharpMetricsAnalyzer.TYPE_DECLARATION_TYPES.has(sibling.type)
         ) {
           break;
         }
