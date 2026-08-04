@@ -112,6 +112,8 @@ export class CSharpMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
+  /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
+  private preprocessorDepth = 0;
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
@@ -217,6 +219,7 @@ export class CSharpMetricsAnalyzer {
 
     // Reset state for new function
     this.nesting = 0;
+    this.preprocessorDepth = 0;
     this.complexity = 0;
     this.details = [];
 
@@ -438,13 +441,16 @@ export class CSharpMetricsAnalyzer {
 
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
+    const isPreproc = node.type.startsWith("preproc_");
     if (nests) { this.nesting++; }
+    if (isPreproc) { this.preprocessorDepth++; }
     for (const child of node.children) {
       if (!this.isFunctionDeclaration(child)) {
         this.visit(child);
       }
     }
     if (nests) { this.nesting--; }
+    if (isPreproc) { this.preprocessorDepth--; }
   }
 
   /**
@@ -660,20 +666,16 @@ export class CSharpMetricsAnalyzer {
   }
 
   /**
-   * Checks if a node is within a preprocessor block (preproc_if, preproc_else, etc.)
+   * Checks if the current traversal position is within a preprocessor block.
    *
-   * @param node - The node to check
-   * @returns True if the node is within a preprocessor directive block
+   * Uses the `preprocessorDepth` counter maintained by `visit()` for O(1) lookup,
+   * replacing the previous O(AST-depth) ancestor walk.
+   *
+   * @param _node - Unused; kept for signature compatibility with call sites
+   * @returns True if currently inside a preprocessor directive block
    */
-  private isInPreprocessorBlock(node: Parser.SyntaxNode): boolean {
-    let parent = node.parent;
-    while (parent) {
-      if (parent.type.startsWith("preproc_")) {
-        return true;
-      }
-      parent = parent.parent;
-    }
-    return false;
+  private isInPreprocessorBlock(_node: Parser.SyntaxNode): boolean {
+    return this.preprocessorDepth > 0;
   }
 
   /**
