@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { registerCodeLensProvider } from "./providers/codeLensProvider";
+import { registerDiagnosticsProvider } from "./providers/diagnosticsProvider";
 import { UnifiedFunctionMetrics } from "./metricsAnalyzer/metricsAnalyzerFactory";
 import { ConfigurationManager } from "./configuration";
 
@@ -68,8 +69,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register providers
   const codeLensDisposable = registerCodeLensProvider();
+  const diagnosticsDisposable = registerDiagnosticsProvider(context);
 
-  context.subscriptions.push(showFunctionDetailsCommand, codeLensDisposable);
+  context.subscriptions.push(showFunctionDetailsCommand, codeLensDisposable, diagnosticsDisposable);
 }
 
 // This method is called when your extension is deactivated

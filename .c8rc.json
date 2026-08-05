@@ -5,7 +5,10 @@
   ],
   "exclude": [
     "out/test/**/*",
-    "out/unit/**/*"
+    "out/unit/**/*",
+    "out/extension.js",
+    "out/configuration.js",
+    "out/providers/**/*"
   ],
   "reporter": [
     "text",
@@ -15,8 +18,8 @@
   "reports-dir": "./coverage",
   "clean": true,
   "check-coverage": true,
-  "lines": 80,
-  "statements": 80,
+  "lines": 95,
+  "statements": 95,
   "branches": 88,
-  "functions": 95
+  "functions": 97
 }
