@@ -687,6 +687,27 @@ class Validator {
       assert.strictEqual(results[0].name, "Validator.check");
     });
 
+    it("should use bare field name for arrow function fields in anonymous TS classes", () => {
+      // Covers the `className ? ... : fieldName` fallback when getEnclosingClassName
+      // returns null (anonymous class expression has no name).
+      const sourceCode = `
+const obj = class {
+  compute = (x: number): number => {
+    if (x > 0) {
+      return x;
+    }
+    return 0;
+  };
+};
+`;
+      const results = TypeScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      // No class name available → bare field name "compute"
+      assert.strictEqual(results[0].name, "compute",
+        "arrow function field in anonymous class should use bare field name");
+      assert.strictEqual(results[0].complexity, 1, "one if statement");
+    });
+
     it("should handle factory analyzeFile with typescript language id", () => {
       const sourceCode = `
 function hello(): string {
@@ -1877,6 +1898,24 @@ loop:
         d.reason === "goto statement"
       );
       assert.ok(gotoDetail, "goto statement should add complexity");
+    });
+
+    it("should format pointer-to-array receiver using text fallback (non-identifier inner type)", () => {
+      // Note: Go does not permit methods on unnamed receiver types like *[3]int, but tree-sitter may still parse them.
+      // This test ensures our name extraction fallback remains robust for such semantically-invalid but parseable code.
+      const sourceCode = `
+package main
+
+func (s *[3]int) Sum() int {
+    return (*s)[0] + (*s)[1] + (*s)[2]
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      // Name should be "[3]int.Sum" (asterisk stripped from "*[3]int")
+      assert.strictEqual(results[0].name, "[3]int.Sum",
+        "non-identifier pointer receiver should strip '*' and use text fallback");
+      assert.strictEqual(results[0].complexity, 0, "no control flow, so complexity 0");
     });
 
     it("should count type switch statements", () => {
