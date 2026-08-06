@@ -1901,8 +1901,8 @@ loop:
     });
 
     it("should format pointer-to-array receiver using text fallback (non-identifier inner type)", () => {
-      // Covers the ternary fallback in getFunctionName when the pointer_type inner
-      // node is not a type_identifier (e.g. *[3]int).
+      // Note: Go does not permit methods on unnamed receiver types like *[3]int, but tree-sitter may still parse them.
+      // This test ensures our name extraction fallback remains robust for such semantically-invalid but parseable code.
       const sourceCode = `
 package main
 
