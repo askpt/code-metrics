@@ -3848,7 +3848,7 @@ const api = {
   // CSharp: preprocessor ERROR node with no recognised pattern
   // ──────────────────────────────────────────────────────────────────────────
   describe("CSharp: preprocessor ERROR node fallback", () => {
-    it("should return 'complexity pattern (in preprocessor block)' for unrecognised ERROR node text", () => {
+    it("should analyze the method when a preprocessor ERROR node has unrecognised text", () => {
       // An ERROR node inside a preprocessor block that does not match any of the
       // known keyword/pattern regexes reaches the final fallback return in
       // getComplexityReasonFromErrorNode (line 725 in csharpAnalyzer).
@@ -3868,10 +3868,8 @@ public class Foo {
 }
 `;
       const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
-      // The method may or may not get complexity depending on tree-sitter's parse;
-      // what we care about is that the analyser does not throw and the fallback
-      // path is exercised without error.
-      assert.ok(Array.isArray(results), "analyzeFile should return an array");
+      assert.strictEqual(results.length, 1, "one method expected");
+      assert.strictEqual(results[0].name, "Foo.Bar", "the method should still be discovered");
     });
   });
 
@@ -3879,7 +3877,7 @@ public class Foo {
   // CSharp: malformed declaration in preprocessor with no pattern match
   // ──────────────────────────────────────────────────────────────────────────
   describe("CSharp: malformed declaration fallback", () => {
-    it("should return 'complexity pattern in declaration (preprocessor block)' for unrecognised declaration text", () => {
+    it("should analyze the method when a malformed preprocessor declaration has unrecognised text", () => {
       // A field_declaration inside a preprocessor block that has neither a ternary
       // pattern nor `&&`/`||` reaches the last return in
       // getComplexityReasonFromMalformedDeclaration (lines 752-754).
@@ -3897,7 +3895,8 @@ public class Foo {
 }
 `;
       const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.ok(Array.isArray(results), "analyzeFile should return an array");
+      assert.strictEqual(results.length, 1, "one method expected");
+      assert.strictEqual(results[0].name, "Foo.Baz", "the method should still be discovered");
     });
   });
 });
