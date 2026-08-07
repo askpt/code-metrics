@@ -213,6 +213,17 @@ export class JsLikeMetricsAnalyzer {
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
       }
+      // Anonymous function_expression/generator_function as an object property value:
+      // `{ getData: function() {} }` — check the parent pair's key.
+      if (node.type === "function_expression" || node.type === "generator_function") {
+        const parent = node.parent;
+        if (parent?.type === "pair") {
+          const keyNode = parent.childForFieldName("key");
+          if (keyNode?.type === "property_identifier" || keyNode?.type === "identifier") {
+            return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+          }
+        }
+      }
     }
 
     if (node.type === "method_definition") {
