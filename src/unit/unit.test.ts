@@ -2589,6 +2589,57 @@ const result = (function() {
       assert.strictEqual(results[0].name, "(anonymous)", "anonymous function expression should show (anonymous)");
       assert.strictEqual(results[0].complexity, 1);
     });
+
+    it("should name anonymous function expression by object property key", () => {
+      const sourceCode = `
+const api = {
+  getData: function() {
+    if (flag) { return data; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "object method function expression is a top-level entry");
+      assert.strictEqual(results[0].name, "getData", "should use the property key as the function name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should name anonymous generator function by object property key", () => {
+      const sourceCode = `
+const api = {
+  getStream: function*() {
+    if (flag) { yield 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "getStream", "generator in object literal should use property key");
+    });
+
+    it("should name anonymous function expression assigned to member expression", () => {
+      const sourceCode = `
+exports.bar = function() {
+  if (x) { return 1; }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "bar", "function assigned to member should use property name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should name anonymous function expression assigned to simple identifier", () => {
+      const sourceCode = `
+handler = function() {
+  if (x) { return 1; }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "handler", "function assigned to identifier should use identifier name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
