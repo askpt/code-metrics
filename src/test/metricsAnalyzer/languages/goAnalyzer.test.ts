@@ -727,6 +727,34 @@ func ProcessData(items []int, includeNegatives bool) []int {
       // for(1) + if(2) + else if(1) + &&(1 flat) + else(1) + continue(3) + if(1) + else if(1) = 11
       assert.strictEqual(results[0].complexity, 11);
     });
+
+    test("should skip a function declaration without a body (e.g. assembly/cgo stub)", () => {
+      const sourceCode = `
+package main
+
+func Foo(a int) int
+`;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      // No body means analyzeFunction returns null and is filtered out.
+      assert.strictEqual(results.length, 0);
+    });
+
+    test("should skip a method declaration without a body (e.g. assembly/cgo stub)", () => {
+      const sourceCode = `
+package main
+
+type T struct{}
+
+func (t T) Foo(a int) int
+`;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      // No body means analyzeFunction returns null and is filtered out.
+      assert.strictEqual(results.length, 0);
+    });
   });
 
   suite("Position Information", () => {

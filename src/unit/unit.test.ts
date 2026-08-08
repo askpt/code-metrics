@@ -2702,6 +2702,30 @@ outer:
       );
       assert.ok(detail, "labeled continue should add complexity");
     });
+
+    it("should skip a function declaration without a body (e.g. assembly/cgo stub)", () => {
+      const sourceCode = `
+package main
+
+func Foo(a int) int
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      // No body means analyzeFunction returns null and the declaration is filtered out.
+      assert.strictEqual(results.length, 0);
+    });
+
+    it("should skip a method declaration without a body (e.g. assembly/cgo stub)", () => {
+      const sourceCode = `
+package main
+
+type T struct{}
+
+func (t T) Foo(a int) int
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      // No body means analyzeFunction returns null and the declaration is filtered out.
+      assert.strictEqual(results.length, 0);
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
