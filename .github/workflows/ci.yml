@@ -2,31 +2,21 @@ name: Continuous Integration
 permissions:
   contents: read
 
+# Deliberately not path-filtered. `CI Gate` is a required status check, and a required
+# check that never reports stays *pending* rather than failing - so a docs-only pull
+# request would be unmergeable without an admin bypass.
 on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - 'eslint.config.mjs'
-      - '.vscode-test.mjs'
-      - '.github/workflows/ci.yml'
   pull_request:
-    paths:
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - 'eslint.config.mjs'
-      - '.vscode-test.mjs'
-      - '.github/workflows/ci.yml'
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Keyed on the pull request rather than the ref, and only superseding in-flight runs
+  # for `pull_request`: cancelling on `push` would abandon CI for a commit already on main.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -39,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Install Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -69,3 +61,52 @@ jobs:
           verbose: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  ci-gate:
+    name: CI Gate
+    # `always()` is load-bearing. Without it the job inherits the implicit `success()`
+    # condition and is reported as *skipped* when a dependency fails - and branch
+    # protection treats a skipped check as satisfied, letting through exactly the pull
+    # requests this job exists to stop.
+    if: always()
+    needs: [build]
+
+    permissions:
+      contents: read
+
+    # `ubuntu-slim` ships jq and bash, which is everything this job needs.
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+
+    steps:
+      - name: Check that every gated job succeeded
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          # Comma-separated jobs allowed to report `skipped`. Empty on purpose: nothing
+          # here is skipped by design, so an accidental `if:` cannot quietly stop gating
+          # a job.
+          ALLOWED_SKIPS: ""
+        run: |
+          {
+            echo "### CI Gate"
+            echo ""
+            echo "| Job | Result |"
+            echo "| --- | --- |"
+            echo "$NEEDS_JSON" | jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failing=$(echo "$NEEDS_JSON" | jq -r --arg allowed "$ALLOWED_SKIPS" '
+            ($allowed | split(",") | map(select(length > 0))) as $ok
+            | to_entries[]
+            | select(.value.result != "success")
+            | select(.value.result != "skipped" or ([.key] - $ok | length) > 0)
+            | "\(.key): \(.value.result)"
+          ')
+
+          if [ -n "$failing" ]; then
+            echo "::error::One or more gated jobs did not succeed:"
+            echo "$failing"
+            exit 1
+          fi
+
+          echo "All gated jobs succeeded or were intentionally skipped."
