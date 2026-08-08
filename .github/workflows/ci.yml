@@ -87,6 +87,11 @@ jobs:
           # a job.
           ALLOWED_SKIPS: ""
         run: |
+          # Fail closed explicitly rather than relying on the runner's default
+          # `bash -e`: a `shell:` override would otherwise let a jq error through
+          # as an empty `failing` and pass the gate.
+          set -euo pipefail
+
           {
             echo "### CI Gate"
             echo ""
@@ -96,7 +101,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           failing=$(echo "$NEEDS_JSON" | jq -r --arg allowed "$ALLOWED_SKIPS" '
-            ($allowed | split(",") | map(select(length > 0))) as $ok
+            ($allowed | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))) as $ok
             | to_entries[]
             | select(.value.result != "success")
             | select(.value.result != "skipped" or ([.key] - $ok | length) > 0)
