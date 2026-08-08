@@ -17,6 +17,8 @@ export interface CodeMetricsConfig {
   enabled: boolean;
   /** Whether to show CodeLens above functions */
   showCodeLens: boolean;
+  /** Whether to show diagnostics in the Problems pane */
+  showDiagnostics: boolean;
   /** Complexity threshold for warning status (yellow indicator) */
   warningThreshold: number;
   /** Complexity threshold for error status (red indicator) */
@@ -31,6 +33,7 @@ export interface CodeMetricsConfig {
 export const DEFAULT_CONFIG: CodeMetricsConfig = {
   enabled: true,
   showCodeLens: true,
+  showDiagnostics: true,
   warningThreshold: 10,
   errorThreshold: 15,
   excludePatterns: [
@@ -69,6 +72,10 @@ export class ConfigurationManager {
       showCodeLens: config.get<boolean>(
         "showCodeLens",
         DEFAULT_CONFIG.showCodeLens
+      ),
+      showDiagnostics: config.get<boolean>(
+        "showDiagnostics",
+        DEFAULT_CONFIG.showDiagnostics
       ),
       warningThreshold: config.get<number>(
         "warningThreshold",

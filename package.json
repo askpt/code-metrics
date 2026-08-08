@@ -69,6 +69,11 @@
           "default": true,
           "description": "Show code metrics information as CodeLens above functions"
         },
+        "codeMetrics.showDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show cognitive complexity diagnostics in the Problems pane"
+        },
         "codeMetrics.warningThreshold": {
           "type": "number",
           "default": 10,
