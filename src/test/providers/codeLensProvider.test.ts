@@ -35,6 +35,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       ConfigurationManager.getConfiguration = () => ({
         enabled: false,
         showCodeLens: true,
+        showDiagnostics: true,
         warningThreshold: 10,
         errorThreshold: 15,
         excludePatterns: [],
@@ -75,6 +76,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       ConfigurationManager.getConfiguration = () => ({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         warningThreshold: 1,
         errorThreshold: 2,
         excludePatterns: [],
@@ -130,6 +132,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: false,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -162,6 +165,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: false,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -189,6 +193,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -220,6 +225,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -253,6 +259,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: ["*.generated.*", "**/bin/**"],
         warningThreshold: 10,
         threshold: 15,
@@ -284,6 +291,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: ["*.generated.*", "**/bin/**"],
         warningThreshold: 10,
         threshold: 15,
@@ -406,6 +414,7 @@ suite("Metrics Code Lens Provider Tests", () => {
         const mockConfig = createMockConfiguration({
           enabled: true,
           showCodeLens: true,
+          showDiagnostics: true,
           excludePatterns: [testCase.pattern],
           warningThreshold: 10,
           threshold: 15,
@@ -452,6 +461,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const excludingConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: ["*.generated.*"],
         warningThreshold: 10,
         threshold: 15,
@@ -485,6 +495,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const nonExcludingConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -530,6 +541,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -582,6 +594,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 5,
         threshold: 15,
@@ -620,6 +633,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -670,6 +684,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -716,6 +731,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -739,6 +755,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       const mockConfig = createMockConfiguration({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         excludePatterns: [],
         warningThreshold: 10,
         threshold: 15,
@@ -797,6 +814,7 @@ suite("Metrics Code Lens Provider Tests", () => {
       ConfigurationManager.getConfiguration = () => ({
         enabled: true,
         showCodeLens: true,
+        showDiagnostics: true,
         warningThreshold: 10,
         errorThreshold: 15,
         excludePatterns: [],

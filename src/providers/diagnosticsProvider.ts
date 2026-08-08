@@ -52,7 +52,7 @@ export class ComplexityDiagnosticsProvider {
 
     const config = ConfigurationManager.getConfiguration(document.uri);
 
-    if (!config.enabled || !MetricsAnalyzerFactory.isSupportedLanguage(document.languageId)) {
+    if (!config.enabled || !config.showDiagnostics || !MetricsAnalyzerFactory.isSupportedLanguage(document.languageId)) {
       this.collection.delete(document.uri);
       this.trackedUris.delete(document.uri.toString());
       return;
