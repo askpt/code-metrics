@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.8.3](https://github.com/askpt/code-metrics/compare/v0.8.2...v0.8.3) (2026-08-08)
+
+
+### 🐛 Bug Fixes
+
+* correct C# logical operator cognitive complexity counting ([#489](https://github.com/askpt/code-metrics/issues/489)) ([445d848](https://github.com/askpt/code-metrics/commit/445d848f181b68973b3f1637a81af603010877d8))
+* correct Go logical operator cognitive complexity (flat +1, not nesting-penalized) ([#495](https://github.com/askpt/code-metrics/issues/495)) ([fd7d1f7](https://github.com/askpt/code-metrics/commit/fd7d1f72f628f2475ba0d303a9645f22e1d6b70a))
+
+
+### 🚀 Performance
+
+* avoid array allocation in C# operator name lookup and substring in Go recover check ([#493](https://github.com/askpt/code-metrics/issues/493)) ([f5b5ede](https://github.com/askpt/code-metrics/commit/f5b5ede5308a104130b34a10d6a65c7216283619))
+* avoid substring allocation in getBinaryOperator for C# && and || ([#480](https://github.com/askpt/code-metrics/issues/480)) ([b8a54b8](https://github.com/askpt/code-metrics/commit/b8a54b8fdb61fdb8d867ad17c9b7f16c57af0288))
+* O(1) else-token lookup in Java analyzer via child(3) instead of find() ([#477](https://github.com/askpt/code-metrics/issues/477)) ([8966cdd](https://github.com/askpt/code-metrics/commit/8966cddfdd77d8c3d910f607053a0fc9cf3b6802))
+* replace O(depth) isInPreprocessorBlock walk with O(1) depth counter ([#505](https://github.com/askpt/code-metrics/issues/505)) ([e52ebcb](https://github.com/askpt/code-metrics/commit/e52ebcb53452e4c81165b270811b0f8f63e3db1e))
+* replace O(n) indexOf+children with O(1) nextSibling traversal in C# analyzer ([#499](https://github.com/askpt/code-metrics/issues/499)) ([ed4f8b0](https://github.com/askpt/code-metrics/commit/ed4f8b06051cfaa05c1d74e3beaeb969c23db4c7))
+
 ## [0.8.2](https://github.com/askpt/code-metrics/compare/v0.8.1...v0.8.2) (2026-07-25)
 
 
