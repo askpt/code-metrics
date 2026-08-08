@@ -3765,4 +3765,138 @@ class A {
       assert.strictEqual(results[0].complexity, 2, "Rust a&&b||c should count as 2");
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // JS: Arrow function with non-identifier object property key
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("JS: Arrow function with string-literal object property key", () => {
+    it("should fall back to (arrow function) name when key is a string literal", () => {
+      // String-keyed pairs have a `string` AST node type, not `property_identifier`
+      // or `identifier`, so the name falls through to the anonymous fallback.
+      // This covers the false branch of the `keyNode?.type === "property_identifier" ||
+      // keyNode?.type === "identifier"` guard in jsLikeAnalyzer.getFunctionName.
+      const sourceCode = `
+const api = {
+  "getData": () => {
+    if (flag) { return 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "string-keyed arrow should still be analysed");
+      assert.strictEqual(
+        results[0].name,
+        "(arrow function)",
+        "string-literal key is not a plain identifier, so name should be (arrow function)"
+      );
+      assert.strictEqual(results[0].complexity, 1);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // JS: anonymous function_expression / generator in object property
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("JS: anonymous function_expression in object property", () => {
+    it("should use the property key name when an anonymous function_expression is an object value", () => {
+      // Previously, `{ getData: function() {} }` would return "(anonymous)" because
+      // getFunctionName only checked the "name" child field of function_expression.
+      // After the fix, it also checks the parent pair's key.
+      const sourceCode = `
+const api = {
+  getData: function() {
+    if (flag) { return 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "object method should be analysed");
+      assert.strictEqual(results[0].name, "getData", "should use the pair key as the function name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("should use the property key name when an anonymous generator_function is an object value", () => {
+      const sourceCode = `
+const api = {
+  fetch: function*() {
+    if (flag) { return 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "object generator should be analysed");
+      assert.strictEqual(results[0].name, "fetch", "should use the pair key as the generator name");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    it("named function_expression in object property should keep its own name", () => {
+      // A named function expression like `{ getData: function inner() {} }` already
+      // has a name node; the improvement should not override it.
+      const sourceCode = `
+const api = {
+  getData: function inner() {
+    if (flag) { return 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "inner", "named function_expression should keep its own name");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CSharp: preprocessor ERROR node with no recognised pattern
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp: preprocessor ERROR node fallback", () => {
+    it("should analyze the method when a preprocessor ERROR node has unrecognised text", () => {
+      // An ERROR node inside a preprocessor block that does not match any of the
+      // known keyword/pattern regexes reaches the final fallback return in
+      // getComplexityReasonFromErrorNode (line 725 in csharpAnalyzer).
+      // We fake this by inserting a bare identifier in the #else branch so
+      // tree-sitter emits an ERROR node that contains neither `if(`, `while(`,
+      // `for(`, `foreach(`, `&&`/`||`, `?:`, `try{`, nor `catch(`.
+      const sourceCode = `
+public class Foo {
+  public void Bar()
+#if DEBUG
+  { }
+#else
+  {
+    someUnknownStatement;
+  }
+#endif
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      assert.strictEqual(results[0].name, "Foo.Bar", "the method should still be discovered");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CSharp: malformed declaration in preprocessor with no pattern match
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp: malformed declaration fallback", () => {
+    it("should analyze the method when a malformed preprocessor declaration has unrecognised text", () => {
+      // A field_declaration inside a preprocessor block that has neither a ternary
+      // pattern nor `&&`/`||` reaches the last return in
+      // getComplexityReasonFromMalformedDeclaration (lines 752-754).
+      // We use a simple type-only declaration to avoid ternary and logical matches.
+      const sourceCode = `
+public class Foo {
+  public void Baz()
+#if DEBUG
+  {
+    int x;
+  }
+#else
+  { }
+#endif
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      assert.strictEqual(results[0].name, "Foo.Baz", "the method should still be discovered");
+    });
+  });
 });
