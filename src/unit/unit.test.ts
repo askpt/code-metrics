@@ -2590,31 +2590,27 @@ const result = (function() {
       assert.strictEqual(results[0].complexity, 1);
     });
 
-    it("should name anonymous function expression by object property key", () => {
+    it("should name anonymous function expression by variable declarator name", () => {
       const sourceCode = `
-const api = {
-  getData: function() {
-    if (flag) { return data; }
-  }
+const handler = function() {
+  if (flag) { return data; }
 };
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.strictEqual(results.length, 1, "object method function expression is a top-level entry");
-      assert.strictEqual(results[0].name, "getData", "should use the property key as the function name");
+      assert.strictEqual(results.length, 1, "variable declarator function expression is a top-level entry");
+      assert.strictEqual(results[0].name, "handler", "should use the variable declarator name as the function name");
       assert.strictEqual(results[0].complexity, 1);
     });
 
-    it("should name anonymous generator function by object property key", () => {
+    it("should name anonymous generator function assigned to member expression", () => {
       const sourceCode = `
-const api = {
-  getStream: function*() {
-    if (flag) { yield 1; }
-  }
+exports.getStream = function*() {
+  if (flag) { yield 1; }
 };
 `;
       const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].name, "getStream", "generator in object literal should use property key");
+      assert.strictEqual(results[0].name, "getStream", "generator assigned to member should use property name");
     });
 
     it("should name anonymous function expression assigned to member expression", () => {

@@ -216,6 +216,12 @@ export class JsLikeMetricsAnalyzer {
       // Anonymous function_expression / generator_function: infer name from parent context.
       if (node.type === "function_expression" || node.type === "generator_function") {
         const parent = node.parent;
+        if (parent?.type === "variable_declarator") {
+          const nameNode = parent.childForFieldName("name");
+          if (nameNode?.type === "identifier") {
+            return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+          }
+        }
         if (parent?.type === "pair") {
           // { getData: function() {} } — use the key if it is a bare identifier
           const keyNode = parent.childForFieldName("key");
@@ -226,7 +232,7 @@ export class JsLikeMetricsAnalyzer {
         if (parent?.type === "assignment_expression") {
           // obj.method = function() {} or exports.bar = function() {} — use the property name
           // x = function() {} — use the identifier name
-          const left = parent.child(0);
+          const left = parent.childForFieldName("left");
           if (left?.type === "member_expression") {
             const propNode = left.childForFieldName("property");
             if (propNode?.type === "property_identifier") {
