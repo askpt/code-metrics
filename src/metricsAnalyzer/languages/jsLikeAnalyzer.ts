@@ -213,14 +213,33 @@ export class JsLikeMetricsAnalyzer {
       if (nameNode) {
         return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
       }
-      // Anonymous function_expression/generator_function as an object property value:
-      // `{ getData: function() {} }` — check the parent pair's key.
+      // Anonymous function_expression / generator_function: infer name from parent context.
       if (node.type === "function_expression" || node.type === "generator_function") {
         const parent = node.parent;
+        if (parent?.type === "variable_declarator") {
+          const nameNode = parent.childForFieldName("name");
+          if (nameNode?.type === "identifier") {
+            return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+          }
+        }
         if (parent?.type === "pair") {
+          // { getData: function() {} } — use the key if it is a bare identifier
           const keyNode = parent.childForFieldName("key");
           if (keyNode?.type === "property_identifier" || keyNode?.type === "identifier") {
             return this.sourceText.substring(keyNode.startIndex, keyNode.endIndex);
+          }
+        }
+        if (parent?.type === "assignment_expression") {
+          // obj.method = function() {} or exports.bar = function() {} — use the property name
+          // x = function() {} — use the identifier name
+          const left = parent.childForFieldName("left");
+          if (left?.type === "member_expression") {
+            const propNode = left.childForFieldName("property");
+            if (propNode?.type === "property_identifier") {
+              return this.sourceText.substring(propNode.startIndex, propNode.endIndex);
+            }
+          } else if (left?.type === "identifier") {
+            return this.sourceText.substring(left.startIndex, left.endIndex);
           }
         }
       }
