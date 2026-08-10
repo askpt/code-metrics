@@ -3835,6 +3835,24 @@ class A {
       assert.strictEqual(results.length, 1, "should analyze exactly one Rust function");
       assert.strictEqual(results[0].complexity, 2, "Rust a&&b||c should count as 2");
     });
+
+    it("C#: chained && counts once, not per pair", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "class Foo { bool Bar(bool a, bool b, bool c) { return a && b && c; } }",
+        "csharp"
+      );
+      assert.strictEqual(results.length, 1, "should analyze exactly one C# method");
+      assert.strictEqual(results[0].complexity, 1, "C# chained && should count as 1");
+    });
+
+    it("C#: mixed && and || counts each sequence separately", () => {
+      const results = MetricsAnalyzerFactory.analyzeFile(
+        "class Foo { bool Bar(bool a, bool b, bool c) { return a && b || c; } }",
+        "csharp"
+      );
+      assert.strictEqual(results.length, 1, "should analyze exactly one C# method");
+      assert.strictEqual(results[0].complexity, 2, "C# a&&b||c should count as 2");
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
