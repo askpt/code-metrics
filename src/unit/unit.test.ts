@@ -3917,6 +3917,27 @@ const api = {
       assert.strictEqual(results[0].complexity, 1);
     });
 
+    it("should fall back to (anonymous) when an object property key is computed", () => {
+      // { [computedKey]: function() {} } — the key is a computed_property_name node,
+      // not a bare property_identifier/identifier, so no name can be inferred from it.
+      const sourceCode = `
+const computedKey = "getData";
+const api = {
+  [computedKey]: function() {
+    if (flag) { return 1; }
+  }
+};
+`;
+      const results = JavaScriptMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "object method with computed key should be analysed");
+      assert.strictEqual(
+        results[0].name,
+        "(anonymous)",
+        "computed property key cannot be used as a name, so it should fall back to (anonymous)"
+      );
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
     it("named function_expression in object property should keep its own name", () => {
       // A named function expression like `{ getData: function inner() {} }` already
       // has a name node; the improvement should not override it.
