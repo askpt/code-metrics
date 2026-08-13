@@ -3984,6 +3984,93 @@ public class Foo {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
+  // CSharp: preprocessor ERROR node reason branches (if/while/for/foreach/
+  // logical operator/ternary/try) — getComplexityReasonFromErrorNode only had
+  // its "catch clause" branch covered; the other keyword/pattern branches
+  // (lines 696-719 in csharpAnalyzer.ts) were untested.
+  // ──────────────────────────────────────────────────────────────────────────
+  describe("CSharp: preprocessor ERROR node reason branches", () => {
+    const buildSource = (statement: string): string => `
+public class Foo {
+    public void Bar()
+#if DEBUG
+    { }
+#else
+    {
+        ${statement}
+    }
+#endif
+}
+`;
+
+    it("should detect an if statement isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("if (x) { }"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "if statement (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "if statement in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a while loop isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("while (x) { }"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "while loop (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "while loop in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a for loop isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("for (;;) { }"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "for loop (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "for loop in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a foreach loop isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("foreach (var y in z) { }"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "foreach loop (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "foreach loop in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a logical operator isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("someUnknownStatement && other;"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "logical operator (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "logical operator in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a ternary operator isolated in a preprocessor ERROR node", () => {
+      // Use a parenthesised expression statement so tree-sitter parses the entire
+      // block as an ERROR node rather than a field_declaration/variable_declaration,
+      // ensuring getComplexityReasonFromErrorNode's ternary branch is exercised.
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("(cond ? a : b);"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "ternary operator (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "ternary operator in a preprocessor ERROR node should be reported");
+    });
+
+    it("should detect a try statement isolated in a preprocessor ERROR node", () => {
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("try { }"));
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "try statement (in preprocessor block)"
+      );
+      assert.ok(detail !== undefined, "try statement in a preprocessor ERROR node should be reported");
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
   // CSharp: malformed declaration in preprocessor with no pattern match
   // ──────────────────────────────────────────────────────────────────────────
   describe("CSharp: malformed declaration fallback", () => {
@@ -4008,5 +4095,6 @@ public class Foo {
       assert.strictEqual(results.length, 1, "one method expected");
       assert.strictEqual(results[0].name, "Foo.Baz", "the method should still be discovered");
     });
+
   });
 });
