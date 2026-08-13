@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-12T03:14:00Z",
-  "last_run_id": "31559332391",
+  "last_run": "2026-08-13T03:17:00Z",
+  "last_run_id": "31663366813",
   "backlog_cursor": {
     "issues": 490,
     "prs": 0
@@ -56,9 +56,10 @@
     "feat-diagnostics-provider-20260724 (PR #473, still open)",
     "perf-java-else-token-O1-20260726 (merged as #477)",
     "improve-java-coverage-20260726 (merged as #478)",
-    "perf-go-csharp-O1-recover-20260802 (PR created 2026-08-02)"
+    "perf-go-csharp-O1-recover-20260802 (PR created 2026-08-02)",
+    "test-csharp-error-node-branches-20260813 (PR created; csharpAnalyzer branch coverage 78.32%->87.33%)"
   ],
-  "notes": "PR #479 (release-please 0.9.0) merged/closed 2026-08-09. PR #455 (TS7) open. PR #501 (tree-sitter bump) open, blocked on c-sharp ESM issue. PR #511 (diagnostics provider) open/draft. Issues #353 (Ruby), #402 (Kotlin), #508 (C++) blocked by protected-files, patches available as artifacts. Issue #535 (patch dep bump) blocked by protected-files, unmerged. Issues #504/#525/#533/#534 are protected-files notices for PR #511 branch pushes. npm audit: 4 dev-only vulns (mocha/diff/serialize-javascript), fix needs breaking mocha bump touching package.json - documented in issue #494, not auto-applied. Monthly activity 2026-08 is issue #494 (updated this run). 2026-08-12 run: Task 6 rebased+repushed PR #511 onto latest main (clean, no conflicts), rebuilt/retested (217 passing). Task 4/2 found no new actionable work (dep bumps already tracked by issue #535; all issues have recent comments with no new human activity); substituted per fallback table but also found no low-risk Task-5 improvement. Monthly activity issue #494 updated.",
+  "notes": "PR #479 (release-please 0.9.0) merged/closed 2026-08-09. PR #455 (TS7) open. PR #501 (tree-sitter bump) open, blocked on c-sharp ESM issue. PR #511 (diagnostics provider) open/draft. Issues #353 (Ruby), #402 (Kotlin), #508 (C++) blocked by protected-files, patches available as artifacts. Issue #535 (patch dep bump) blocked by protected-files, unmerged. Issues #504/#525/#533/#534 are protected-files notices for PR #511 branch pushes. npm audit: 4 dev-only vulns (mocha/diff/serialize-javascript), fix needs breaking mocha bump touching package.json - documented in issue #494, not auto-applied. Monthly activity 2026-08 is issue #494 (updated this run). 2026-08-12 run: Task 6 rebased+repushed PR #511 onto latest main (clean, no conflicts), rebuilt/retested (217 passing). Task 4/2 found no new actionable work (dep bumps already tracked by issue #535; all issues have recent comments with no new human activity); substituted per fallback table but also found no low-risk Task-5 improvement. Monthly activity issue #494 updated. 2026-08-13 run: Task 5 (substituted for Task 9 testing) added 9 tests covering previously-untested csharpAnalyzer.ts ERROR-node/malformed-declaration reason branches (if/while/for/foreach/logical-operator/ternary/try), branch coverage 78.32%->87.33%, 226 tests passing, PR created (branch repo-assist/test-csharp-error-node-branches-20260813). Task 4: no new actionable dependency work found beyond already-tracked PR #538/issue #535; npm audit --omit=dev clean. Task 2: issues #353/#402/#508/#535 still have recent status comments with no new human activity, no new comment posted. Monthly activity issue #494 updated with new PR entry.",
   "monthly_activity_issue": {
     "month": "2026-08",
     "number": "aw_aug_monthly"
@@ -72,6 +73,10 @@
     {
       "branch": "repo-assist/perf-go-csharp-O1-recover-20260802",
       "title": "perf: avoid array allocation in C# operator name lookup and substring in Go recover check"
+    },
+    {
+      "branch": "repo-assist/test-csharp-error-node-branches-20260813",
+      "title": "test: cover C# preprocessor ERROR-node and malformed-declaration reason branches"
     }
   ],
   "checked_off_items": []
