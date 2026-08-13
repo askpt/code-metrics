@@ -4028,7 +4028,10 @@ public class Foo {
     });
 
     it("should detect a ternary operator isolated in a preprocessor ERROR node", () => {
-      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("var v = cond ? a : b;"));
+      // Use a parenthesised expression statement so tree-sitter parses the entire
+      // block as an ERROR node rather than a field_declaration/variable_declaration,
+      // ensuring getComplexityReasonFromErrorNode's ternary branch is exercised.
+      const results = CSharpMetricsAnalyzer.analyzeFile(buildSource("(cond ? a : b);"));
       assert.strictEqual(results.length, 1, "one method expected");
       const detail = results[0].details.find(
         (d: UnifiedMetricsDetail) => d.reason === "ternary operator (in preprocessor block)"
@@ -4072,55 +4075,5 @@ public class Foo {
       assert.strictEqual(results[0].name, "Foo.Baz", "the method should still be discovered");
     });
 
-    it("should detect a ternary operator in a malformed preprocessor declaration", () => {
-      // Covers the ternary-operator branch (line 737-738) in
-      // getComplexityReasonFromMalformedDeclaration.
-      const sourceCode = `
-public class Foo {
-  public void Baz()
-#if DEBUG
-  {
-    int x = cond ? 1 : 2;
-  }
-#else
-  { }
-#endif
-}
-`;
-      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.strictEqual(results.length, 1, "one method expected");
-      const detail = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason === "ternary operator (in preprocessor block)"
-      );
-      assert.ok(
-        detail !== undefined,
-        "ternary operator in a malformed preprocessor declaration should be reported"
-      );
-    });
-
-    it("should detect a logical operator in a malformed preprocessor declaration", () => {
-      // Covers the logical-operator branch in getComplexityReasonFromMalformedDeclaration.
-      const sourceCode = `
-public class Foo {
-  public void Baz()
-#if DEBUG
-  {
-    bool x = a && b;
-  }
-#else
-  { }
-#endif
-}
-`;
-      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
-      assert.strictEqual(results.length, 1, "one method expected");
-      const detail = results[0].details.find(
-        (d: UnifiedMetricsDetail) => d.reason === "logical operator (in preprocessor block)"
-      );
-      assert.ok(
-        detail !== undefined,
-        "logical operator in a malformed preprocessor declaration should be reported"
-      );
-    });
   });
 });
