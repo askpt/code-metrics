@@ -196,18 +196,4 @@ export class ConfigurationManager {
     });
   }
 
-  /**
-   * Logs the current configuration to the console for debugging purposes.
-   *
-   * @param resource - Optional URI for workspace-specific configuration
-   */
-  public static logCurrentConfiguration(resource?: vscode.Uri): void {
-    const config = this.getConfiguration(resource);
-    const validation = this.validateConfiguration(resource);
-
-    console.log("Current Code Metrics Configuration:", {
-      config,
-      validation,
-    });
-  }
 }
