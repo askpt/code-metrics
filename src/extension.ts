@@ -55,6 +55,20 @@ function showFunctionDetails(
   detailsChannel.show(true /* preserveFocus */);
 }
 
+/**
+ * Validates the current configuration and, if the thresholds are misconfigured
+ * (e.g. warningThreshold >= errorThreshold), surfaces a warning to the user so
+ * the issue isn't silently ignored.
+ */
+function checkConfigurationValidity(): void {
+  const { valid, warnings } = ConfigurationManager.validateConfiguration();
+  if (!valid) {
+    vscode.window.showWarningMessage(
+      `Code Metrics: invalid configuration detected. ${warnings.join(" ")}`
+    );
+  }
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -69,7 +83,17 @@ export function activate(context: vscode.ExtensionContext) {
   // Register providers
   const codeLensDisposable = registerCodeLensProvider();
 
-  context.subscriptions.push(showFunctionDetailsCommand, codeLensDisposable);
+  // Warn the user up front, and again whenever settings change, if thresholds are invalid.
+  checkConfigurationValidity();
+  const configValidityWatcher = ConfigurationManager.onConfigurationChanged(() => {
+    checkConfigurationValidity();
+  });
+
+  context.subscriptions.push(
+    showFunctionDetailsCommand,
+    codeLensDisposable,
+    configValidityWatcher
+  );
 }
 
 // This method is called when your extension is deactivated
