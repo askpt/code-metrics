@@ -15,7 +15,7 @@ We welcome contributions to the Code Metrics VS Code extension! This document pr
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/code-complexity.git
+   git clone https://github.com/YOUR_USERNAME/code-metrics.git
    cd code-metrics
    ```
 
