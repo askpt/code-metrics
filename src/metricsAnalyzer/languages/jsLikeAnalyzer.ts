@@ -174,7 +174,8 @@ export class JsLikeMetricsAnalyzer {
       this.details = savedDetails;
       this.nesting = savedNesting;
     } else {
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         this.collectFunctions(child, functions);
       }
     }
@@ -341,7 +342,8 @@ export class JsLikeMetricsAnalyzer {
       this.nesting++;
     }
 
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       // Nested functions: add a nesting penalty and continue analyzing their body
       // as part of the outer function at an increased nesting level, so that any
       // complexity inside the nested body (ternaries, loops, etc.) counts toward

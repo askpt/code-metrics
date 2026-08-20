@@ -149,7 +149,8 @@ export class RustMetricsAnalyzer {
           }
         }
       } else {
-        for (const child of node.children) {
+        for (let i = 0; i < node.childCount; i++) {
+          const child = node.child(i)!;
           visit(child);
         }
       }
@@ -269,7 +270,8 @@ export class RustMetricsAnalyzer {
     // shouldSkipChildStructuralIncrement handles else-if chains to avoid double-counting.
     const nests = this.increasesNesting(node);
     if (nests) { this.nesting++; }
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       if (!this.isFunctionDeclaration(child)) {
         this.visit(child, this.shouldSkipChildStructuralIncrement(node, child));
       }
