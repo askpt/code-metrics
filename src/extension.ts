@@ -59,8 +59,10 @@ function showFunctionDetails(
  * Validates the current configuration and, if the thresholds are misconfigured
  * (e.g. warningThreshold >= errorThreshold), surfaces a warning to the user so
  * the issue isn't silently ignored.
+ *
+ * Exported for unit-testing purposes.
  */
-function checkConfigurationValidity(): void {
+export function checkConfigurationValidity(): void {
   const { valid, warnings } = ConfigurationManager.validateConfiguration();
   if (!valid) {
     vscode.window.showWarningMessage(
