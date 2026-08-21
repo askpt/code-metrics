@@ -147,7 +147,8 @@ export class GoMetricsAnalyzer {
         return;
       }
 
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         visit(child);
       }
     };
@@ -350,7 +351,8 @@ export class GoMetricsAnalyzer {
       ? node.childForFieldName("alternative")
       : null;
 
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       if (this.isFunctionDeclaration(child)) { continue; }
       if (alternative && child === alternative) {
         this.visitAlternative(child);
@@ -395,7 +397,8 @@ export class GoMetricsAnalyzer {
       // (do NOT bump nesting again — the outer if already did).
       // We must also intercept any nested alternative (further else-if/else chains).
       const innerAlt = node.childForFieldName("alternative");
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         if (this.isFunctionDeclaration(child)) { continue; }
         if (child.type === "else") { continue; } // skip the 'else' keyword token
         if (innerAlt && child === innerAlt) {

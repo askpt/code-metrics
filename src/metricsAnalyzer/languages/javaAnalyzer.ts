@@ -130,7 +130,8 @@ export class JavaMetricsAnalyzer {
         // Do not recurse into the method body again — analyzeMethod handles it
         return;
       }
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         visit(child);
       }
     };
@@ -222,7 +223,8 @@ export class JavaMetricsAnalyzer {
    * @param node - The block or body node to visit
    */
   private visitBody(node: Parser.SyntaxNode): void {
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       this.visit(child);
     }
   }
@@ -271,7 +273,8 @@ export class JavaMetricsAnalyzer {
     // to avoid double-counting (the else_clause +1 already accounts for it).
     const nests = this.increasesNesting(node);
     if (nests) { this.nesting++; }
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       if (!this.isMethodDeclaration(child)) {
         this.visit(child, elseBranchNode !== null && child === elseBranchNode);
       }
