@@ -128,17 +128,25 @@ export class MetricsAnalyzerFactory {
       // Use cache to avoid re-analyzing identical source text
       const cacheKey = `${languageId}:${sourceText.length}:${hashString(sourceText)}`;
       const cached = analysisCache.get(cacheKey);
-      if (cached) {
+      // Verify the cached source text actually matches: the cache key combines
+      // length and a non-cryptographic hash, so two different files with the
+      // same length can theoretically collide. Comparing sourceText guards
+      // against silently returning results for the wrong file.
+      if (cached && cached.sourceText === sourceText) {
         // Move to end to maintain LRU order (most recently used stays at back)
         analysisCache.delete(cacheKey);
         analysisCache.set(cacheKey, cached);
-        return cached;
+        return cached.results;
       }
       const results = analyzer(sourceText);
-      if (analysisCache.size >= CACHE_MAX_SIZE) {
+      // If this key already exists (e.g. hash collision with different sourceText),
+      // remove it first so replacement becomes most-recently-used without shrinking
+      // the cache when at capacity.
+      const replacedExistingKey = analysisCache.delete(cacheKey);
+      if (!replacedExistingKey && analysisCache.size >= CACHE_MAX_SIZE) {
         analysisCache.delete(analysisCache.keys().next().value!);
       }
-      analysisCache.set(cacheKey, results);
+      analysisCache.set(cacheKey, { sourceText, results });
       return results;
     }
     // Return an empty array if languageId does not match any known analyzers
@@ -149,11 +157,18 @@ export class MetricsAnalyzerFactory {
 /** Maximum number of analysis results to keep in cache (one entry per unique file content). */
 const CACHE_MAX_SIZE = 20;
 
-/** Cache of analysis results keyed by language + content hash. Evicts least-recently-used entry when full. */
-const analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
+/**
+ * Cache of analysis results keyed by language + content hash. Evicts least-recently-used
+ * entry when full. Stores the original `sourceText` alongside the results so a lookup can
+ * verify the hash key isn't a collision from a different file of the same length.
+ */
+const analysisCache = new Map<
+  string,
+  { sourceText: string; results: UnifiedFunctionMetrics[] }
+>();
 
-/** Fast non-cryptographic hash for cache key generation (djb2 variant). */
-function hashString(str: string): number {
+/** @internal Fast non-cryptographic hash for cache key generation (djb2 variant). Exported for unit testing. */
+export function hashString(str: string): number {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 33) ^ str.charCodeAt(i);
