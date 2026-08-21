@@ -187,6 +187,9 @@ suite("Extension Activation Tests", () => {
       await vsConfig.update("warningThreshold", 10, vscode.ConfigurationTarget.Global);
       await vsConfig.update("errorThreshold", 10, vscode.ConfigurationTarget.Global);
 
+      // Reset captured messages so that onConfigurationChanged calls from the
+      // config updates above don't pollute the assertion.
+      warningMessages = [];
       extensionModule.checkConfigurationValidity();
 
       assert.strictEqual(
@@ -209,6 +212,9 @@ suite("Extension Activation Tests", () => {
       await vsConfig.update("warningThreshold", 20, vscode.ConfigurationTarget.Global);
       await vsConfig.update("errorThreshold", 10, vscode.ConfigurationTarget.Global);
 
+      // Reset captured messages so that onConfigurationChanged calls from the
+      // config updates above don't pollute the assertion.
+      warningMessages = [];
       extensionModule.checkConfigurationValidity();
 
       assert.strictEqual(
