@@ -167,8 +167,8 @@ const analysisCache = new Map<
   { sourceText: string; results: UnifiedFunctionMetrics[] }
 >();
 
-/** Fast non-cryptographic hash for cache key generation (djb2 variant). */
-function hashString(str: string): number {
+/** @internal Fast non-cryptographic hash for cache key generation (djb2 variant). Exported for unit testing. */
+export function hashString(str: string): number {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 33) ^ str.charCodeAt(i);

@@ -18,6 +18,7 @@ import {
   MetricsAnalyzerFactory,
   UnifiedFunctionMetrics,
   UnifiedMetricsDetail,
+  hashString,
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { SampleCSharpCode } from "../test/testUtils";
 
@@ -953,13 +954,6 @@ function cached(x: number): number {
       const sourceA = `function dkcdfu(): number { return 568; }`;
       const sourceB = `function qbnlka(): number { return 874; }`;
       assert.strictEqual(sourceA.length, sourceB.length);
-      const hashString = (str: string): number => {
-        let hash = 5381;
-        for (let i = 0; i < str.length; i++) {
-          hash = (hash * 33) ^ str.charCodeAt(i);
-        }
-        return hash >>> 0;
-      };
       assert.strictEqual(hashString(sourceA), hashString(sourceB));
 
       const resultsA = MetricsAnalyzerFactory.analyzeFile(sourceA, "typescript");
