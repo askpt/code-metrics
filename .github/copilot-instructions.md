@@ -7,7 +7,7 @@
 **Target Runtime**: VS Code Extension Host (Node.js 22.x)  
 **Repository Size**: Small-medium (~20 source files)
 
-This repository contains a VS Code extension called "code-complexity" that calculates and displays Cognitive Complexity metrics based on SonarSource's specification. The extension analyzes C# and Go code files and provides CodeLens overlays showing complexity scores with color-coded indicators (green/yellow/red).
+This repository contains a VS Code extension called "code-metrics" that calculates and displays Cognitive Complexity metrics based on SonarSource's specification. The extension analyzes C# and Go code files and provides CodeLens overlays showing complexity scores with color-coded indicators (green/yellow/red).
 
 **Key Features**:
 
