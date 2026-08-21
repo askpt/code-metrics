@@ -147,4 +147,89 @@ suite("Extension Activation Tests", () => {
       extensionModule.deactivate();
     }, "deactivate() should not throw");
   });
+
+  suite("checkConfigurationValidity", () => {
+    // Stub type to capture showWarningMessage calls
+    type ShowWarningStub = (message: string, ...items: string[]) => Thenable<string | undefined>;
+
+    let warningMessages: string[];
+    let originalShowWarningMessage: typeof vscode.window.showWarningMessage;
+
+    setup(() => {
+      warningMessages = [];
+      originalShowWarningMessage = vscode.window.showWarningMessage;
+      (vscode.window as any).showWarningMessage = ((message: string) => {
+        warningMessages.push(message);
+        return Promise.resolve(undefined);
+      }) as ShowWarningStub;
+    });
+
+    teardown(async () => {
+      (vscode.window as any).showWarningMessage = originalShowWarningMessage;
+      const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
+      await vsConfig.update("warningThreshold", undefined, vscode.ConfigurationTarget.Global);
+      await vsConfig.update("errorThreshold", undefined, vscode.ConfigurationTarget.Global);
+    });
+
+    test("should not show a warning when thresholds are valid", () => {
+      // Default configuration has valid thresholds (warningThreshold < errorThreshold)
+      extensionModule.checkConfigurationValidity();
+
+      assert.strictEqual(
+        warningMessages.length,
+        0,
+        "No warning should be shown for valid configuration"
+      );
+    });
+
+    test("should show a warning when warningThreshold equals errorThreshold", async () => {
+      const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
+      await vsConfig.update("warningThreshold", 10, vscode.ConfigurationTarget.Global);
+      await vsConfig.update("errorThreshold", 10, vscode.ConfigurationTarget.Global);
+
+      // Reset captured messages so that onConfigurationChanged calls from the
+      // config updates above don't pollute the assertion.
+      warningMessages = [];
+      extensionModule.checkConfigurationValidity();
+
+      assert.strictEqual(
+        warningMessages.length,
+        1,
+        "Exactly one warning should be shown"
+      );
+      assert.ok(
+        warningMessages[0].includes("Code Metrics"),
+        "Warning message should be prefixed with 'Code Metrics'"
+      );
+      assert.ok(
+        warningMessages[0].includes("invalid configuration"),
+        "Warning message should mention invalid configuration"
+      );
+    });
+
+    test("should show a warning when warningThreshold exceeds errorThreshold", async () => {
+      const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
+      await vsConfig.update("warningThreshold", 20, vscode.ConfigurationTarget.Global);
+      await vsConfig.update("errorThreshold", 10, vscode.ConfigurationTarget.Global);
+
+      // Reset captured messages so that onConfigurationChanged calls from the
+      // config updates above don't pollute the assertion.
+      warningMessages = [];
+      extensionModule.checkConfigurationValidity();
+
+      assert.strictEqual(
+        warningMessages.length,
+        1,
+        "Exactly one warning should be shown"
+      );
+      assert.ok(
+        warningMessages[0].includes("Warning threshold (20)"),
+        "Warning message should include the invalid warningThreshold value"
+      );
+      assert.ok(
+        warningMessages[0].includes("error threshold (10)"),
+        "Warning message should include the errorThreshold value"
+      );
+    });
+  });
 });
