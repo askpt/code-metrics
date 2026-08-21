@@ -185,7 +185,8 @@ export class CSharpMetricsAnalyzer {
       }
 
       // Continue traversing child nodes
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         visit(child);
       }
     };
@@ -458,7 +459,8 @@ export class CSharpMetricsAnalyzer {
     const isPreproc = node.type.startsWith("preproc_");
     if (nests) { this.nesting++; }
     if (isPreproc) { this.preprocessorDepth++; }
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       if (!this.isFunctionDeclaration(child)) {
         this.visit(child);
       }

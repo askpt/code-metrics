@@ -122,7 +122,8 @@ export class PythonMetricsAnalyzer {
         const name = nameNode
           ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
           : "<class>";
-        for (const child of node.children) {
+        for (let i = 0; i < node.childCount; i++) {
+          const child = node.child(i)!;
           visit(child, name);
         }
         return;
@@ -144,7 +145,8 @@ export class PythonMetricsAnalyzer {
         return;
       }
 
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         visit(child, className);
       }
     };
@@ -231,7 +233,8 @@ export class PythonMetricsAnalyzer {
         });
       }
       this.nesting++;
-      for (const child of node.children) {
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i)!;
         this.visit(child);
       }
       this.nesting--;
@@ -253,7 +256,8 @@ export class PythonMetricsAnalyzer {
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
     if (nests) { this.nesting++; }
-    for (const child of node.children) {
+    for (let i = 0; i < node.childCount; i++) {
+      const child = node.child(i)!;
       this.visit(child);
     }
     if (nests) { this.nesting--; }
