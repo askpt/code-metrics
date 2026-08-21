@@ -16,6 +16,20 @@ import CSharp from "tree-sitter-c-sharp";
 const _parser = new Parser();
 _parser.setLanguage(CSharp);
 
+// Regex patterns used by the ERROR-node/malformed-declaration heuristics below are hoisted to
+// module scope to avoid recompiling them on every invocation of those heuristics.
+const IF_KEYWORD_REGEX = /\bif\s*\(/;
+const WHILE_KEYWORD_REGEX = /\bwhile\s*\(/;
+const FOR_KEYWORD_REGEX = /\bfor\s*\(/;
+const FOREACH_KEYWORD_REGEX = /\bforeach\s*\(/;
+const LOGICAL_OPERATOR_REGEX = /&&|\|\|/;
+const LOGICAL_OPERATOR_GLOBAL_REGEX = /&&|\|\|/g;
+const TERNARY_OPERATOR_REGEX = /\?[^?]*:/;
+const QUESTION_MARK_REGEX = /\?/;
+const TRY_KEYWORD_REGEX = /\btry\s*\{/;
+const CATCH_KEYWORD_REGEX = /\bcatch\s*\(/;
+const MALFORMED_TERNARY_REGEX = /\w+\s*\?\s*[^?]+\s*:\s*[^:;]+/;
+
 /**
  * Represents a single complexity detail for a specific C# code construct.
  * Each detail contributes to the overall cognitive complexity of a function.
@@ -556,27 +570,27 @@ export class CSharpMetricsAnalyzer {
     // Note: This is a heuristic approach and may not catch all cases
 
     // Look for if keywords that might indicate control flow
-    if (/\bif\s*\(/.test(text)) {
+    if (IF_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
 
     // Look for while loops
-    if (/\bwhile\s*\(/.test(text)) {
+    if (WHILE_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
 
     // Look for for loops
-    if (/\bfor\s*\(/.test(text)) {
+    if (FOR_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
 
     // Look for foreach loops
-    if (/\bforeach\s*\(/.test(text)) {
+    if (FOREACH_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
 
     // Look for logical operators - be more precise about detection
-    const logicalOpMatches = text.match(/&&|\|\|/g);
+    const logicalOpMatches = text.match(LOGICAL_OPERATOR_GLOBAL_REGEX);
     if (logicalOpMatches) {
       complexity += logicalOpMatches.length;
     }
@@ -584,17 +598,17 @@ export class CSharpMetricsAnalyzer {
     // Look for ternary operators - check for fragments too
     // Handle both complete ternary and fragmented ternary parts
     if (
-      /\?[^?]*:/.test(text) ||
-      (/\?/.test(text) && this.hasMatchingColonInSiblings(errorNode))
+      TERNARY_OPERATOR_REGEX.test(text) ||
+      (QUESTION_MARK_REGEX.test(text) && this.hasMatchingColonInSiblings(errorNode))
     ) {
       complexity += 1;
     }
 
     // Look for try-catch blocks
-    if (/\btry\s*\{/.test(text)) {
+    if (TRY_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
-    if (/\bcatch\s*\(/.test(text)) {
+    if (CATCH_KEYWORD_REGEX.test(text)) {
       complexity += 1;
     }
 
@@ -654,12 +668,12 @@ export class CSharpMetricsAnalyzer {
 
     // Look for ternary operators that got misinterpreted as declarations
     // Pattern: identifier ? value : value
-    if (/\w+\s*\?\s*[^?]+\s*:\s*[^:;]+/.test(text)) {
+    if (MALFORMED_TERNARY_REGEX.test(text)) {
       complexity += 1;
     }
 
     // Look for logical operators
-    const logicalOpMatches = text.match(/&&|\|\|/g);
+    const logicalOpMatches = text.match(LOGICAL_OPERATOR_GLOBAL_REGEX);
     if (logicalOpMatches) {
       complexity += logicalOpMatches.length;
     }
@@ -695,31 +709,31 @@ export class CSharpMetricsAnalyzer {
     );
 
     // Try to identify what type of complexity pattern was found
-    if (/\bif\s*\(/.test(text)) {
+    if (IF_KEYWORD_REGEX.test(text)) {
       return "if statement (in preprocessor block)";
     }
-    if (/\bwhile\s*\(/.test(text)) {
+    if (WHILE_KEYWORD_REGEX.test(text)) {
       return "while loop (in preprocessor block)";
     }
-    if (/\bfor\s*\(/.test(text)) {
+    if (FOR_KEYWORD_REGEX.test(text)) {
       return "for loop (in preprocessor block)";
     }
-    if (/\bforeach\s*\(/.test(text)) {
+    if (FOREACH_KEYWORD_REGEX.test(text)) {
       return "foreach loop (in preprocessor block)";
     }
-    if (/&&|\|\|/.test(text)) {
+    if (LOGICAL_OPERATOR_REGEX.test(text)) {
       return "logical operator (in preprocessor block)";
     }
     if (
-      /\?[^?]*:/.test(text) ||
-      (/\?/.test(text) && this.hasMatchingColonInSiblings(errorNode))
+      TERNARY_OPERATOR_REGEX.test(text) ||
+      (QUESTION_MARK_REGEX.test(text) && this.hasMatchingColonInSiblings(errorNode))
     ) {
       return "ternary operator (in preprocessor block)";
     }
-    if (/\btry\s*\{/.test(text)) {
+    if (TRY_KEYWORD_REGEX.test(text)) {
       return "try statement (in preprocessor block)";
     }
-    if (/\bcatch\s*\(/.test(text)) {
+    if (CATCH_KEYWORD_REGEX.test(text)) {
       return "catch clause (in preprocessor block)";
     }
 
@@ -745,10 +759,10 @@ export class CSharpMetricsAnalyzer {
     );
 
     // Try to identify what type of complexity pattern was found
-    if (/\w+\s*\?\s*[^?]+\s*:\s*[^:;]+/.test(text)) {
+    if (MALFORMED_TERNARY_REGEX.test(text)) {
       return "ternary operator (in preprocessor block)";
     }
-    if (/&&|\|\|/.test(text)) {
+    if (LOGICAL_OPERATOR_REGEX.test(text)) {
       return "logical operator (in preprocessor block)";
     }
 
