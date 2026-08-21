@@ -949,25 +949,30 @@ function cached(x: number): number {
     });
 
     it("should return correct, distinct results for two different same-length sources (guards against hash-collision cache bugs)", () => {
-      // Same length, different content and different function names/bodies.
-      // The cache key combines length + a non-cryptographic hash; even in the
-      // pathological case where the hash happened to collide, the cache must
-      // still return results matching the actual source text passed in.
-      const sourceA = `function aName1(): number { return 111; }`;
-      const sourceB = `function bName2(): number { return 222; }`;
+      // Same length, different content, and known to collide under hashString.
+      const sourceA = `function dkcdfu(): number { return 568; }`;
+      const sourceB = `function qbnlka(): number { return 874; }`;
       assert.strictEqual(sourceA.length, sourceB.length);
+      const hashString = (str: string): number => {
+        let hash = 5381;
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash * 33) ^ str.charCodeAt(i);
+        }
+        return hash >>> 0;
+      };
+      assert.strictEqual(hashString(sourceA), hashString(sourceB));
 
       const resultsA = MetricsAnalyzerFactory.analyzeFile(sourceA, "typescript");
       const resultsB = MetricsAnalyzerFactory.analyzeFile(sourceB, "typescript");
 
-      assert.strictEqual(resultsA[0].name, "aName1");
-      assert.strictEqual(resultsB[0].name, "bName2");
+      assert.strictEqual(resultsA[0].name, "dkcdfu");
+      assert.strictEqual(resultsB[0].name, "qbnlka");
 
       // Re-querying each should still return its own correct result, not the other's.
       const resultsARepeat = MetricsAnalyzerFactory.analyzeFile(sourceA, "typescript");
       const resultsBRepeat = MetricsAnalyzerFactory.analyzeFile(sourceB, "typescript");
-      assert.strictEqual(resultsARepeat[0].name, "aName1");
-      assert.strictEqual(resultsBRepeat[0].name, "bName2");
+      assert.strictEqual(resultsARepeat[0].name, "dkcdfu");
+      assert.strictEqual(resultsBRepeat[0].name, "qbnlka");
     });
   });
 

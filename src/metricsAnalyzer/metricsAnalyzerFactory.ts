@@ -139,7 +139,11 @@ export class MetricsAnalyzerFactory {
         return cached.results;
       }
       const results = analyzer(sourceText);
-      if (analysisCache.size >= CACHE_MAX_SIZE) {
+      // If this key already exists (e.g. hash collision with different sourceText),
+      // remove it first so replacement becomes most-recently-used without shrinking
+      // the cache when at capacity.
+      const replacedExistingKey = analysisCache.delete(cacheKey);
+      if (!replacedExistingKey && analysisCache.size >= CACHE_MAX_SIZE) {
         analysisCache.delete(analysisCache.keys().next().value!);
       }
       analysisCache.set(cacheKey, { sourceText, results });
