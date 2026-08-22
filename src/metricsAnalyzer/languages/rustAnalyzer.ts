@@ -144,8 +144,8 @@ export class RustMetricsAnalyzer {
         }
         const body = node.childForFieldName("body");
         if (body) {
-          for (const child of body.children) {
-            visit(child);
+          for (let i = 0; i < body.childCount; i++) {
+            visit(body.child(i)!);
           }
         }
       } else {
