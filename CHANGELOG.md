@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/askpt/code-metrics/compare/v0.9.1...v0.9.2) (2026-08-22)
+
+
+### 🚀 Performance
+
+* convert remaining node.children array accesses to childCount/child(i) ([#562](https://github.com/askpt/code-metrics/issues/562)) ([c036b79](https://github.com/askpt/code-metrics/commit/c036b7951a79c2267e1d5cc00d9df44c80238f2f))
+
 ## [0.9.1](https://github.com/askpt/code-metrics/compare/v0.9.0...v0.9.1) (2026-08-22)
 
 
