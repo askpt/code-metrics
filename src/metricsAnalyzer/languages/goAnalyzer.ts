@@ -291,7 +291,8 @@ export class GoMetricsAnalyzer {
   private findTypeInParameterList(
     parameterList: Parser.SyntaxNode
   ): Parser.SyntaxNode | null {
-    for (const child of parameterList.children) {
+    for (let i = 0; i < parameterList.childCount; i++) {
+      const child = parameterList.child(i)!;
       if (child.type === "parameter_declaration") {
         // Use childForFieldName for O(1) field access rather than a linear
         // scan over the parameter's children.

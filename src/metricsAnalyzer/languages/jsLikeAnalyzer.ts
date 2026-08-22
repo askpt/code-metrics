@@ -359,8 +359,8 @@ export class JsLikeMetricsAnalyzer {
           nesting: this.nesting,
         });
         this.nesting++;
-        for (const grandchild of child.children) {
-          this.analyzeNode(grandchild);
+        for (let i = 0; i < child.childCount; i++) {
+          this.analyzeNode(child.child(i)!);
         }
         this.nesting--;
         continue;

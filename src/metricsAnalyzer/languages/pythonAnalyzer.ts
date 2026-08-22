@@ -138,8 +138,8 @@ export class PythonMetricsAnalyzer {
         // function definitions (analyzed as separate top-level entries).
         const body = node.childForFieldName("body");
         if (body) {
-          for (const child of body.children) {
-            visit(child);
+          for (let i = 0; i < body.childCount; i++) {
+            visit(body.child(i)!);
           }
         }
         return;

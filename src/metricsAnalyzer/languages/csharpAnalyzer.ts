@@ -390,7 +390,7 @@ export class CSharpMetricsAnalyzer {
 
     // If no body found in children, the method might be split by preprocessor directives
     // Check if this method ends with a semicolon (indicating it's incomplete due to preprocessing)
-    const lastChild = node.children[node.children.length - 1];
+    const lastChild = node.child(node.childCount - 1);
     if (lastChild && lastChild.type === ";") {
       // This looks like a method signature split by preprocessor - try to find body in siblings.
       // Use nextSibling traversal (O(1) per step) instead of indexOf + index loop (O(n) scan).
