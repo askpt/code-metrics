@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.1](https://github.com/askpt/code-metrics/compare/v0.9.0...v0.9.1) (2026-08-22)
+
+
+### 🐛 Bug Fixes
+
+* surface warning when config thresholds are invalid ([#552](https://github.com/askpt/code-metrics/issues/552)) ([e1dd130](https://github.com/askpt/code-metrics/commit/e1dd1300a57745ce9dbf579cf6983c6b32ee366a))
+* verify source text on analysis cache hit to guard against hash collisions ([#556](https://github.com/askpt/code-metrics/issues/556)) ([7cf138e](https://github.com/askpt/code-metrics/commit/7cf138ed1818d6ba4aad00994304f086ad4a3ca6))
+
+
+### 🚀 Performance
+
+* avoid node.children array allocation in hot AST traversal loops ([#554](https://github.com/askpt/code-metrics/issues/554)) ([d10e517](https://github.com/askpt/code-metrics/commit/d10e517966d388531444b79945a3e771b97900db))
+* hoist regex literals in C# ERROR-node heuristics to module scope ([#555](https://github.com/askpt/code-metrics/issues/555)) ([92200d9](https://github.com/askpt/code-metrics/commit/92200d92824214d4bbb5374569179e3703e63d45))
+
+
+### 🔄 Refactoring
+
+* remove unused ConfigurationManager.logCurrentConfiguration ([#548](https://github.com/askpt/code-metrics/issues/548)) ([572f97d](https://github.com/askpt/code-metrics/commit/572f97d0412186f94fbde5559a4e841cc38315c2))
+
 ## [0.9.0](https://github.com/askpt/code-metrics/compare/v0.8.2...v0.9.0) (2026-08-09)
 
 
