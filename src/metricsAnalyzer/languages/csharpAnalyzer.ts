@@ -750,6 +750,9 @@ export class CSharpMetricsAnalyzer {
     declarationNode: Parser.SyntaxNode
   ): string {
     if (!this.isInPreprocessorBlock(declarationNode)) {
+      /* c8 ignore next 2 */
+      // Unreachable in practice: getComplexityFromMalformedDeclaration() returns 0 when
+      // not in a preprocessor block, so visit() never calls getComplexityReason() for this case.
       return "complexity in declaration"; // Fallback
     }
 
@@ -766,6 +769,10 @@ export class CSharpMetricsAnalyzer {
       return "logical operator (in preprocessor block)";
     }
 
+    /* c8 ignore next 3 */
+    // Unreachable in practice: getComplexityFromMalformedDeclaration() only adds complexity
+    // for MALFORMED_TERNARY_REGEX or logical-operator matches, so visit() never reaches this
+    // fallback for a declaration whose text matches neither pattern.
     return "complexity pattern in declaration (preprocessor block)";
   }
 
@@ -840,6 +847,9 @@ export class CSharpMetricsAnalyzer {
       case "variable_declaration":
         return this.getComplexityReasonFromMalformedDeclaration(node);
       default:
+        /* c8 ignore next */
+        // Unreachable: this switch mirrors getComplexityIncrement()'s node types, which
+        // never returns >0 for a type not also handled above.
         return "unknown complexity source";
     }
   }
