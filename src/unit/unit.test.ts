@@ -2043,6 +2043,25 @@ public class Test {
       assert.ok(gotoDetail, "goto statement should add complexity");
     });
 
+    it("should use a bare function name for top-level local functions with no enclosing type", () => {
+      const sourceCode = `
+int Add(int a, int b) {
+    if (a > b) {
+        return a;
+    }
+    return b;
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(
+        results[0].name,
+        "Add",
+        "top-level function name should not be qualified with an enclosing type"
+      );
+      assert.ok(results[0].complexity > 0);
+    });
+
     it("should use class name in constructor name", () => {
       const sourceCode = `
 public class MyService {
