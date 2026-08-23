@@ -128,6 +128,15 @@ export class CSharpMetricsAnalyzer {
   private nesting = 0;
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
   private preprocessorDepth = 0;
+
+  /**
+   * Caches the { increment, reason } pair computed by the ERROR-node / malformed-declaration
+   * heuristics, keyed by the node they were computed for. `visit()` always calls
+   * getComplexityIncrement() immediately followed by getComplexityReason() for the same node,
+   * so caching here avoids re-extracting the node's source substring and re-running the same
+   * regex tests a second time just to pick a reason string.
+   */
+  private heuristicReasonCache?: { node: Parser.SyntaxNode; reason: string };
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
@@ -565,6 +574,10 @@ export class CSharpMetricsAnalyzer {
       errorNode.endIndex
     );
     let complexity = 0;
+    // The first pattern that matches determines the human-readable reason string returned by
+    // getComplexityReasonFromErrorNode(). Computed here (single substring + regex pass) and
+    // cached so the reason lookup that immediately follows in visit() doesn't redo this work.
+    let reason: string | undefined;
 
     // Look for common complexity patterns in the text
     // Note: This is a heuristic approach and may not catch all cases
@@ -572,27 +585,32 @@ export class CSharpMetricsAnalyzer {
     // Look for if keywords that might indicate control flow
     if (IF_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "if statement (in preprocessor block)";
     }
 
     // Look for while loops
     if (WHILE_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "while loop (in preprocessor block)";
     }
 
     // Look for for loops
     if (FOR_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "for loop (in preprocessor block)";
     }
 
     // Look for foreach loops
     if (FOREACH_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "foreach loop (in preprocessor block)";
     }
 
     // Look for logical operators - be more precise about detection
     const logicalOpMatches = text.match(LOGICAL_OPERATOR_GLOBAL_REGEX);
     if (logicalOpMatches) {
       complexity += logicalOpMatches.length;
+      reason ??= "logical operator (in preprocessor block)";
     }
 
     // Look for ternary operators - check for fragments too
@@ -602,14 +620,21 @@ export class CSharpMetricsAnalyzer {
       (QUESTION_MARK_REGEX.test(text) && this.hasMatchingColonInSiblings(errorNode))
     ) {
       complexity += 1;
+      reason ??= "ternary operator (in preprocessor block)";
     }
 
     // Look for try-catch blocks
     if (TRY_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "try statement (in preprocessor block)";
     }
     if (CATCH_KEYWORD_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "catch clause (in preprocessor block)";
+    }
+
+    if (reason !== undefined) {
+      this.heuristicReasonCache = { node: errorNode, reason };
     }
 
     return complexity;
@@ -665,17 +690,24 @@ export class CSharpMetricsAnalyzer {
       declarationNode.endIndex
     );
     let complexity = 0;
+    let reason: string | undefined;
 
     // Look for ternary operators that got misinterpreted as declarations
     // Pattern: identifier ? value : value
     if (MALFORMED_TERNARY_REGEX.test(text)) {
       complexity += 1;
+      reason ??= "ternary operator (in preprocessor block)";
     }
 
     // Look for logical operators
     const logicalOpMatches = text.match(LOGICAL_OPERATOR_GLOBAL_REGEX);
     if (logicalOpMatches) {
       complexity += logicalOpMatches.length;
+      reason ??= "logical operator (in preprocessor block)";
+    }
+
+    if (reason !== undefined) {
+      this.heuristicReasonCache = { node: declarationNode, reason };
     }
 
     return complexity;
@@ -703,6 +735,17 @@ export class CSharpMetricsAnalyzer {
   private getComplexityReasonFromErrorNode(
     errorNode: Parser.SyntaxNode
   ): string {
+    // Fast path: getComplexityFromErrorNode() already computed the reason for this exact node
+    // as part of the increment calculation immediately preceding this call in visit().
+    if (this.heuristicReasonCache?.node === errorNode) {
+      return this.heuristicReasonCache.reason;
+    }
+
+    // Unreachable in practice: getComplexityFromErrorNode() always populates
+    // heuristicReasonCache whenever it returns a positive increment, and visit() only calls
+    // getComplexityReason() when the increment is positive. Kept as a defensive fallback in
+    // case this method is ever invoked independently of getComplexityFromErrorNode().
+    /* c8 ignore start */
     const text = this.sourceText.substring(
       errorNode.startIndex,
       errorNode.endIndex
@@ -738,6 +781,7 @@ export class CSharpMetricsAnalyzer {
     }
 
     return "complexity pattern (in preprocessor block)";
+    /* c8 ignore stop */
   }
 
   /**
@@ -749,10 +793,18 @@ export class CSharpMetricsAnalyzer {
   private getComplexityReasonFromMalformedDeclaration(
     declarationNode: Parser.SyntaxNode
   ): string {
+    // Fast path: getComplexityFromMalformedDeclaration() already computed the reason for this
+    // exact node as part of the increment calculation immediately preceding this call in visit().
+    if (this.heuristicReasonCache?.node === declarationNode) {
+      return this.heuristicReasonCache.reason;
+    }
+
+    // Unreachable in practice: getComplexityFromMalformedDeclaration() always populates
+    // heuristicReasonCache whenever it returns a positive increment, and visit() only calls
+    // getComplexityReason() when the increment is positive. Kept as a defensive fallback in
+    // case this method is ever invoked independently of getComplexityFromMalformedDeclaration().
+    /* c8 ignore start */
     if (!this.isInPreprocessorBlock(declarationNode)) {
-      // Unreachable in practice: getComplexityFromMalformedDeclaration() returns 0 when
-      // not in a preprocessor block, so visit() never calls getComplexityReason() for this case.
-      /* c8 ignore next */
       return "complexity in declaration"; // Fallback
     }
 
@@ -769,11 +821,8 @@ export class CSharpMetricsAnalyzer {
       return "logical operator (in preprocessor block)";
     }
 
-    // Unreachable in practice: getComplexityFromMalformedDeclaration() only adds complexity
-    // for MALFORMED_TERNARY_REGEX or logical-operator matches, so visit() never reaches this
-    // fallback for a declaration whose text matches neither pattern.
-    /* c8 ignore next */
     return "complexity pattern in declaration (preprocessor block)";
+    /* c8 ignore stop */
   }
 
   /**
