@@ -9,6 +9,7 @@
  */
 
 import Parser from "tree-sitter";
+import { isOutermostInSameOperatorChain } from "./complexityHelpers";
 
 /**
  * Represents a single complexity detail for a specific JS/TS code construct.
@@ -431,14 +432,17 @@ export class JsLikeMetricsAnalyzer {
         if (op === "&&" || op === "||" || op === "??") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
-          const parent = node.parent;
-          if (parent && (parent.type === "binary_expression" || parent.type === "logical_expression")) {
-            const parentOp = this.getOperator(parent);
-            if (parentOp === op) {
-              return 0; // inner node of a same-operator chain — already counted by parent
-            }
+          if (
+            isOutermostInSameOperatorChain(
+              node,
+              op,
+              ["binary_expression", "logical_expression"],
+              (n) => this.getOperator(n)
+            )
+          ) {
+            return 1;
           }
-          return 1;
+          return 0; // inner node of a same-operator chain — already counted by parent
         }
         return 0;
       }

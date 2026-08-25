@@ -10,6 +10,7 @@
  */
 
 import Parser from "tree-sitter";
+import { isOutermostInSameOperatorChain } from "./complexityHelpers";
 const Rust = require("tree-sitter-rust"); // noqa
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
@@ -328,14 +329,10 @@ export class RustMetricsAnalyzer {
         if (op === "&&" || op === "||") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
-          const parent = node.parent;
-          if (parent && parent.type === "binary_expression") {
-            const parentOp = this.getBinaryOperator(parent);
-            if (parentOp === op) {
-              return 0; // inner node of a same-operator chain — already counted by parent
-            }
+          if (isOutermostInSameOperatorChain(node, op, "binary_expression", (n) => this.getBinaryOperator(n))) {
+            return 1;
           }
-          return 1;
+          return 0; // inner node of a same-operator chain — already counted by parent
         }
         return 0;
       }

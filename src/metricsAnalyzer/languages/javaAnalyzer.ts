@@ -11,6 +11,7 @@
 
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
+import { isOutermostInSameOperatorChain } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -338,14 +339,10 @@ export class JavaMetricsAnalyzer {
         // Only count if this is the "outermost" binary expression for this operator chain
         // (i.e. the parent is NOT also a binary_expression with the same operator)
         if (op === "&&" || op === "||") {
-          const parent = node.parent;
-          if (parent && parent.type === "binary_expression") {
-            const parentOp = this.getBinaryOperator(parent);
-            if (parentOp === op) {
-              return 0; // Already counted by the parent
-            }
+          if (isOutermostInSameOperatorChain(node, op, "binary_expression", (n) => this.getBinaryOperator(n))) {
+            return 1;
           }
-          return 1;
+          return 0; // Already counted by the parent
         }
         return 0;
       }
