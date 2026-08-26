@@ -14,6 +14,8 @@
  *
  */
 
+import { LruCache } from "../lruCache";
+
 /**
  * Represents a single complexity detail for a specific code construct.
  * Each detail contributes to the overall complexity of a function.
@@ -133,19 +135,9 @@ export class MetricsAnalyzerFactory {
       // same length can theoretically collide. Comparing sourceText guards
       // against silently returning results for the wrong file.
       if (cached && cached.sourceText === sourceText) {
-        // Move to end to maintain LRU order (most recently used stays at back)
-        analysisCache.delete(cacheKey);
-        analysisCache.set(cacheKey, cached);
         return cached.results;
       }
       const results = analyzer(sourceText);
-      // If this key already exists (e.g. hash collision with different sourceText),
-      // remove it first so replacement becomes most-recently-used without shrinking
-      // the cache when at capacity.
-      const replacedExistingKey = analysisCache.delete(cacheKey);
-      if (!replacedExistingKey && analysisCache.size >= CACHE_MAX_SIZE) {
-        analysisCache.delete(analysisCache.keys().next().value!);
-      }
       analysisCache.set(cacheKey, { sourceText, results });
       return results;
     }
@@ -162,10 +154,10 @@ const CACHE_MAX_SIZE = 20;
  * entry when full. Stores the original `sourceText` alongside the results so a lookup can
  * verify the hash key isn't a collision from a different file of the same length.
  */
-const analysisCache = new Map<
+const analysisCache = new LruCache<
   string,
   { sourceText: string; results: UnifiedFunctionMetrics[] }
->();
+>(CACHE_MAX_SIZE);
 
 /** @internal Fast non-cryptographic hash for cache key generation (djb2 variant). Exported for unit testing. */
 export function hashString(str: string): number {

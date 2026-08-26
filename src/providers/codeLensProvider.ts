@@ -4,6 +4,7 @@ import {
   UnifiedFunctionMetrics,
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { ConfigurationManager, CodeMetricsConfig } from "../configuration";
+import { LruCache } from "../lruCache";
 
 /**
  * Compiled regex cache for exclude patterns.
@@ -12,14 +13,12 @@ import { ConfigurationManager, CodeMetricsConfig } from "../configuration";
  * Capped at EXCLUDE_CACHE_MAX_SIZE entries (LRU eviction) to prevent unbounded growth when
  * workspace settings vary across many open folders or when settings change frequently.
  */
-const excludeRegexCache = new Map<
+const excludeRegexCache = new LruCache<
   string,
   { regex: RegExp; isFullPath: boolean }[]
->();
+>(32);
 
-/** Maximum number of distinct pattern-list compilations to keep in the exclude regex cache. */
-const EXCLUDE_CACHE_MAX_SIZE = 32;
-
+/** Maximum number of workspace-folder config entries to keep in the config cache. */
 const CONFIG_CACHE_MAX_SIZE = 32;
 
 /**
@@ -27,6 +26,9 @@ const CONFIG_CACHE_MAX_SIZE = 32;
  * One entry per open document is typical; 64 is generous for large workspaces.
  */
 const ANALYSIS_CACHE_MAX_SIZE = 64;
+
+/** Maximum number of rendered CodeLens arrays to keep in the codeLens cache. */
+const CODE_LENS_CACHE_MAX_SIZE = 64;
 
 /**
  * Maximum number of per-path exclusion decisions to keep in the result cache.
@@ -72,14 +74,6 @@ function getCompiledPatterns(
   let compiled = excludeRegexCache.get(cacheKey);
   if (!compiled) {
     compiled = patterns.map(compileExcludePattern);
-    if (excludeRegexCache.size >= EXCLUDE_CACHE_MAX_SIZE) {
-      // Evict the least-recently-used entry (first key in insertion order).
-      excludeRegexCache.delete(excludeRegexCache.keys().next().value!);
-    }
-    excludeRegexCache.set(cacheKey, compiled);
-  } else {
-    // Refresh LRU order: move this entry to the end.
-    excludeRegexCache.delete(cacheKey);
     excludeRegexCache.set(cacheKey, compiled);
   }
   return compiled;
@@ -98,7 +92,9 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    * round-trips — which each make 5 separate VS Code API calls — measurably reduces overhead.
    * The cache is cleared by the configuration change watcher whenever settings change.
    */
-  private readonly configCache = new Map<string, CodeMetricsConfig>();
+  private readonly configCache = new LruCache<string, CodeMetricsConfig>(
+    CONFIG_CACHE_MAX_SIZE
+  );
 
   /**
    * Cache of analysis results keyed by `"<uri>#<languageId>#<version>"`.
@@ -109,7 +105,10 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    * entirely without reusing results after a language mode switch.
    * The cache is bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
    */
-  private readonly analysisCache = new Map<string, UnifiedFunctionMetrics[]>();
+  private readonly analysisCache = new LruCache<
+    string,
+    UnifiedFunctionMetrics[]
+  >(ANALYSIS_CACHE_MAX_SIZE);
 
   /**
    * Cache of per-path exclusion decisions.
@@ -119,7 +118,9 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    * Cleared whenever configuration (and thus exclude patterns) changes.
    * Bounded to EXCLUDE_RESULT_CACHE_MAX_SIZE entries (LRU eviction).
    */
-  private readonly excludeResultCache = new Map<string, boolean>();
+  private readonly excludeResultCache = new LruCache<string, boolean>(
+    EXCLUDE_RESULT_CACHE_MAX_SIZE
+  );
 
   /**
    * Cache of rendered CodeLens arrays keyed by `"<analysisKey>#<configKey>"`.
@@ -132,9 +133,11 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    * Invalidated by `clearConfigCache()` (threshold changes alter icon/text) and
    * `clearAnalysisCache()` (language-mode switches). Entries for closed documents are
    * pruned proactively by `pruneAnalysisCacheForDocument()`.
-   * Bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
+   * Bounded to CODE_LENS_CACHE_MAX_SIZE entries (LRU eviction).
    */
-  private readonly codeLensCache = new Map<string, vscode.CodeLens[]>();
+  private readonly codeLensCache = new LruCache<string, vscode.CodeLens[]>(
+    CODE_LENS_CACHE_MAX_SIZE
+  );
 
   public async provideCodeLenses(
     document: vscode.TextDocument,
@@ -146,17 +149,6 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     let config = this.configCache.get(configKey);
     if (!config) {
       config = ConfigurationManager.getConfiguration(document.uri);
-      if (this.configCache.size >= CONFIG_CACHE_MAX_SIZE) {
-        // Evict the oldest entry in insertion order.
-        const oldestKey = this.configCache.keys().next().value;
-        if (oldestKey !== undefined) {
-          this.configCache.delete(oldestKey);
-        }
-      }
-      this.configCache.set(configKey, config);
-    } else {
-      // Refresh LRU order: move this entry to the end so it survives the next eviction.
-      this.configCache.delete(configKey);
       this.configCache.set(configKey, config);
     }
 
@@ -188,17 +180,6 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
           sourceText,
           document.languageId
         );
-        if (this.analysisCache.size >= ANALYSIS_CACHE_MAX_SIZE) {
-          // Evict the least-recently-used entry (first key in insertion order).
-          const oldestKey = this.analysisCache.keys().next().value;
-          if (oldestKey !== undefined) {
-            this.analysisCache.delete(oldestKey);
-          }
-        }
-        this.analysisCache.set(analysisKey, functions);
-      } else {
-        // Refresh LRU order.
-        this.analysisCache.delete(analysisKey);
         this.analysisCache.set(analysisKey, functions);
       }
 
@@ -208,12 +189,6 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
       let lenses = this.codeLensCache.get(codeLensKey);
       if (!lenses) {
         lenses = this.createCodeLenses(functions, document, config);
-        if (this.codeLensCache.size >= ANALYSIS_CACHE_MAX_SIZE) {
-          this.codeLensCache.delete(this.codeLensCache.keys().next().value!);
-        }
-        this.codeLensCache.set(codeLensKey, lenses);
-      } else {
-        this.codeLensCache.delete(codeLensKey);
         this.codeLensCache.set(codeLensKey, lenses);
       }
       return lenses;
@@ -246,9 +221,6 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     // config changes, so we avoid rerunning regex matching on every event.
     const cached = this.excludeResultCache.get(normalizedPath);
     if (cached !== undefined) {
-      // Refresh LRU position so frequently-opened files survive eviction.
-      this.excludeResultCache.delete(normalizedPath);
-      this.excludeResultCache.set(normalizedPath, cached);
       return cached;
     }
 
@@ -268,12 +240,6 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
       return regex.test(filename);
     });
 
-    // Store result, evicting the oldest entry if the cache is full.
-    if (this.excludeResultCache.size >= EXCLUDE_RESULT_CACHE_MAX_SIZE) {
-      this.excludeResultCache.delete(
-        this.excludeResultCache.keys().next().value!
-      );
-    }
     this.excludeResultCache.set(normalizedPath, result);
     return result;
   }
@@ -342,16 +308,8 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    */
   public pruneAnalysisCacheForDocument(uriString: string): void {
     const prefix = `${uriString}#`;
-    for (const key of this.analysisCache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.analysisCache.delete(key);
-      }
-    }
-    for (const key of this.codeLensCache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.codeLensCache.delete(key);
-      }
-    }
+    this.analysisCache.deleteWhere((key) => key.startsWith(prefix));
+    this.codeLensCache.deleteWhere((key) => key.startsWith(prefix));
   }
 }
 
