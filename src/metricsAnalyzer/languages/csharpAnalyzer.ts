@@ -11,6 +11,7 @@
 
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
+import { isOutermostInSameOperatorChain } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -514,14 +515,12 @@ export class CSharpMetricsAnalyzer {
         if (operator === "&&" || operator === "||") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
-          const parent = node.parent;
-          if (parent && parent.type === "binary_expression") {
-            const parentOp = this.getBinaryOperator(parent);
-            if (parentOp === operator) {
-              return 0; // inner node of a same-operator chain — already counted by parent
-            }
+          if (
+            isOutermostInSameOperatorChain(node, operator, "binary_expression", (n) => this.getBinaryOperator(n))
+          ) {
+            return 1;
           }
-          return 1;
+          return 0; // inner node of a same-operator chain — already counted by parent
         }
         return 0;
       }
