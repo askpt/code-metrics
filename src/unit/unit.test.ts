@@ -21,8 +21,94 @@ import {
   hashString,
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { SampleCSharpCode } from "../test/testUtils";
+import { LruCache } from "../lruCache";
 
 describe("Core Logic Unit Tests (Node.js)", () => {
+  describe("LruCache", () => {
+    it("should store and retrieve values", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      assert.strictEqual(cache.get("a"), 1);
+      assert.strictEqual(cache.size, 1);
+    });
+
+    it("should return undefined for missing keys", () => {
+      const cache = new LruCache<string, number>(2);
+      assert.strictEqual(cache.get("missing"), undefined);
+    });
+
+    it("should evict the least-recently-used entry when full", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      cache.set("c", 3); // evicts "a" (oldest, never touched)
+      assert.strictEqual(cache.get("a"), undefined);
+      assert.strictEqual(cache.get("b"), 2);
+      assert.strictEqual(cache.get("c"), 3);
+      assert.strictEqual(cache.size, 2);
+    });
+
+    it("should refresh LRU order on get so recently-used entries survive eviction", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      cache.get("a"); // "a" becomes most-recently-used
+      cache.set("c", 3); // evicts "b" instead of "a"
+      assert.strictEqual(cache.get("a"), 1);
+      assert.strictEqual(cache.get("b"), undefined);
+      assert.strictEqual(cache.get("c"), 3);
+    });
+
+    it("should refresh LRU order when re-setting an existing key", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      cache.set("a", 10); // "a" becomes most-recently-used, value updated
+      cache.set("c", 3); // evicts "b" instead of "a"
+      assert.strictEqual(cache.get("a"), 10);
+      assert.strictEqual(cache.get("b"), undefined);
+      assert.strictEqual(cache.get("c"), 3);
+    });
+
+    it("should peek without refreshing LRU order", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      assert.strictEqual(cache.peek("a"), 1);
+      cache.set("c", 3); // "a" still evicted since peek doesn't refresh
+      assert.strictEqual(cache.get("a"), undefined);
+      assert.strictEqual(cache.get("c"), 3);
+    });
+
+    it("should delete a specific key", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.delete("a");
+      assert.strictEqual(cache.get("a"), undefined);
+      assert.strictEqual(cache.size, 0);
+    });
+
+    it("should delete entries matching a predicate via deleteWhere", () => {
+      const cache = new LruCache<string, number>(10);
+      cache.set("doc1#v1", 1);
+      cache.set("doc1#v2", 2);
+      cache.set("doc2#v1", 3);
+      cache.deleteWhere((key) => key.startsWith("doc1#"));
+      assert.strictEqual(cache.get("doc1#v1"), undefined);
+      assert.strictEqual(cache.get("doc1#v2"), undefined);
+      assert.strictEqual(cache.get("doc2#v1"), 3);
+    });
+
+    it("should clear all entries", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      cache.clear();
+      assert.strictEqual(cache.size, 0);
+      assert.strictEqual(cache.get("a"), undefined);
+    });
+  });
+
   describe("Go Analyzer Core Logic", () => {
     it("should analyze simple function correctly", () => {
       const analyzer = new GoMetricsAnalyzer();

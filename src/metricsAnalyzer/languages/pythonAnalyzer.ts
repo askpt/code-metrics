@@ -11,6 +11,7 @@
 
 import Parser from "tree-sitter";
 const Python = require("tree-sitter-python"); // noqa
+import { isOutermostInSameOperatorChain } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -296,14 +297,10 @@ export class PythonMetricsAnalyzer {
         if (op === "and" || op === "or") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a and b and c` has two boolean_operators, but counts once.
-          const parent = node.parent;
-          if (parent && parent.type === "boolean_operator") {
-            const parentOp = this.getBooleanOperator(parent);
-            if (parentOp === op) {
-              return 0; // inner node of a same-operator chain — already counted by parent
-            }
+          if (isOutermostInSameOperatorChain(node, op, "boolean_operator", (n) => this.getBooleanOperator(n))) {
+            return 1 + this.nesting;
           }
-          return 1 + this.nesting;
+          return 0; // inner node of a same-operator chain — already counted by parent
         }
         /* c8 ignore next */
         return 0;
