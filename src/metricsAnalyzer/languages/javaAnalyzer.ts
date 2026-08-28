@@ -420,7 +420,11 @@ export class JavaMetricsAnalyzer {
    * @returns An array of complexity analysis results for all methods found
    */
   public static analyzeFile(sourceText: string): JavaFunctionMetrics[] {
-    const analyzer = new JavaMetricsAnalyzer();
-    return analyzer.analyzeFunctions(sourceText);
+    return _analyzerInstance.analyzeFunctions(sourceText);
   }
 }
+
+// Module-level singleton: avoids object allocation on every analyzeFile() call.
+// JavaMetricsAnalyzer resets its mutable state at the start of each top-level
+// function analysis (save/restore pattern), so the singleton is safe to reuse.
+const _analyzerInstance = new JavaMetricsAnalyzer();
