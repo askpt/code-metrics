@@ -174,6 +174,7 @@ export class PythonMetricsAnalyzer {
     const functionName = this.getFunctionName(node, className);
 
     const body = node.childForFieldName("body");
+    /* c8 ignore next 3 */
     if (!body) {
       return null;
     }

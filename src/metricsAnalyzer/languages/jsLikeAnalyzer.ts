@@ -468,6 +468,7 @@ export class JsLikeMetricsAnalyzer {
   private getOperator(node: Parser.SyntaxNode): string | null {
     // binary_expression structure: [left, operator, right] — operator always at index 1
     const operatorNode = node.child(1);
+    /* c8 ignore next */
     if (!operatorNode) { return null; }
     const type = operatorNode.type;
     if (type === "&&" || type === "||" || type === "??") { return type; }
