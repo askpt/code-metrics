@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.2](https://github.com/askpt/code-metrics/compare/v0.9.1...v0.9.2) (2026-08-29)
+
+
+### 🚀 Performance
+
+* cache C# ERROR/malformed-declaration reason to avoid duplicate regex scan ([#565](https://github.com/askpt/code-metrics/issues/565)) ([625b753](https://github.com/askpt/code-metrics/commit/625b753adc21ebcb391c26b434cda472d31aa77d))
+* convert remaining node.children array accesses to childCount/child(i) ([#562](https://github.com/askpt/code-metrics/issues/562)) ([c036b79](https://github.com/askpt/code-metrics/commit/c036b7951a79c2267e1d5cc00d9df44c80238f2f))
+* reuse singleton analyzer instances in C#/Go/Java/Python/Rust analyzeFile() ([#580](https://github.com/askpt/code-metrics/issues/580)) ([c8d989e](https://github.com/askpt/code-metrics/commit/c8d989e0c0d12146b4ed8517c70931577f541253))
+* reuse singleton JavaScriptMetricsAnalyzer instance in analyzeFile() ([#578](https://github.com/askpt/code-metrics/issues/578)) ([e759b8c](https://github.com/askpt/code-metrics/commit/e759b8ce2ad62066fd50c507c2e1a307a60d19ac))
+
+
+### 🔄 Refactoring
+
+* extract shared LruCache helper to eliminate duplicated cache-eviction logic ([#574](https://github.com/askpt/code-metrics/issues/574)) ([7cd308a](https://github.com/askpt/code-metrics/commit/7cd308a4db16680e341a09170814efe74971ad99))
+* extract shared same-operator-chain dedup helper across analyzers ([#571](https://github.com/askpt/code-metrics/issues/571)) ([a40c854](https://github.com/askpt/code-metrics/commit/a40c854fc8b74fd44063cb0a27c7c8bbf7c5d2c4))
+
 ## [0.9.1](https://github.com/askpt/code-metrics/compare/v0.9.0...v0.9.1) (2026-08-22)
 
 
