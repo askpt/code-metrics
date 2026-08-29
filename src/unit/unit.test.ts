@@ -6,6 +6,7 @@
  */
 
 import * as assert from "assert";
+import type Parser from "tree-sitter";
 import { CSharpMetricsAnalyzer } from "../metricsAnalyzer/languages/csharpAnalyzer";
 import { GoMetricsAnalyzer } from "../metricsAnalyzer/languages/goAnalyzer";
 import { JavaMetricsAnalyzer } from "../metricsAnalyzer/languages/javaAnalyzer";
@@ -22,6 +23,7 @@ import {
 } from "../metricsAnalyzer/metricsAnalyzerFactory";
 import { SampleCSharpCode } from "../test/testUtils";
 import { LruCache } from "../lruCache";
+import { isOutermostInSameOperatorChain } from "../metricsAnalyzer/languages/complexityHelpers";
 
 describe("Core Logic Unit Tests (Node.js)", () => {
   describe("LruCache", () => {
@@ -106,6 +108,47 @@ describe("Core Logic Unit Tests (Node.js)", () => {
       cache.clear();
       assert.strictEqual(cache.size, 0);
       assert.strictEqual(cache.get("a"), undefined);
+    });
+  });
+
+  describe("complexityHelpers: isOutermostInSameOperatorChain", () => {
+    it("returns true when the node has no parent (root of tree)", () => {
+      const node = { parent: null, type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const result = isOutermostInSameOperatorChain(node, "&&", "binary_expression", () => "&&");
+      assert.strictEqual(result, true);
+    });
+
+    it("returns false when the parent is the same kind with the same operator (inner node of a chain)", () => {
+      const parent = { type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const node = { parent, type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const result = isOutermostInSameOperatorChain(node, "&&", "binary_expression", () => "&&");
+      assert.strictEqual(result, false);
+    });
+
+    it("returns true when the parent is the same kind but with a different operator", () => {
+      const parent = { type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const node = { parent, type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const result = isOutermostInSameOperatorChain(node, "&&", "binary_expression", () => "||");
+      assert.strictEqual(result, true);
+    });
+
+    it("returns true when the parent is a different node type entirely", () => {
+      const parent = { type: "if_statement" } as unknown as Parser.SyntaxNode;
+      const node = { parent, type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const result = isOutermostInSameOperatorChain(node, "&&", "binary_expression", () => "&&");
+      assert.strictEqual(result, true);
+    });
+
+    it("supports an array of sameKindTypes", () => {
+      const parent = { type: "logical_expression" } as unknown as Parser.SyntaxNode;
+      const node = { parent, type: "binary_expression" } as unknown as Parser.SyntaxNode;
+      const result = isOutermostInSameOperatorChain(
+        node,
+        "&&",
+        ["binary_expression", "logical_expression"],
+        () => "&&"
+      );
+      assert.strictEqual(result, false);
     });
   });
 
