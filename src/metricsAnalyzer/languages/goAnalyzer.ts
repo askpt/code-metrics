@@ -608,7 +608,11 @@ export class GoMetricsAnalyzer {
    * ```
    */
   public static analyzeFile(sourceText: string): GoFunctionMetrics[] {
-    const analyzer = new GoMetricsAnalyzer();
-    return analyzer.analyzeFunctions(sourceText);
+    return _analyzerInstance.analyzeFunctions(sourceText);
   }
 }
+
+// Module-level singleton: avoids object allocation on every analyzeFile() call.
+// GoMetricsAnalyzer resets its mutable state at the start of each top-level
+// function analysis (save/restore pattern), so the singleton is safe to reuse.
+const _analyzerInstance = new GoMetricsAnalyzer();
