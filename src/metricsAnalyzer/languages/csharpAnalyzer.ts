@@ -183,26 +183,31 @@ export class CSharpMetricsAnalyzer {
    */
   public analyzeFunctions(sourceText: string): CSharpFunctionMetrics[] {
     this.sourceText = sourceText;
-    const tree = this.parser.parse(sourceText);
-    const functions: CSharpFunctionMetrics[] = [];
+    this.heuristicReasonCache = undefined;
+    try {
+      const tree = this.parser.parse(sourceText);
+      const functions: CSharpFunctionMetrics[] = [];
 
-    const visit = (node: Parser.SyntaxNode) => {
-      if (this.isFunctionDeclaration(node)) {
-        const result = this.analyzeFunction(node);
-        if (result) {
-          functions.push(result);
+      const visit = (node: Parser.SyntaxNode) => {
+        if (this.isFunctionDeclaration(node)) {
+          const result = this.analyzeFunction(node);
+          if (result) {
+            functions.push(result);
+          }
         }
-      }
 
-      // Continue traversing child nodes
-      for (let i = 0; i < node.childCount; i++) {
-        const child = node.child(i)!;
-        visit(child);
-      }
-    };
+        // Continue traversing child nodes
+        for (let i = 0; i < node.childCount; i++) {
+          const child = node.child(i)!;
+          visit(child);
+        }
+      };
 
-    visit(tree.rootNode);
-    return functions;
+      visit(tree.rootNode);
+      return functions;
+    } finally {
+      this.heuristicReasonCache = undefined;
+    }
   }
 
   /**
