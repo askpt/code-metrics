@@ -183,26 +183,31 @@ export class CSharpMetricsAnalyzer {
    */
   public analyzeFunctions(sourceText: string): CSharpFunctionMetrics[] {
     this.sourceText = sourceText;
-    const tree = this.parser.parse(sourceText);
-    const functions: CSharpFunctionMetrics[] = [];
+    this.heuristicReasonCache = undefined;
+    try {
+      const tree = this.parser.parse(sourceText);
+      const functions: CSharpFunctionMetrics[] = [];
 
-    const visit = (node: Parser.SyntaxNode) => {
-      if (this.isFunctionDeclaration(node)) {
-        const result = this.analyzeFunction(node);
-        if (result) {
-          functions.push(result);
+      const visit = (node: Parser.SyntaxNode) => {
+        if (this.isFunctionDeclaration(node)) {
+          const result = this.analyzeFunction(node);
+          if (result) {
+            functions.push(result);
+          }
         }
-      }
 
-      // Continue traversing child nodes
-      for (let i = 0; i < node.childCount; i++) {
-        const child = node.child(i)!;
-        visit(child);
-      }
-    };
+        // Continue traversing child nodes
+        for (let i = 0; i < node.childCount; i++) {
+          const child = node.child(i)!;
+          visit(child);
+        }
+      };
 
-    visit(tree.rootNode);
-    return functions;
+      visit(tree.rootNode);
+      return functions;
+    } finally {
+      this.heuristicReasonCache = undefined;
+    }
   }
 
   /**
@@ -934,7 +939,11 @@ export class CSharpMetricsAnalyzer {
    * ```
    */
   public static analyzeFile(sourceText: string): CSharpFunctionMetrics[] {
-    const analyzer = new CSharpMetricsAnalyzer();
-    return analyzer.analyzeFunctions(sourceText);
+    return _analyzerInstance.analyzeFunctions(sourceText);
   }
 }
+
+// Module-level singleton: avoids object allocation on every analyzeFile() call.
+// CSharpMetricsAnalyzer resets its mutable state at the start of each top-level
+// function analysis (save/restore pattern), so the singleton is safe to reuse.
+const _analyzerInstance = new CSharpMetricsAnalyzer();
