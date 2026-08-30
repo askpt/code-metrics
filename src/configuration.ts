@@ -27,13 +27,19 @@ export interface CodeMetricsConfig {
 
 /**
  * Default configuration values used when user hasn't specified custom values.
+ *
+ * Frozen because `WorkspaceConfiguration.get(key, defaultValue)` returns this
+ * exact object/array reference (no cloning) whenever the user hasn't
+ * overridden the setting. Freezing prevents an accidental mutation by any
+ * caller from silently corrupting the shared defaults for the rest of the
+ * session.
  */
-export const DEFAULT_CONFIG: CodeMetricsConfig = {
+export const DEFAULT_CONFIG: CodeMetricsConfig = Object.freeze({
   enabled: true,
   showCodeLens: true,
   warningThreshold: 10,
   errorThreshold: 15,
-  excludePatterns: [
+  excludePatterns: Object.freeze([
     "**/node_modules/**",
     "**/dist/**",
     "**/build/**",
@@ -41,8 +47,8 @@ export const DEFAULT_CONFIG: CodeMetricsConfig = {
     "**/*.min.js",
     "**/*.spec.*",
     "**/*.test.*",
-  ],
-};
+  ]) as string[],
+});
 
 /**
  * Configuration manager class that provides typed access to extension settings.
