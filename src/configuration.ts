@@ -84,10 +84,10 @@ export class ConfigurationManager {
         "errorThreshold",
         DEFAULT_CONFIG.errorThreshold
       ),
-      excludePatterns: config.get<readonly string[]>(
+      excludePatterns: Object.freeze(config.get<string[]>(
         "excludePatterns",
-        DEFAULT_CONFIG.excludePatterns
-      ),
+        DEFAULT_CONFIG.excludePatterns as string[]
+      ) ?? DEFAULT_CONFIG.excludePatterns),
     };
   }
 
