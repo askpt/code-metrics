@@ -22,18 +22,24 @@ export interface CodeMetricsConfig {
   /** Complexity threshold for error status (red indicator) */
   errorThreshold: number;
   /** Glob patterns for files to exclude from analysis */
-  excludePatterns: string[];
+  readonly excludePatterns: readonly string[];
 }
 
 /**
  * Default configuration values used when user hasn't specified custom values.
+ *
+ * Frozen because `WorkspaceConfiguration.get(key, defaultValue)` returns this
+ * exact object/array reference (no cloning) whenever the user hasn't
+ * overridden the setting. Freezing prevents an accidental mutation by any
+ * caller from silently corrupting the shared defaults for the rest of the
+ * session.
  */
-export const DEFAULT_CONFIG: CodeMetricsConfig = {
+export const DEFAULT_CONFIG: CodeMetricsConfig = Object.freeze({
   enabled: true,
   showCodeLens: true,
   warningThreshold: 10,
   errorThreshold: 15,
-  excludePatterns: [
+  excludePatterns: Object.freeze([
     "**/node_modules/**",
     "**/dist/**",
     "**/build/**",
@@ -41,8 +47,8 @@ export const DEFAULT_CONFIG: CodeMetricsConfig = {
     "**/*.min.js",
     "**/*.spec.*",
     "**/*.test.*",
-  ],
-};
+  ]),
+});
 
 /**
  * Configuration manager class that provides typed access to extension settings.
@@ -78,10 +84,10 @@ export class ConfigurationManager {
         "errorThreshold",
         DEFAULT_CONFIG.errorThreshold
       ),
-      excludePatterns: config.get<string[]>(
+      excludePatterns: Object.freeze(config.get<string[]>(
         "excludePatterns",
-        DEFAULT_CONFIG.excludePatterns
-      ),
+        DEFAULT_CONFIG.excludePatterns as string[]
+      ) ?? DEFAULT_CONFIG.excludePatterns),
     };
   }
 

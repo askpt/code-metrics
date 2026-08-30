@@ -66,7 +66,7 @@ function compileExcludePattern(
 
 /** Returns compiled regex entries for the given patterns, using a cache to avoid recompilation. */
 function getCompiledPatterns(
-  patterns: string[]
+  patterns: readonly string[]
 ): { regex: RegExp; isFullPath: boolean }[] {
   // Normalize separators before keying so Windows paths (backslash) and
   // forward-slash paths for the same pattern list share a single cache entry.
@@ -213,7 +213,7 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     );
   }
 
-  private isExcluded(filePath: string, excludePatterns: string[]): boolean {
+  private isExcluded(filePath: string, excludePatterns: readonly string[]): boolean {
     const normalizedPath = filePath.replace(/\\/g, "/");
 
     // Check the path-level result cache first. `provideCodeLenses` is called on every
