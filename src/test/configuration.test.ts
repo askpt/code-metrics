@@ -234,4 +234,26 @@ suite("ConfigurationManager Tests", () => {
     assert.ok(config.errorThreshold !== undefined);
     assert.ok(config.excludePatterns !== undefined);
   });
+
+  test("DEFAULT_CONFIG and its excludePatterns array should be frozen", () => {
+    assert.ok(Object.isFrozen(DEFAULT_CONFIG), "DEFAULT_CONFIG should be frozen");
+    assert.ok(Object.isFrozen(DEFAULT_CONFIG.excludePatterns), "DEFAULT_CONFIG.excludePatterns should be frozen");
+  });
+
+  test("mutating DEFAULT_CONFIG should not change the defaults", () => {
+    const originalLength = DEFAULT_CONFIG.excludePatterns.length;
+
+    // Attempt to mutate — should throw in strict mode or silently no-op
+    try {
+      (DEFAULT_CONFIG.excludePatterns as string[]).push("**/*.extra.*");
+    } catch {
+      // Expected in strict mode
+    }
+
+    assert.strictEqual(
+      DEFAULT_CONFIG.excludePatterns.length,
+      originalLength,
+      "DEFAULT_CONFIG.excludePatterns should not be mutated"
+    );
+  });
 });

@@ -22,7 +22,7 @@ export interface CodeMetricsConfig {
   /** Complexity threshold for error status (red indicator) */
   errorThreshold: number;
   /** Glob patterns for files to exclude from analysis */
-  excludePatterns: string[];
+  readonly excludePatterns: readonly string[];
 }
 
 /**
@@ -47,7 +47,7 @@ export const DEFAULT_CONFIG: CodeMetricsConfig = Object.freeze({
     "**/*.min.js",
     "**/*.spec.*",
     "**/*.test.*",
-  ]) as string[],
+  ]),
 });
 
 /**
@@ -84,7 +84,7 @@ export class ConfigurationManager {
         "errorThreshold",
         DEFAULT_CONFIG.errorThreshold
       ),
-      excludePatterns: config.get<string[]>(
+      excludePatterns: config.get<readonly string[]>(
         "excludePatterns",
         DEFAULT_CONFIG.excludePatterns
       ),
