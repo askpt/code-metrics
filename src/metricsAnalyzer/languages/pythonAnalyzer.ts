@@ -87,6 +87,12 @@ export class PythonMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
+  /**
+   * Bound reference to `getBooleanOperator`, created once per instance instead of as a new
+   * arrow-function closure on every `isOutermostInSameOperatorChain` call.
+   */
+  private readonly getBooleanOperatorBound = (n: Parser.SyntaxNode): string | null =>
+    this.getBooleanOperator(n);
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
@@ -297,7 +303,7 @@ export class PythonMetricsAnalyzer {
         if (op === "and" || op === "or") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a and b and c` has two boolean_operators, but counts once.
-          if (isOutermostInSameOperatorChain(node, op, "boolean_operator", (n) => this.getBooleanOperator(n))) {
+          if (isOutermostInSameOperatorChain(node, op, "boolean_operator", this.getBooleanOperatorBound)) {
             return 1 + this.nesting;
           }
           return 0; // inner node of a same-operator chain — already counted by parent

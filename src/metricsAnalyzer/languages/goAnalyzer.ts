@@ -90,6 +90,12 @@ export class GoMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
+  /**
+   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
+   * arrow-function closure on every `isOutermostInSameOperatorChain` call.
+   */
+  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
+    this.getBinaryOperator(n);
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
@@ -448,7 +454,7 @@ export class GoMetricsAnalyzer {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
           if (
-            isOutermostInSameOperatorChain(node, operator, "binary_expression", (n) => this.getBinaryOperator(n))
+            isOutermostInSameOperatorChain(node, operator, "binary_expression", this.getBinaryOperatorBound)
           ) {
             return 1;
           }

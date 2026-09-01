@@ -100,6 +100,12 @@ export class JavaMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
+  /**
+   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
+   * arrow-function closure on every `isOutermostInSameOperatorChain` call.
+   */
+  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
+    this.getBinaryOperator(n);
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current method being analyzed */
@@ -339,7 +345,7 @@ export class JavaMetricsAnalyzer {
         // Only count if this is the "outermost" binary expression for this operator chain
         // (i.e. the parent is NOT also a binary_expression with the same operator)
         if (op === "&&" || op === "||") {
-          if (isOutermostInSameOperatorChain(node, op, "binary_expression", (n) => this.getBinaryOperator(n))) {
+          if (isOutermostInSameOperatorChain(node, op, "binary_expression", this.getBinaryOperatorBound)) {
             return 1;
           }
           return 0; // Already counted by the parent

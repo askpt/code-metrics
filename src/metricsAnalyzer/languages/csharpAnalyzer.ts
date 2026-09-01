@@ -129,6 +129,13 @@ export class CSharpMetricsAnalyzer {
   private nesting = 0;
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
   private preprocessorDepth = 0;
+  /**
+   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
+   * arrow-function closure on every `isOutermostInSameOperatorChain` call (which runs on
+   * every binary_expression node encountered during traversal).
+   */
+  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
+    this.getBinaryOperator(n);
 
   /**
    * Caches the { increment, reason } pair computed by the ERROR-node / malformed-declaration
@@ -521,7 +528,7 @@ export class CSharpMetricsAnalyzer {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
           if (
-            isOutermostInSameOperatorChain(node, operator, "binary_expression", (n) => this.getBinaryOperator(n))
+            isOutermostInSameOperatorChain(node, operator, "binary_expression", this.getBinaryOperatorBound)
           ) {
             return 1;
           }
