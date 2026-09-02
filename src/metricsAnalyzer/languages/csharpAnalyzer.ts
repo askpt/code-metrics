@@ -830,9 +830,6 @@ export class CSharpMetricsAnalyzer {
   }
 
   /**
-   * Extracts the binary operator from a binary expression node.
-   *
-
    * Generates a human-readable reason for why a syntax node increases complexity.
    *
    * Provides descriptive text explaining the complexity contribution,
