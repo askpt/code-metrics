@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -129,14 +129,6 @@ export class CSharpMetricsAnalyzer {
   private nesting = 0;
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
   private preprocessorDepth = 0;
-  /**
-   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
-   * arrow-function closure on every `isOutermostInSameOperatorChain` call (which runs on
-   * every binary_expression node encountered during traversal).
-   */
-  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
-    this.getBinaryOperator(n);
-
   /**
    * Caches the { increment, reason } pair computed by the ERROR-node / malformed-declaration
    * heuristics, keyed by the node they were computed for. `visit()` always calls
@@ -523,12 +515,12 @@ export class CSharpMetricsAnalyzer {
 
       // Logical operators (+1 per distinct same-operator sequence, flat — no nesting penalty)
       case "binary_expression": {
-        const operator = this.getBinaryOperator(node);
+        const operator = getBinaryLogicalOperator(node);
         if (operator === "&&" || operator === "||") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
           if (
-            isOutermostInSameOperatorChain(node, operator, "binary_expression", this.getBinaryOperatorBound)
+            isOutermostInSameOperatorChain(node, operator, "binary_expression", getBinaryLogicalOperator)
           ) {
             return 1;
           }
@@ -837,28 +829,6 @@ export class CSharpMetricsAnalyzer {
   }
 
   /**
-   * Extracts the binary operator from a binary expression node.
-   *
-   * Searches for operator tokens within the binary expression node
-   * to identify logical operators like && and ||.
-   *
-   * @param node - The binary expression syntax node
-   * @returns The operator string or null if not found
-   */
-  private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // binary_expression structure: [left, operator, right] — operator always at index 1.
-    // In tree-sitter-c-sharp, anonymous operator tokens use their literal text as their node
-    // type (e.g. type === "&&"), so reading `.type` avoids a sourceText.substring allocation.
-    const operatorNode = node.child(1);
-    if (!operatorNode) { return null; }
-    const type = operatorNode.type;
-    if (type === "&&" || type === "||") {
-      return type;
-    }
-    return null;
-  }
-
-  /**
    * Generates a human-readable reason for why a syntax node increases complexity.
    *
    * Provides descriptive text explaining the complexity contribution,
@@ -886,7 +856,7 @@ export class CSharpMetricsAnalyzer {
       case "catch_clause":
         return "catch clause";
       case "binary_expression": {
-        const operator = this.getBinaryOperator(node);
+        const operator = getBinaryLogicalOperator(node);
         return `binary ${operator} operator`;
       }
       case "conditional_expression":

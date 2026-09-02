@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -100,12 +100,6 @@ export class JavaMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
-  /**
-   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
-   * arrow-function closure on every `isOutermostInSameOperatorChain` call.
-   */
-  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
-    this.getBinaryOperator(n);
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current method being analyzed */
@@ -341,11 +335,11 @@ export class JavaMetricsAnalyzer {
         return 1;
 
       case "binary_expression": {
-        const op = this.getBinaryOperator(node);
+        const op = getBinaryLogicalOperator(node);
         // Only count if this is the "outermost" binary expression for this operator chain
         // (i.e. the parent is NOT also a binary_expression with the same operator)
         if (op === "&&" || op === "||") {
-          if (isOutermostInSameOperatorChain(node, op, "binary_expression", this.getBinaryOperatorBound)) {
+          if (isOutermostInSameOperatorChain(node, op, "binary_expression", getBinaryLogicalOperator)) {
             return 1;
           }
           return 0; // Already counted by the parent
@@ -358,20 +352,6 @@ export class JavaMetricsAnalyzer {
     }
   }
 
-  /**
-   * Extracts the operator from a binary expression node.
-   *
-   * @param node - The binary_expression syntax node
-   * @returns The operator string or null if not found
-   */
-  private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // binary_expression structure: [left, operator, right] — operator always at index 1
-    const operatorNode = node.child(1);
-    if (!operatorNode) { return null; }
-    const type = operatorNode.type;
-    if (type === "&&" || type === "||") { return type; }
-    return null;
-  }
 
   /**
    * Generates a human-readable reason for why a syntax node increases complexity.
@@ -400,7 +380,7 @@ export class JavaMetricsAnalyzer {
       case "ternary_expression":
         return "ternary expression";
       case "binary_expression": {
-        const op = this.getBinaryOperator(node);
+        const op = getBinaryLogicalOperator(node);
         return `binary ${op} operator`;
       }
       /* c8 ignore next 2 */

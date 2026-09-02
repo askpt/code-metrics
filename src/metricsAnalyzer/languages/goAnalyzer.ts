@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -90,12 +90,6 @@ export class GoMetricsAnalyzer {
 
   /** Current nesting level during analysis */
   private nesting = 0;
-  /**
-   * Bound reference to `getBinaryOperator`, created once per instance instead of as a new
-   * arrow-function closure on every `isOutermostInSameOperatorChain` call.
-   */
-  private readonly getBinaryOperatorBound = (n: Parser.SyntaxNode): string | null =>
-    this.getBinaryOperator(n);
   /** Current complexity score during analysis */
   private complexity = 0;
   /** Array of complexity details for the current function being analyzed */
@@ -449,12 +443,12 @@ export class GoMetricsAnalyzer {
 
       // Logical operators (+1 flat per distinct sequence — no nesting penalty)
       case "binary_expression": {
-        const operator = this.getBinaryOperator(node);
+        const operator = getBinaryLogicalOperator(node);
         if (operator === "&&" || operator === "||") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
           if (
-            isOutermostInSameOperatorChain(node, operator, "binary_expression", this.getBinaryOperatorBound)
+            isOutermostInSameOperatorChain(node, operator, "binary_expression", getBinaryLogicalOperator)
           ) {
             return 1;
           }
@@ -518,24 +512,6 @@ export class GoMetricsAnalyzer {
   }
 
   /**
-   * Extracts the binary operator from a binary expression node.
-   *
-   * Uses node.type for O(1) operator detection — anonymous tokens in tree-sitter
-   * have their literal text as their type, so no substring allocation is needed.
-   *
-   * @param node - The binary expression syntax node
-   * @returns The operator string or null if not found
-   */
-  private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // binary_expression structure: [left, operator, right] — operator always at index 1
-    const operatorNode = node.child(1);
-    if (!operatorNode) { return null; }
-    const type = operatorNode.type;
-    if (type === "&&" || type === "||") { return type; }
-    return null;
-  }
-
-  /**
    * Generates a human-readable reason for why a syntax node increases complexity.
    *
    * Provides descriptive text explaining the complexity contribution,
@@ -557,7 +533,7 @@ export class GoMetricsAnalyzer {
       case "select_statement":
         return "select statement";
       case "binary_expression": {
-        const operator = this.getBinaryOperator(node);
+        const operator = getBinaryLogicalOperator(node);
         return `binary ${operator} operator`;
       }
       case "func_literal":
