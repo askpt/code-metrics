@@ -10,7 +10,7 @@
  */
 
 import Parser from "tree-sitter";
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
 const Rust = require("tree-sitter-rust"); // noqa
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
@@ -325,11 +325,11 @@ export class RustMetricsAnalyzer {
         return 1;
 
       case "binary_expression": {
-        const op = this.getBinaryOperator(node);
+        const op = getBinaryLogicalOperator(node);
         if (op === "&&" || op === "||") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a && b && c` has two binary_expressions for &&, but counts once.
-          if (isOutermostInSameOperatorChain(node, op, "binary_expression", (n) => this.getBinaryOperator(n))) {
+          if (isOutermostInSameOperatorChain(node, op, "binary_expression", getBinaryLogicalOperator)) {
             return 1;
           }
           return 0; // inner node of a same-operator chain — already counted by parent
@@ -352,23 +352,6 @@ export class RustMetricsAnalyzer {
     }
   }
 
-  /**
-   * Extracts the binary operator from a binary expression node.
-   *
-   * Uses node.type for O(1) operator detection — anonymous tokens in tree-sitter
-   * have their literal text as their type, so no substring allocation is needed.
-   *
-   * @param node - The binary expression syntax node
-   * @returns The operator string or null if not found
-   */
-  private getBinaryOperator(node: Parser.SyntaxNode): string | null {
-    // binary_expression structure: [left, operator, right] — operator always at index 1
-    const operatorNode = node.child(1);
-    if (!operatorNode) { return null; }
-    const type = operatorNode.type;
-    if (type === "&&" || type === "||") { return type; }
-    return null;
-  }
 
   /**
    * Generates a human-readable reason for why a syntax node increases complexity.
@@ -393,7 +376,7 @@ export class RustMetricsAnalyzer {
       case "match_expression":
         return "match expression";
       case "binary_expression": {
-        const op = this.getBinaryOperator(node);
+        const op = getBinaryLogicalOperator(node);
         return `binary ${op} operator`;
       }
       case "closure_expression":
