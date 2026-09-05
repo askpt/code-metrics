@@ -34,6 +34,14 @@ describe("Core Logic Unit Tests (Node.js)", () => {
       assert.strictEqual(cache.size, 1);
     });
 
+    it("should track size as entries are added", () => {
+      const cache = new LruCache<string, number>(3);
+      assert.strictEqual(cache.size, 0);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      assert.strictEqual(cache.size, 2);
+    });
+
     it("should return undefined for missing keys", () => {
       const cache = new LruCache<string, number>(2);
       assert.strictEqual(cache.get("missing"), undefined);
@@ -72,6 +80,16 @@ describe("Core Logic Unit Tests (Node.js)", () => {
       assert.strictEqual(cache.get("c"), 3);
     });
 
+    it("should update an existing key without evicting other entries", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.set("b", 2);
+      cache.set("a", 100);
+      assert.strictEqual(cache.size, 2);
+      assert.strictEqual(cache.peek("a"), 100);
+      assert.strictEqual(cache.peek("b"), 2);
+    });
+
     it("should peek without refreshing LRU order", () => {
       const cache = new LruCache<string, number>(2);
       cache.set("a", 1);
@@ -88,6 +106,14 @@ describe("Core Logic Unit Tests (Node.js)", () => {
       cache.delete("a");
       assert.strictEqual(cache.get("a"), undefined);
       assert.strictEqual(cache.size, 0);
+    });
+
+    it("should no-op when deleting a missing key", () => {
+      const cache = new LruCache<string, number>(2);
+      cache.set("a", 1);
+      cache.delete("missing");
+      assert.strictEqual(cache.size, 1);
+      assert.strictEqual(cache.get("a"), 1);
     });
 
     it("should delete entries matching a predicate via deleteWhere", () => {
