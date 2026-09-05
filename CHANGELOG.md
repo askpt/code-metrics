@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.3](https://github.com/askpt/code-metrics/compare/v0.9.2...v0.9.3) (2026-09-05)
+
+
+### 🔄 Refactoring
+
+* extract shared getBinaryLogicalOperator helper ([#597](https://github.com/askpt/code-metrics/issues/597)) ([ebe1a46](https://github.com/askpt/code-metrics/commit/ebe1a46b790c9fcf79f4a551dade05121a4c4a07))
+* freeze DEFAULT_CONFIG to prevent shared-state mutation ([#584](https://github.com/askpt/code-metrics/issues/584)) ([3d30dc8](https://github.com/askpt/code-metrics/commit/3d30dc8ff17fc36cee4e58dca4e51ea705c4da1b))
+
 ## [0.9.2](https://github.com/askpt/code-metrics/compare/v0.9.1...v0.9.2) (2026-08-29)
 
 
