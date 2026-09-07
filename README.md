@@ -51,6 +51,10 @@ This extension contributes the following settings:
 - `codeMetrics.errorThreshold`: Metrics threshold for showing error status with red indicator (default: `15`)
 - `codeMetrics.excludePatterns`: Glob patterns for files to exclude from metrics analysis (default: excludes node_modules, dist, build, out, minified files, and test files)
 
+  **Pattern matching notes:**
+  - Patterns containing a `/` (e.g. `legacy/*.ts`) are matched against the file's full normalized path, and `**` matches across any number of path segments (e.g. `**/generated/**`).
+  - Patterns without a `/` (e.g. `*.test.ts`) are matched only against the file's basename; in this mode `**` behaves the same as `*` (a single segment), since there are no path separators to span.
+
 ## Installation
 
 Install from the [VS Code Extension Marketplace](https://marketplace.visualstudio.com/vscode) or search for "code-metrics" in the Extensions view.
