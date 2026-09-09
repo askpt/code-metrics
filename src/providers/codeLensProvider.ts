@@ -36,6 +36,12 @@ const CODE_LENS_CACHE_MAX_SIZE = 64;
  */
 const EXCLUDE_RESULT_CACHE_MAX_SIZE = 512;
 
+/**
+ * Delay (ms) before refreshing CodeLenses after a configuration change, giving VS Code
+ * time to fully propagate the updated settings before re-rendering.
+ */
+const CONFIG_CHANGE_REFRESH_DELAY_MS = 100;
+
 /** Compiles a single glob pattern into a regex, honouring `**`, `*`, `?` wildcards. */
 function compileExcludePattern(
   pattern: string
@@ -329,7 +335,7 @@ export function registerCodeLensProvider(): vscode.Disposable {
   const configWatcher = ConfigurationManager.onConfigurationChanged((_e) => {
     excludeRegexCache.clear();
     provider.clearConfigCache();
-    setTimeout(() => provider.refresh(), 100);
+    setTimeout(() => provider.refresh(), CONFIG_CHANGE_REFRESH_DELAY_MS);
   });
 
   // Proactively evict analysis-cache entries for closed documents to reduce memory pressure.
