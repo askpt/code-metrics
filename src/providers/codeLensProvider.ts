@@ -107,8 +107,9 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
    *
    * VS Code calls `provideCodeLenses` on every document change, but the document version
    * increments only when the text actually changes. Caching by URI + language ID + version
-   * means that cursor movements, focus switches, and scroll events skip the tree-sitter parse
-   * entirely without reusing results after a language mode switch.
+   * means that cursor movements, focus switches, and scroll events reuse the cached result
+   * and skip the tree-sitter parse entirely (since neither changes the document version).
+   * A language-mode switch changes the key and correctly triggers a fresh parse.
    * The cache is bounded to ANALYSIS_CACHE_MAX_SIZE entries (LRU eviction).
    */
   private readonly analysisCache = new LruCache<
