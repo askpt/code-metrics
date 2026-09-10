@@ -248,7 +248,7 @@ suite("ConfigurationManager Tests", () => {
   test("excludePatterns returned by get() should also be frozen", async () => {
     const customPatterns = ["**/*.generated.*"];
     const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
-    const previousPatterns = vsConfig.get<string[]>("excludePatterns");
+    const previousGlobalPatterns = vsConfig.inspect<string[]>("excludePatterns")?.globalValue;
 
     try {
       await vsConfig.update(
@@ -274,7 +274,7 @@ suite("ConfigurationManager Tests", () => {
     } finally {
       await vsConfig.update(
         "excludePatterns",
-        previousPatterns,
+        previousGlobalPatterns,
         vscode.ConfigurationTarget.Global
       );
     }
