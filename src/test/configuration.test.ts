@@ -272,11 +272,19 @@ suite("ConfigurationManager Tests", () => {
         "get('excludePatterns') should not be mutated"
       );
     } finally {
-      await vsConfig.update(
-        "excludePatterns",
-        previousGlobalPatterns,
-        vscode.ConfigurationTarget.Global
-      );
+      if (previousGlobalPatterns === undefined) {
+        await vsConfig.update(
+          "excludePatterns",
+          undefined,
+          vscode.ConfigurationTarget.Global
+        );
+      } else {
+        await vsConfig.update(
+          "excludePatterns",
+          previousGlobalPatterns,
+          vscode.ConfigurationTarget.Global
+        );
+      }
     }
   });
 
