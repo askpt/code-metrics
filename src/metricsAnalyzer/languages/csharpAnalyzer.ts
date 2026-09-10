@@ -125,6 +125,23 @@ export class CSharpMetricsAnalyzer {
     "anonymous_method_expression",
   ]);
 
+  /** Preprocessor directive node types (preproc_if / preproc_else etc.) — used for O(1) type checks during traversal. */
+  private static readonly PREPROC_TYPES: ReadonlySet<string> = new Set([
+    "preproc_if",
+    "preproc_elif",
+    "preproc_else",
+    "preproc_define",
+    "preproc_undef",
+    "preproc_region",
+    "preproc_endregion",
+    "preproc_pragma",
+    "preproc_line",
+    "preproc_nullable",
+    "preproc_error",
+    "preproc_warning",
+    "preproc_arg",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
@@ -471,7 +488,7 @@ export class CSharpMetricsAnalyzer {
 
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
-    const isPreproc = node.type.startsWith("preproc_");
+    const isPreproc = CSharpMetricsAnalyzer.PREPROC_TYPES.has(node.type);
     if (nests) { this.nesting++; }
     if (isPreproc) { this.preprocessorDepth++; }
     for (let i = 0; i < node.childCount; i++) {
