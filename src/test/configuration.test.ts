@@ -258,6 +258,11 @@ suite("ConfigurationManager Tests", () => {
       );
 
       const patterns = ConfigurationManager.get("excludePatterns");
+      assert.deepStrictEqual(
+        patterns,
+        customPatterns,
+        "get('excludePatterns') should return the overridden value"
+      );
       assert.ok(Object.isFrozen(patterns), "get('excludePatterns') should be frozen");
 
       try {
