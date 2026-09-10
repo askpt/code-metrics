@@ -245,6 +245,11 @@ suite("ConfigurationManager Tests", () => {
     assert.ok(Object.isFrozen(config.excludePatterns), "getConfiguration().excludePatterns should be frozen");
   });
 
+  test("excludePatterns returned by get() should also be frozen", () => {
+    const patterns = ConfigurationManager.get("excludePatterns");
+    assert.ok(Object.isFrozen(patterns), "get('excludePatterns') should be frozen");
+  });
+
   test("mutating DEFAULT_CONFIG should not change the defaults", () => {
     const originalLength = DEFAULT_CONFIG.excludePatterns.length;
 

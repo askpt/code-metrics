@@ -106,7 +106,13 @@ export class ConfigurationManager {
       this.CONFIG_SECTION,
       resource
     );
-    return config.get<CodeMetricsConfig[K]>(key, DEFAULT_CONFIG[key]);
+    const value = config.get<CodeMetricsConfig[K]>(key, DEFAULT_CONFIG[key]);
+    // Guard against mutation of the shared array reference that
+    // WorkspaceConfiguration.get() may return for "excludePatterns"
+    // (mirrors the freezing done in getConfiguration()).
+    return key === "excludePatterns" && Array.isArray(value)
+      ? (Object.freeze(value) as unknown as CodeMetricsConfig[K])
+      : value;
   }
 
   /**
