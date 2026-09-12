@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.3](https://github.com/askpt/code-metrics/compare/v0.9.2...v0.9.3) (2026-09-12)
+
+
+### 🐛 Bug Fixes
+
+* freeze excludePatterns array returned by ConfigurationManager.get() ([#624](https://github.com/askpt/code-metrics/issues/624)) ([328451d](https://github.com/askpt/code-metrics/commit/328451dd6e84c87cd9cea9922aad2db5c3a19c17))
+
+
+### 🚀 Performance
+
+* use O(1) Set lookup for C# preprocessor directive detection in visit() ([#630](https://github.com/askpt/code-metrics/issues/630)) ([7c12843](https://github.com/askpt/code-metrics/commit/7c12843eb01ee7827c800804f1d11a70dd063bbb))
+
+
+### 🔄 Refactoring
+
+* extract magic number for config-change refresh delay ([#621](https://github.com/askpt/code-metrics/issues/621)) ([2fb1001](https://github.com/askpt/code-metrics/commit/2fb1001c3b1d03e662ddb9a7f499439bc40e907c))
+* extract shared getBinaryLogicalOperator helper ([#597](https://github.com/askpt/code-metrics/issues/597)) ([ebe1a46](https://github.com/askpt/code-metrics/commit/ebe1a46b790c9fcf79f4a551dade05121a4c4a07))
+* freeze DEFAULT_CONFIG to prevent shared-state mutation ([#584](https://github.com/askpt/code-metrics/issues/584)) ([3d30dc8](https://github.com/askpt/code-metrics/commit/3d30dc8ff17fc36cee4e58dca4e51ea705c4da1b))
+
 ## [0.9.2](https://github.com/askpt/code-metrics/compare/v0.9.1...v0.9.2) (2026-08-29)
 
 
