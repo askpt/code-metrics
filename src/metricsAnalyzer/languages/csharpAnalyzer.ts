@@ -488,7 +488,7 @@ export class CSharpMetricsAnalyzer {
 
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
-    const isPreproc = CSharpMetricsAnalyzer.PREPROC_TYPES.has(node.type);
+    const isPreproc = node.type.startsWith("preproc_");
     if (nests) { this.nesting++; }
     if (isPreproc) { this.preprocessorDepth++; }
     for (let i = 0; i < node.childCount; i++) {
