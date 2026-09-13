@@ -855,6 +855,22 @@ suite("Metrics Code Lens Provider Tests", () => {
 
       disposable.dispose();
     });
+
+    test("should not notify listeners after provider is disposed", () => {
+      let refreshCount = 0;
+
+      provider.onDidChangeCodeLenses(() => {
+        refreshCount++;
+      });
+
+      provider.refresh();
+      assert.strictEqual(refreshCount, 1);
+
+      provider.dispose();
+      provider.refresh();
+
+      assert.strictEqual(refreshCount, 1);
+    });
   });
 
   // Helper functions for creating mock objects
