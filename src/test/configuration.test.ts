@@ -189,6 +189,35 @@ suite("ConfigurationManager Tests", () => {
     assert.ok(validationResult.warnings[0].includes("Warning threshold"));
   });
 
+  test("should detect non-positive threshold values", async () => {
+    const vsConfig = vscode.workspace.getConfiguration("codeMetrics");
+
+    // Set thresholds that bypass the Settings UI "minimum": 1 constraint
+    // (e.g. set directly in settings.json or by another extension)
+    await vsConfig.update(
+      "warningThreshold",
+      -5,
+      vscode.ConfigurationTarget.Global
+    );
+    await vsConfig.update(
+      "errorThreshold",
+      0,
+      vscode.ConfigurationTarget.Global
+    );
+
+    const validationResult = ConfigurationManager.validateConfiguration();
+    assert.strictEqual(validationResult.valid, false);
+    // Both non-positive warnings should be present; the ordering warning
+    // should not fire since -5 < 0 satisfies warningThreshold < errorThreshold.
+    assert.strictEqual(validationResult.warnings.length, 2);
+    assert.ok(
+      validationResult.warnings.some((w) => w.includes("Warning threshold"))
+    );
+    assert.ok(
+      validationResult.warnings.some((w) => w.includes("Error threshold"))
+    );
+  });
+
   test("should create configuration change watcher", () => {
     const watcher = ConfigurationManager.onConfigurationChanged(
       (_e: vscode.ConfigurationChangeEvent) => { /* no-op */ }
