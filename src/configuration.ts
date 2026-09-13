@@ -179,6 +179,23 @@ export class ConfigurationManager {
     const config = this.getConfiguration(resource);
     const warnings: string[] = [];
 
+    // Check that thresholds are positive numbers (package.json declares "minimum": 1 for
+    // both settings, but that constraint is only enforced by the Settings UI, not when
+    // values are set directly in settings.json or programmatically by another extension).
+    if (
+      !Number.isFinite(config.warningThreshold) ||
+      config.warningThreshold < 1
+    ) {
+      warnings.push(
+        `Warning threshold (${config.warningThreshold}) should be a positive number`
+      );
+    }
+    if (!Number.isFinite(config.errorThreshold) || config.errorThreshold < 1) {
+      warnings.push(
+        `Error threshold (${config.errorThreshold}) should be a positive number`
+      );
+    }
+
     // Check that warning threshold is less than error threshold
     if (config.warningThreshold >= config.errorThreshold) {
       warnings.push(
