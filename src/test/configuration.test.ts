@@ -218,6 +218,41 @@ suite("ConfigurationManager Tests", () => {
     );
   });
 
+  test("should detect non-finite threshold values", () => {
+    const originalGetConfiguration = vscode.workspace.getConfiguration;
+    const mockConfiguration = {
+      get<T>(key: string, defaultValue?: T): T {
+        if (key === "warningThreshold") {
+          return Number.NaN as T;
+        }
+        if (key === "errorThreshold") {
+          return Number.POSITIVE_INFINITY as T;
+        }
+        return defaultValue as T;
+      },
+    } as vscode.WorkspaceConfiguration;
+
+    vscode.workspace.getConfiguration = () => mockConfiguration;
+
+    try {
+      const validationResult = ConfigurationManager.validateConfiguration();
+      assert.strictEqual(validationResult.valid, false);
+      assert.strictEqual(validationResult.warnings.length, 2);
+      assert.ok(
+        validationResult.warnings.includes(
+          "Warning threshold (NaN) should be a finite number greater than or equal to 1"
+        )
+      );
+      assert.ok(
+        validationResult.warnings.includes(
+          "Error threshold (Infinity) should be a finite number greater than or equal to 1"
+        )
+      );
+    } finally {
+      vscode.workspace.getConfiguration = originalGetConfiguration;
+    }
+  });
+
   test("should create configuration change watcher", () => {
     const watcher = ConfigurationManager.onConfigurationChanged(
       (_e: vscode.ConfigurationChangeEvent) => { /* no-op */ }
