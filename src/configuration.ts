@@ -167,7 +167,8 @@ export class ConfigurationManager {
   }
 
   /**
-   * Validates that thresholds are properly configured (warning < error).
+   * Validates that thresholds are finite numbers greater than or equal to 1 and
+   * properly ordered (warning < error).
    *
    * @param resource - Optional URI for workspace-specific configuration
    * @returns Object with validation results
