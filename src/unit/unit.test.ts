@@ -4263,6 +4263,37 @@ public class Foo {
       );
       assert.ok(detail !== undefined, "try statement in a preprocessor ERROR node should be reported");
     });
+
+    it("should detect a ternary operator whose `?` and matching `:` are split across sibling preprocessor branches", () => {
+      // hasMatchingColonInSiblings() handles the case where a ternary's "?" ends up alone in
+      // one ERROR node (no matching ":" in the same node, so TERNARY_OPERATOR_REGEX doesn't
+      // match) while the ":" lands in a sibling node up to 2 steps away. A #elif branch between
+      // the "?" and the "#else" containing ":" reproduces this fragmentation without also
+      // matching the complete-ternary regex, ensuring the sibling-scan branch is exercised.
+      const sourceCode = `
+public class Foo {
+    public void Bar()
+    {
+#if A
+        weird ?
+#elif B
+        somethingElse
+#else
+        : fallback;
+#endif
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "ternary operator (in preprocessor block)"
+      );
+      assert.ok(
+        detail !== undefined,
+        "a ternary fragmented across sibling preprocessor ERROR nodes should still be reported"
+      );
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
