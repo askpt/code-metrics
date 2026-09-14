@@ -183,22 +183,28 @@ export class ConfigurationManager {
     // for both settings, but that constraint is only enforced by the Settings UI, not
     // when values are set directly in settings.json or programmatically by another
     // extension).
-    if (
-      !Number.isFinite(config.warningThreshold) ||
-      config.warningThreshold < 1
-    ) {
+    const warningThresholdValid =
+      Number.isFinite(config.warningThreshold) && config.warningThreshold >= 1;
+    const errorThresholdValid =
+      Number.isFinite(config.errorThreshold) && config.errorThreshold >= 1;
+
+    if (!warningThresholdValid) {
       warnings.push(
         `Warning threshold (${config.warningThreshold}) should be a finite number greater than or equal to 1`
       );
     }
-    if (!Number.isFinite(config.errorThreshold) || config.errorThreshold < 1) {
+    if (!errorThresholdValid) {
       warnings.push(
         `Error threshold (${config.errorThreshold}) should be a finite number greater than or equal to 1`
       );
     }
 
     // Check that warning threshold is less than error threshold
-    if (config.warningThreshold >= config.errorThreshold) {
+    if (
+      warningThresholdValid &&
+      errorThresholdValid &&
+      config.warningThreshold >= config.errorThreshold
+    ) {
       warnings.push(
         `Warning threshold (${config.warningThreshold}) should be less than error threshold (${config.errorThreshold})`
       );

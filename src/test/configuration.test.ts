@@ -223,7 +223,7 @@ suite("ConfigurationManager Tests", () => {
     const mockConfiguration = {
       get<T>(key: string, defaultValue?: T): T {
         if (key === "warningThreshold") {
-          return Number.NaN as T;
+          return Number.POSITIVE_INFINITY as T;
         }
         if (key === "errorThreshold") {
           return Number.POSITIVE_INFINITY as T;
@@ -240,12 +240,17 @@ suite("ConfigurationManager Tests", () => {
       assert.strictEqual(validationResult.warnings.length, 2);
       assert.ok(
         validationResult.warnings.includes(
-          "Warning threshold (NaN) should be a finite number greater than or equal to 1"
+          "Warning threshold (Infinity) should be a finite number greater than or equal to 1"
         )
       );
       assert.ok(
         validationResult.warnings.includes(
           "Error threshold (Infinity) should be a finite number greater than or equal to 1"
+        )
+      );
+      assert.ok(
+        !validationResult.warnings.some((w) =>
+          w.includes("should be less than error threshold")
         )
       );
     } finally {
