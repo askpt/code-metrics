@@ -318,6 +318,14 @@ export class MetricsCodeLensProvider implements vscode.CodeLensProvider {
     this.analysisCache.deleteWhere((key) => key.startsWith(prefix));
     this.codeLensCache.deleteWhere((key) => key.startsWith(prefix));
   }
+
+  /**
+   * Releases the `onDidChangeCodeLenses` event emitter. Must be called when the provider is no
+   * longer needed (e.g. on extension deactivation) to avoid leaking its internal listener state.
+   */
+  public dispose(): void {
+    this._onDidChangeCodeLenses.dispose();
+  }
 }
 
 // Register the code lens provider
@@ -344,5 +352,10 @@ export function registerCodeLensProvider(): vscode.Disposable {
     provider.pruneAnalysisCacheForDocument(doc.uri.toString());
   });
 
-  return vscode.Disposable.from(...disposables, configWatcher, closeWatcher);
+  return vscode.Disposable.from(
+    provider,
+    ...disposables,
+    configWatcher,
+    closeWatcher
+  );
 }

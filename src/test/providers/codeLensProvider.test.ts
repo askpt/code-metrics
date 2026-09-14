@@ -1,6 +1,9 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { MetricsCodeLensProvider } from "../../providers/codeLensProvider";
+import {
+  MetricsCodeLensProvider,
+  registerCodeLensProvider,
+} from "../../providers/codeLensProvider";
 import { ConfigurationManager } from "../../configuration";
 import {
   MetricsAnalyzerFactory,
@@ -854,6 +857,68 @@ suite("Metrics Code Lens Provider Tests", () => {
       assert.strictEqual(eventFired, true);
 
       disposable.dispose();
+    });
+
+    test("should not notify listeners after provider is disposed", () => {
+      let refreshCount = 0;
+
+      provider.onDidChangeCodeLenses(() => {
+        refreshCount++;
+      });
+
+      provider.refresh();
+      assert.strictEqual(refreshCount, 1);
+
+      provider.dispose();
+      provider.refresh();
+
+      assert.strictEqual(refreshCount, 1);
+    });
+  });
+
+  suite("Provider Registration", () => {
+    test("should dispose provider when registration bundle is disposed", () => {
+      const originalGetSupportedLanguages =
+        MetricsAnalyzerFactory.getSupportedLanguages;
+      const originalRegisterCodeLensProvider =
+        vscode.languages.registerCodeLensProvider;
+      const originalOnConfigurationChanged =
+        ConfigurationManager.onConfigurationChanged;
+      const workspaceWithMutableCloseHandler = vscode.workspace as unknown as {
+        onDidCloseTextDocument: typeof vscode.workspace.onDidCloseTextDocument;
+      };
+      const originalOnDidCloseTextDocument =
+        workspaceWithMutableCloseHandler.onDidCloseTextDocument;
+      const originalProviderDispose = MetricsCodeLensProvider.prototype.dispose;
+
+      let providerDisposeCalls = 0;
+      MetricsAnalyzerFactory.getSupportedLanguages = () => ["go"];
+      vscode.languages.registerCodeLensProvider = () => ({
+        dispose: () => {},
+      });
+      ConfigurationManager.onConfigurationChanged = () => ({
+        dispose: () => {},
+      });
+      workspaceWithMutableCloseHandler.onDidCloseTextDocument = () => ({
+        dispose: () => {},
+      });
+      MetricsCodeLensProvider.prototype.dispose = function (): void {
+        providerDisposeCalls++;
+      };
+
+      try {
+        const registration = registerCodeLensProvider();
+        registration.dispose();
+
+        assert.strictEqual(providerDisposeCalls, 1);
+      } finally {
+        MetricsCodeLensProvider.prototype.dispose = originalProviderDispose;
+        workspaceWithMutableCloseHandler.onDidCloseTextDocument =
+          originalOnDidCloseTextDocument;
+        ConfigurationManager.onConfigurationChanged = originalOnConfigurationChanged;
+        vscode.languages.registerCodeLensProvider = originalRegisterCodeLensProvider;
+        MetricsAnalyzerFactory.getSupportedLanguages = originalGetSupportedLanguages;
+      }
     });
   });
 

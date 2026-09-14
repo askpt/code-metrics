@@ -167,7 +167,8 @@ export class ConfigurationManager {
   }
 
   /**
-   * Validates that thresholds are properly configured (warning < error).
+   * Validates that thresholds are finite numbers greater than or equal to 1 and
+   * properly ordered (warning < error).
    *
    * @param resource - Optional URI for workspace-specific configuration
    * @returns Object with validation results
@@ -179,8 +180,32 @@ export class ConfigurationManager {
     const config = this.getConfiguration(resource);
     const warnings: string[] = [];
 
+    // Check that thresholds are finite numbers >= 1 (package.json declares "minimum": 1
+    // for both settings, but that constraint is only enforced by the Settings UI, not
+    // when values are set directly in settings.json or programmatically by another
+    // extension).
+    const warningThresholdValid =
+      Number.isFinite(config.warningThreshold) && config.warningThreshold >= 1;
+    const errorThresholdValid =
+      Number.isFinite(config.errorThreshold) && config.errorThreshold >= 1;
+
+    if (!warningThresholdValid) {
+      warnings.push(
+        `Warning threshold (${config.warningThreshold}) should be a finite number greater than or equal to 1`
+      );
+    }
+    if (!errorThresholdValid) {
+      warnings.push(
+        `Error threshold (${config.errorThreshold}) should be a finite number greater than or equal to 1`
+      );
+    }
+
     // Check that warning threshold is less than error threshold
-    if (config.warningThreshold >= config.errorThreshold) {
+    if (
+      warningThresholdValid &&
+      errorThresholdValid &&
+      config.warningThreshold >= config.errorThreshold
+    ) {
       warnings.push(
         `Warning threshold (${config.warningThreshold}) should be less than error threshold (${config.errorThreshold})`
       );
