@@ -2312,6 +2312,41 @@ public class Test {
       assert.ok(anonDetail, "anonymous method nested in loop should add complexity");
     });
 
+    it("should not count anonymous method expressions at the top level (no nesting)", () => {
+      const sourceCode = `
+public class Test {
+    public void TopLevelAnonMethod() {
+        Func<int, int> fn = delegate(int x) { return x + 1; };
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(
+        results[0].complexity,
+        0,
+        "anonymous method not inside any nesting construct should not add complexity"
+      );
+    });
+
+    it("should not count continue/break statements at the top level (no nesting)", () => {
+      const sourceCode = `
+public class Test {
+    public void TopLevelJump() {
+        continue;
+        break;
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(
+        results[0].complexity,
+        0,
+        "continue/break not inside any nesting construct should not add complexity"
+      );
+    });
+
     it("should count conditional expressions (ternary operator)", () => {
       const sourceCode = `
 public class Test {
