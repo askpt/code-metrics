@@ -2980,6 +2980,56 @@ outer:
       assert.ok(detail, "labeled continue should add complexity");
     });
 
+    it("should count an unlabeled break nested inside a for/if as 'break statement (nested)'", () => {
+      // Exercises the getComplexityIncrement/getComplexityReason branches for
+      // break_statement where hasLabel() is false but nesting > 0.
+      const sourceCode = `
+package main
+
+func findFirst(items []int) int {
+	for i := 0; i < len(items); i++ {
+		if items[i] > 0 {
+			break
+		}
+	}
+	return -1
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const detail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "break statement (nested)"
+      );
+      assert.ok(detail, "unlabeled nested break should add complexity with the 'nested' reason");
+      assert.strictEqual(detail!.increment, 3, "break nested two levels deep adds 1 + nesting(2)");
+    });
+
+    it("should count an unlabeled continue nested inside a for/if as 'continue statement (nested)'", () => {
+      // Exercises the getComplexityIncrement/getComplexityReason branches for
+      // continue_statement where hasLabel() is false but nesting > 0.
+      const sourceCode = `
+package main
+
+func sumPositives(items []int) int {
+	total := 0
+	for i := 0; i < len(items); i++ {
+		if items[i] < 0 {
+			continue
+		}
+		total += items[i]
+	}
+	return total
+}
+`;
+      const results = GoMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1);
+      const detail = results[0].details.find((d: UnifiedMetricsDetail) =>
+        d.reason === "continue statement (nested)"
+      );
+      assert.ok(detail, "unlabeled nested continue should add complexity with the 'nested' reason");
+      assert.strictEqual(detail!.increment, 3, "continue nested two levels deep adds 1 + nesting(2)");
+    });
+
     it("should skip a function declaration without a body (e.g. assembly/cgo stub)", () => {
       const sourceCode = `
 package main
