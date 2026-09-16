@@ -98,6 +98,14 @@ export class JavaMetricsAnalyzer {
     "lambda_expression",
   ]);
 
+  /** Node types that represent a class, interface, enum, or record declaration. */
+  private static readonly TYPE_DECLARATION_TYPES: ReadonlySet<string> = new Set([
+    "class_declaration",
+    "interface_declaration",
+    "enum_declaration",
+    "record_declaration",
+  ]);
+
   /** Current nesting level during analysis */
   private nesting = 0;
   /** Current complexity score during analysis */
@@ -196,12 +204,7 @@ export class JavaMetricsAnalyzer {
     // Walk up the AST to find the enclosing class, interface, enum, or record name
     let parent = node.parent;
     while (parent) {
-      if (
-        parent.type === "class_declaration" ||
-        parent.type === "interface_declaration" ||
-        parent.type === "enum_declaration" ||
-        parent.type === "record_declaration"
-      ) {
+      if (JavaMetricsAnalyzer.TYPE_DECLARATION_TYPES.has(parent.type)) {
         const classNameNode = parent.childForFieldName("name");
         if (classNameNode) {
           const className = this.sourceText.substring(
