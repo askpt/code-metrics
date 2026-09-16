@@ -303,10 +303,15 @@ export class JavaMetricsAnalyzer {
    * Returns the optional else branch node for an if_statement.
    * For tree-sitter-java named children: index 0 = condition, 1 = then branch,
    * 2 = else branch when present.
+   *
+   * Uses `namedChildCount`/`namedChild(i)` (O(1) per access) rather than
+   * `node.namedChildren` (which allocates a full array on every call) — every
+   * `if_statement` visited pays this cost, so avoiding the allocation matters
+   * for large files with many conditionals.
    */
   private getElseBranchNode(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-    return node.namedChildren.length > JavaMetricsAnalyzer.ELSE_BRANCH_INDEX
-      ? node.namedChildren[JavaMetricsAnalyzer.ELSE_BRANCH_INDEX]
+    return node.namedChildCount > JavaMetricsAnalyzer.ELSE_BRANCH_INDEX
+      ? node.namedChild(JavaMetricsAnalyzer.ELSE_BRANCH_INDEX)
       : null;
   }
 
