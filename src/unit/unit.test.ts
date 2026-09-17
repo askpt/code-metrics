@@ -4379,6 +4379,39 @@ public class Foo {
         "a ternary fragmented across sibling preprocessor ERROR nodes should still be reported"
       );
     });
+
+    it("should not report a ternary when a lone `?` has no matching `:` within 2 sibling nodes", () => {
+      // hasMatchingColonInSiblings() returns false when no ":" is found in the next 2
+      // sibling nodes after the ERROR node. This exercises that "no match" path — the
+      // method itself has no other complexity source, so it should report complexity 0
+      // and no "ternary operator" detail rather than incorrectly falling through to
+      // the generic "complexity pattern" fallback.
+      const sourceCode = `
+public class Foo {
+    public void Bar()
+    {
+#if A
+        weird ?
+#endif
+    }
+}
+`;
+      const results = CSharpMetricsAnalyzer.analyzeFile(sourceCode);
+      assert.strictEqual(results.length, 1, "one method expected");
+      assert.strictEqual(
+        results[0].complexity,
+        0,
+        "a lone '?' with no matching ':' nearby should not be treated as a ternary operator"
+      );
+      const detail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "ternary operator (in preprocessor block)"
+      );
+      assert.strictEqual(
+        detail,
+        undefined,
+        "no ternary operator detail should be reported when no matching ':' is found"
+      );
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
