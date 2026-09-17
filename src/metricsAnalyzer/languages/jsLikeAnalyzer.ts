@@ -9,7 +9,7 @@
  */
 
 import Parser from "tree-sitter";
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, hasLabelChild } from "./complexityHelpers";
 
 /**
  * Represents a single complexity detail for a specific JS/TS code construct.
@@ -450,9 +450,7 @@ export class JsLikeMetricsAnalyzer {
       // Labeled break/continue (+1)
       case "break_statement":
       case "continue_statement":
-        // In JS/TS, a labeled break/continue has a statement_identifier as its first
-        // (and only) named child. Use firstNamedChild for O(1) instead of a linear scan.
-        return node.firstNamedChild?.type === "statement_identifier" ? 1 : 0;
+        return hasLabelChild(node, "statement_identifier") ? 1 : 0;
 
       default:
         return 0;

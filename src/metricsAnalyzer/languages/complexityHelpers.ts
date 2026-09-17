@@ -58,3 +58,26 @@ export function getBinaryLogicalOperator(node: Parser.SyntaxNode): string | null
   }
   return null;
 }
+
+/**
+ * Returns true if `node`'s first named child's type matches one of `labelTypes`.
+ *
+ * Used to detect labeled break/continue/goto statements: in the tree-sitter
+ * grammars for Go, Rust, and JS/TS, the label token is always the first (and
+ * only) named child of the labeled node, so firstNamedChild gives an O(1)
+ * check instead of a linear scan over children.
+ *
+ * Shared by the Go, Rust, and JS/TS analyzers, which each identify labeled
+ * jump statements this way but use different label token type names.
+ *
+ * @param node - The break/continue/goto syntax node to check
+ * @param labelTypes - Node type name(s) that represent a label token
+ * @returns true if the node's first named child is a label token
+ */
+export function hasLabelChild(node: Parser.SyntaxNode, labelTypes: string | readonly string[]): boolean {
+  const childType = node.firstNamedChild?.type;
+  if (childType === undefined) {
+    return false;
+  }
+  return typeof labelTypes === "string" ? childType === labelTypes : labelTypes.includes(childType);
+}

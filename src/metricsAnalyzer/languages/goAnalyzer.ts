@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -465,7 +465,7 @@ export class GoMetricsAnalyzer {
       case "break_statement":
       case "continue_statement":
         // Check if it has a label (labeled break/continue add complexity)
-        if (this.hasLabel(node)) {
+        if (hasLabelChild(node, "label_name")) {
           return 1 + this.nesting;
         }
         // Non-labeled break/continue in nested structures (+1 + nesting)
@@ -503,15 +503,6 @@ export class GoMetricsAnalyzer {
   }
 
   /**
-   * Returns true if the node has a label_name child (labeled break/continue/goto).
-   * In Go's AST, label_name is always the first (and only) named child of a labeled
-   * break/continue statement, so firstNamedChild gives an O(1) membership test.
-   */
-  private hasLabel(node: Parser.SyntaxNode): boolean {
-    return node.firstNamedChild?.type === "label_name";
-  }
-
-  /**
    * Generates a human-readable reason for why a syntax node increases complexity.
    *
    * Provides descriptive text explaining the complexity contribution,
@@ -539,11 +530,11 @@ export class GoMetricsAnalyzer {
       case "func_literal":
         return "function literal (nested)";
       case "break_statement":
-        return this.hasLabel(node)
+        return hasLabelChild(node, "label_name")
           ? "labeled break statement"
           : "break statement (nested)";
       case "continue_statement":
-        return this.hasLabel(node)
+        return hasLabelChild(node, "label_name")
           ? "labeled continue statement"
           : "continue statement (nested)";
       case "goto_statement":
