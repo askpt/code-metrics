@@ -10,7 +10,7 @@
  */
 
 import Parser from "tree-sitter";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild } from "./complexityHelpers";
 const Rust = require("tree-sitter-rust"); // noqa
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
@@ -343,7 +343,7 @@ export class RustMetricsAnalyzer {
       case "break_expression":
       case "continue_expression": {
         // Labeled break/continue always add complexity; unlabeled do not.
-        const hasLabel = this.hasLabel(node);
+        const hasLabel = hasLabelChild(node, ["label", "loop_label"]);
         return hasLabel ? 1 : 0;
       }
 
@@ -382,27 +382,17 @@ export class RustMetricsAnalyzer {
       case "closure_expression":
         return "closure (nested)";
       case "break_expression": {
-        const hasLabel = this.hasLabel(node);
+        const hasLabel = hasLabelChild(node, ["label", "loop_label"]);
         return hasLabel ? "labeled break" : "break (nested)";
       }
       case "continue_expression": {
-        const hasLabel = this.hasLabel(node);
+        const hasLabel = hasLabelChild(node, ["label", "loop_label"]);
         return hasLabel ? "labeled continue" : "continue (nested)";
       }
       /* c8 ignore next 2 */
       default:
         return "unknown complexity source";
     }
-  }
-
-  /**
-   * Returns true if the node has a loop label child (labeled break/continue).
-   * In Rust's AST, the loop label is always the first named child of break_expression
-   * and continue_expression nodes. Using firstNamedChild avoids an O(n) linear scan.
-   */
-  private hasLabel(node: Parser.SyntaxNode): boolean {
-    const childType = node.firstNamedChild?.type;
-    return childType === "label" || childType === "loop_label";
   }
 
   /**
