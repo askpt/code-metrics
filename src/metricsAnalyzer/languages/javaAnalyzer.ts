@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -201,24 +201,10 @@ export class JavaMetricsAnalyzer {
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
       : "<anonymous>";
 
-    // Walk up the AST to find the enclosing class, interface, enum, or record name
-    let parent = node.parent;
-    while (parent) {
-      if (JavaMetricsAnalyzer.TYPE_DECLARATION_TYPES.has(parent.type)) {
-        const classNameNode = parent.childForFieldName("name");
-        if (classNameNode) {
-          const className = this.sourceText.substring(
-            classNameNode.startIndex,
-            classNameNode.endIndex
-          );
-          return `${className}.${methodName}`;
-        }
-      }
-      parent = parent.parent;
-    }
+    const className = findEnclosingTypeName(node, JavaMetricsAnalyzer.TYPE_DECLARATION_TYPES, this.sourceText);
 
     /* c8 ignore next */
-    return methodName;
+    return className ? `${className}.${methodName}` : methodName;
   }
 
   /**

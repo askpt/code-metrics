@@ -81,3 +81,35 @@ export function hasLabelChild(node: Parser.SyntaxNode, labelTypes: string | read
   }
   return typeof labelTypes === "string" ? childType === labelTypes : labelTypes.includes(childType);
 }
+
+/**
+ * Walks up from `node` to find the name of the nearest enclosing type
+ * declaration (class, struct, interface, record, or enum), returning `null`
+ * if no such ancestor exists (e.g. top-level local functions).
+ *
+ * Shared by the C# and Java analyzers, which both identify the enclosing
+ * type by walking `node.parent` until a type-declaration node type is found,
+ * then reading its `name` field.
+ *
+ * @param node - The syntax node to start searching from (typically a function/method declaration)
+ * @param typeDeclarationTypes - Node type name(s) that represent a type declaration
+ * @param sourceText - The full source text, used to extract the name substring
+ * @returns The enclosing type name, or null if none found
+ */
+export function findEnclosingTypeName(
+  node: Parser.SyntaxNode,
+  typeDeclarationTypes: ReadonlySet<string>,
+  sourceText: string
+): string | null {
+  let parent = node.parent;
+  while (parent) {
+    if (typeDeclarationTypes.has(parent.type)) {
+      const nameNode = parent.childForFieldName("name");
+      if (nameNode) {
+        return sourceText.substring(nameNode.startIndex, nameNode.endIndex);
+      }
+    }
+    parent = parent.parent;
+  }
+  return null;
+}
