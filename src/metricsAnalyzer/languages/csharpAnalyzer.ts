@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -296,17 +296,7 @@ export class CSharpMetricsAnalyzer {
    * @returns The enclosing type name, or null if none found
    */
   private getEnclosingTypeName(node: Parser.SyntaxNode): string | null {
-    let parent = node.parent;
-    while (parent) {
-      if (CSharpMetricsAnalyzer.TYPE_DECLARATION_TYPES.has(parent.type)) {
-        const nameNode = parent.childForFieldName("name");
-        if (nameNode) {
-          return this.sourceText.substring(nameNode.startIndex, nameNode.endIndex);
-        }
-      }
-      parent = parent.parent;
-    }
-    return null;
+    return findEnclosingTypeName(node, CSharpMetricsAnalyzer.TYPE_DECLARATION_TYPES, this.sourceText);
   }
 
   /**
