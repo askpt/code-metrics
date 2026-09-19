@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 const Python = require("tree-sitter-python"); // noqa
-import { isOutermostInSameOperatorChain } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, ComplexityAccumulator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -85,12 +85,8 @@ export class PythonMetricsAnalyzer {
     "generator_expression",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current function being analyzed */
-  private details: PythonMetricsDetail[] = [];
+  /** Accumulates nesting level, running complexity total, and details for the current function */
+  private acc = new ComplexityAccumulator();
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for Python */
@@ -167,9 +163,7 @@ export class PythonMetricsAnalyzer {
     node: Parser.SyntaxNode,
     className?: string
   ): PythonFunctionMetrics | null {
-    this.nesting = 0;
-    this.complexity = 0;
-    this.details = [];
+    this.acc.reset();
 
     const functionName = this.getFunctionName(node, className);
 
@@ -183,8 +177,8 @@ export class PythonMetricsAnalyzer {
 
     return {
       name: functionName,
-      complexity: this.complexity,
-      details: this.details,
+      complexity: this.acc.complexity,
+      details: this.acc.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -223,26 +217,26 @@ export class PythonMetricsAnalyzer {
     // Only match the named lambda expression node, not the anonymous "lambda" keyword token
     // that tree-sitter includes as a child inside every lambda expression node.
     if (node.type === "lambda" && node.isNamed) {
-      if (this.nesting > 0) {
-        this.addDetail(
-          1 + this.nesting,
+      if (this.acc.nesting > 0) {
+        this.acc.addDetail(
+          1 + this.acc.nesting,
           "lambda (nested)",
           node.startPosition.row,
           node.startPosition.column
         );
       }
-      this.nesting++;
+      this.acc.nesting++;
       for (let i = 0; i < node.childCount; i++) {
         const child = node.child(i)!;
         this.visit(child);
       }
-      this.nesting--;
+      this.acc.nesting--;
       return;
     }
 
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.addDetail(
+      this.acc.addDetail(
         increment,
         this.getComplexityReason(node),
         node.startPosition.row,
@@ -252,26 +246,12 @@ export class PythonMetricsAnalyzer {
 
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
-    if (nests) { this.nesting++; }
+    if (nests) { this.acc.nesting++; }
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
       this.visit(child);
     }
-    if (nests) { this.nesting--; }
-  }
-
-  /**
-   * Records a complexity-contributing detail and adds its increment to the running total.
-   */
-  private addDetail(increment: number, reason: string, line: number, column: number): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
+    if (nests) { this.acc.nesting--; }
   }
 
   /**
@@ -290,7 +270,7 @@ export class PythonMetricsAnalyzer {
     // All NESTING_TYPES nodes produce a structural increment (1 + current nesting).
     // NESTING_TYPES is the single source of truth for structural-increment node types.
     if (PythonMetricsAnalyzer.NESTING_TYPES.has(node.type)) {
-      return 1 + this.nesting;
+      return 1 + this.acc.nesting;
     }
 
     switch (node.type) {
@@ -307,7 +287,7 @@ export class PythonMetricsAnalyzer {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a and b and c` has two boolean_operators, but counts once.
           if (isOutermostInSameOperatorChain(node, op, "boolean_operator", (n) => this.getBooleanOperator(n))) {
-            return 1 + this.nesting;
+            return 1 + this.acc.nesting;
           }
           return 0; // inner node of a same-operator chain — already counted by parent
         }

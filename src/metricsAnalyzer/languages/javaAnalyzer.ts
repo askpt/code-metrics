@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName, ComplexityAccumulator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -106,12 +106,8 @@ export class JavaMetricsAnalyzer {
     "record_declaration",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current method being analyzed */
-  private details: JavaMetricsDetail[] = [];
+  /** Accumulates nesting level, running complexity total, and details for the current method */
+  private acc = new ComplexityAccumulator();
   /** The source code text being analyzed */
   private sourceText: string;
 
@@ -170,9 +166,7 @@ export class JavaMetricsAnalyzer {
       return null; // Abstract or interface method without body
     }
 
-    this.nesting = 0;
-    this.complexity = 0;
-    this.details = [];
+    this.acc.reset();
 
     const methodName = this.getMethodName(node);
 
@@ -180,8 +174,8 @@ export class JavaMetricsAnalyzer {
 
     return {
       name: methodName,
-      complexity: this.complexity,
-      details: this.details,
+      complexity: this.acc.complexity,
+      details: this.acc.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -233,7 +227,7 @@ export class JavaMetricsAnalyzer {
         ? 0
         : this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.addDetail(
+      this.acc.addDetail(
         increment,
         this.getComplexityReason(node),
         node.startPosition.row,
@@ -254,7 +248,7 @@ export class JavaMetricsAnalyzer {
       const elseToken = node.child(3);
       if (elseToken && elseToken.type === "else") {
         const reason = elseBranchNode.type === "if_statement" ? "else if clause" : "else clause";
-        this.addDetail(1, reason, elseToken.startPosition.row, elseToken.startPosition.column);
+        this.acc.addDetail(1, reason, elseToken.startPosition.row, elseToken.startPosition.column);
       }
     }
 
@@ -262,30 +256,14 @@ export class JavaMetricsAnalyzer {
     // When nesting, if_statement's else branch skips the inner if's own increment
     // to avoid double-counting (the else_clause +1 already accounts for it).
     const nests = this.increasesNesting(node);
-    if (nests) { this.nesting++; }
+    if (nests) { this.acc.nesting++; }
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
       if (!this.isMethodDeclaration(child)) {
         this.visit(child, elseBranchNode !== null && child === elseBranchNode);
       }
     }
-    if (nests) { this.nesting--; }
-  }
-
-  private addDetail(
-    increment: number,
-    reason: string,
-    line: number,
-    column: number
-  ): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
+    if (nests) { this.acc.nesting--; }
   }
 
   /**
@@ -321,7 +299,7 @@ export class JavaMetricsAnalyzer {
     // All NESTING_TYPES nodes produce a structural increment (1 + current nesting).
     // NESTING_TYPES is the single source of truth for structural-increment node types.
     if (JavaMetricsAnalyzer.NESTING_TYPES.has(node.type)) {
-      return 1 + this.nesting;
+      return 1 + this.acc.nesting;
     }
 
     switch (node.type) {

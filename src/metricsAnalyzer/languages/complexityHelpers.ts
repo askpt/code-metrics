@@ -1,6 +1,67 @@
 import Parser from "tree-sitter";
 
 /**
+ * Represents a single complexity detail for a specific code construct.
+ * Each detail contributes to the overall cognitive complexity of a function.
+ */
+export interface MetricsDetail {
+  /** The complexity increment this detail adds to the total complexity */
+  increment: number;
+  /** Human-readable explanation of why this construct increases complexity */
+  reason: string;
+  /** Line number where this complexity-contributing construct is located (0-based) */
+  line: number;
+  /** Column number where this complexity-contributing construct starts (0-based) */
+  column: number;
+  /** Current nesting level of this construct (0 for top-level) */
+  nesting: number;
+}
+
+/**
+ * Accumulates cognitive complexity state (current nesting level, running total,
+ * and the list of contributing details) while an analyzer traverses a single
+ * function/method body.
+ *
+ * Every language analyzer maintained an identical `nesting`/`complexity`/`details`
+ * field trio plus an identical `addDetail()` method; this class centralizes that
+ * shared bookkeeping so each analyzer only needs to hold one `acc` field.
+ */
+export class ComplexityAccumulator {
+  /** Current nesting level during analysis */
+  nesting = 0;
+  /** Current complexity score during analysis */
+  complexity = 0;
+  /** Array of complexity details for the current function being analyzed */
+  details: MetricsDetail[] = [];
+
+  /** Resets all accumulator state, typically before analyzing a new function/method. */
+  reset(): void {
+    this.nesting = 0;
+    this.complexity = 0;
+    this.details = [];
+  }
+
+  /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   *
+   * @param increment - The complexity value contributed by this construct
+   * @param reason - Human-readable explanation of why this construct increases complexity
+   * @param line - Line number where the construct is located (0-based)
+   * @param column - Column number where the construct starts (0-based)
+   */
+  addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
+  }
+}
+
+/**
  * Determines whether `node` is the outermost node in a chain of same-operator
  * logical/boolean expressions (e.g. `a && b && c`, `a and b and c`).
  *

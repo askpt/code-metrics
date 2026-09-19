@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName, ComplexityAccumulator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -142,10 +142,10 @@ export class CSharpMetricsAnalyzer {
     "preproc_arg",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
   private preprocessorDepth = 0;
+  /** Accumulates nesting level, running complexity total, and details for the current function */
+  private acc = new ComplexityAccumulator();
 
   /**
    * Caches the { increment, reason } pair computed by the ERROR-node / malformed-declaration
@@ -155,10 +155,6 @@ export class CSharpMetricsAnalyzer {
    * regex tests a second time just to pick a reason string.
    */
   private heuristicReasonCache?: { node: Parser.SyntaxNode; reason: string };
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current function being analyzed */
-  private details: CSharpMetricsDetail[] = [];
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for C# */
@@ -265,10 +261,8 @@ export class CSharpMetricsAnalyzer {
     }
 
     // Reset state for new function
-    this.nesting = 0;
     this.preprocessorDepth = 0;
-    this.complexity = 0;
-    this.details = [];
+    this.acc.reset();
 
     // Resolve the qualified name only after confirming the body exists
     const functionName = this.getFunctionName(node);
@@ -278,8 +272,8 @@ export class CSharpMetricsAnalyzer {
 
     return {
       name: functionName,
-      complexity: this.complexity,
-      details: this.details,
+      complexity: this.acc.complexity,
+      details: this.acc.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -464,7 +458,7 @@ export class CSharpMetricsAnalyzer {
   private visit(node: Parser.SyntaxNode): void {
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.addDetail(
+      this.acc.addDetail(
         increment,
         this.getComplexityReason(node),
         node.startPosition.row,
@@ -475,7 +469,7 @@ export class CSharpMetricsAnalyzer {
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
     const isPreproc = CSharpMetricsAnalyzer.PREPROC_TYPES.has(node.type);
-    if (nests) { this.nesting++; }
+    if (nests) { this.acc.nesting++; }
     if (isPreproc) { this.preprocessorDepth++; }
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
@@ -483,22 +477,8 @@ export class CSharpMetricsAnalyzer {
         this.visit(child);
       }
     }
-    if (nests) { this.nesting--; }
+    if (nests) { this.acc.nesting--; }
     if (isPreproc) { this.preprocessorDepth--; }
-  }
-
-  /**
-   * Records a complexity-contributing detail and adds its increment to the running total.
-   */
-  private addDetail(increment: number, reason: string, line: number, column: number): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
   }
 
   /**
@@ -524,12 +504,12 @@ export class CSharpMetricsAnalyzer {
       case "foreach_statement":
       case "switch_statement":
       case "switch_expression":
-        return 1 + this.nesting;
+        return 1 + this.acc.nesting;
 
       // Exception handling (structural: +1 + nesting level)
       case "try_statement":
       case "catch_clause":
-        return 1 + this.nesting;
+        return 1 + this.acc.nesting;
 
       // Logical operators (+1 per distinct same-operator sequence, flat — no nesting penalty)
       case "binary_expression": {
@@ -554,12 +534,12 @@ export class CSharpMetricsAnalyzer {
       // Lambda expressions and anonymous methods (nested: +1 + nesting level when inside any other construct)
       case "lambda_expression":
       case "anonymous_method_expression":
-        return this.nesting > 0 ? 1 + this.nesting : 0;
+        return this.acc.nesting > 0 ? 1 + this.acc.nesting : 0;
 
       // Continue and break in nested structures (flat +1)
       case "continue_statement":
       case "break_statement":
-        return this.nesting > 0 ? 1 : 0;
+        return this.acc.nesting > 0 ? 1 : 0;
 
       // Goto statements (flat +1)
       case "goto_statement":

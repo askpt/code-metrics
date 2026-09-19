@@ -9,7 +9,7 @@
  */
 
 import Parser from "tree-sitter";
-import { isOutermostInSameOperatorChain, hasLabelChild } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, hasLabelChild, ComplexityAccumulator } from "./complexityHelpers";
 
 /**
  * Represents a single complexity detail for a specific JS/TS code construct.
@@ -94,12 +94,8 @@ export class JsLikeMetricsAnalyzer {
     "catch_clause",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current function being analyzed */
-  private details: JsLikeMetricsDetail[] = [];
+  /** Accumulates nesting level, running complexity total, and details for the current function */
+  private acc = new ComplexityAccumulator();
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for the target language */
@@ -145,15 +141,9 @@ export class JsLikeMetricsAnalyzer {
     const isFunctionNode = JsLikeMetricsAnalyzer.FUNCTION_NODE_TYPES.has(node.type);
 
     if (isFunctionNode) {
-      // Save current state before analyzing this function
-      const savedComplexity = this.complexity;
-      const savedDetails = this.details;
-      const savedNesting = this.nesting;
-
-      // Reset for the new function
-      this.complexity = 0;
-      this.details = [];
-      this.nesting = 0;
+      // Save current state before analyzing this function, then reset for the new function
+      const savedAcc = this.acc;
+      this.acc = new ComplexityAccumulator();
 
       // Analyze the function body; nested functions are merged in via analyzeNode
       const funcName = this.getFunctionName(node);
@@ -161,8 +151,8 @@ export class JsLikeMetricsAnalyzer {
 
       const metrics: JsLikeFunctionMetrics = {
         name: funcName,
-        complexity: this.complexity,
-        details: this.details,
+        complexity: this.acc.complexity,
+        details: this.acc.details,
         startLine: node.startPosition.row,
         endLine: node.endPosition.row,
         startColumn: node.startPosition.column,
@@ -171,9 +161,7 @@ export class JsLikeMetricsAnalyzer {
       functions.push(metrics);
 
       // Restore state
-      this.complexity = savedComplexity;
-      this.details = savedDetails;
-      this.nesting = savedNesting;
+      this.acc = savedAcc;
     } else {
       for (let i = 0; i < node.childCount; i++) {
         const child = node.child(i)!;
@@ -327,7 +315,7 @@ export class JsLikeMetricsAnalyzer {
     if (!skipSelfIncrement) {
       const increment = this.getComplexityIncrement(node);
       if (increment > 0) {
-        this.addDetail(
+        this.acc.addDetail(
           increment,
           this.getComplexityReason(node),
           node.startPosition.row,
@@ -338,7 +326,7 @@ export class JsLikeMetricsAnalyzer {
 
     const nestingIncreased = this.increasesNesting(node);
     if (nestingIncreased) {
-      this.nesting++;
+      this.acc.nesting++;
     }
 
     for (let i = 0; i < node.childCount; i++) {
@@ -348,17 +336,17 @@ export class JsLikeMetricsAnalyzer {
       // complexity inside the nested body (ternaries, loops, etc.) counts toward
       // the enclosing function rather than being silently discarded.
       if (this.isNestedFunction(child)) {
-        this.addDetail(
-          1 + this.nesting,
+        this.acc.addDetail(
+          1 + this.acc.nesting,
           this.getFunctionReason(child.type),
           child.startPosition.row,
           child.startPosition.column
         );
-        this.nesting++;
+        this.acc.nesting++;
         for (let i = 0; i < child.childCount; i++) {
           this.analyzeNode(child.child(i)!);
         }
-        this.nesting--;
+        this.acc.nesting--;
         continue;
       }
       // For else_clause containing if_statement (else-if):
@@ -372,22 +360,8 @@ export class JsLikeMetricsAnalyzer {
     }
 
     if (nestingIncreased) {
-      this.nesting--;
+      this.acc.nesting--;
     }
-  }
-
-  /**
-   * Records a complexity-contributing detail and adds its increment to the running total.
-   */
-  private addDetail(increment: number, reason: string, line: number, column: number): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
   }
 
   /**
@@ -420,7 +394,7 @@ export class JsLikeMetricsAnalyzer {
       case "while_statement":
       case "do_statement":
       case "switch_statement":
-        return 1 + this.nesting;
+        return 1 + this.acc.nesting;
 
       // Else/else-if clauses (+1, flat)
       case "else_clause":
