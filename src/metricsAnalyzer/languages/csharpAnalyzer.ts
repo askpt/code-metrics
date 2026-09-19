@@ -464,16 +464,12 @@ export class CSharpMetricsAnalyzer {
   private visit(node: Parser.SyntaxNode): void {
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      const reason = this.getComplexityReason(node);
-      this.complexity += increment;
-
-      this.details.push({
+      this.addDetail(
         increment,
-        reason,
-        line: node.startPosition.row,
-        column: node.startPosition.column,
-        nesting: this.nesting,
-      });
+        this.getComplexityReason(node),
+        node.startPosition.row,
+        node.startPosition.column
+      );
     }
 
     // Conditionally bump nesting, iterate children once, then restore.
@@ -489,6 +485,20 @@ export class CSharpMetricsAnalyzer {
     }
     if (nests) { this.nesting--; }
     if (isPreproc) { this.preprocessorDepth--; }
+  }
+
+  /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   */
+  private addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
   }
 
   /**

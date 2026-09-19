@@ -256,15 +256,12 @@ export class RustMetricsAnalyzer {
     if (baseIncrement > 0) {
       const nestingPenalty = this.getNestingPenalty(node);
       const increment = baseIncrement + nestingPenalty;
-      const reason = this.getComplexityReason(node);
-      this.complexity += increment;
-      this.details.push({
+      this.addDetail(
         increment,
-        reason,
-        line: node.startPosition.row,
-        column: node.startPosition.column,
-        nesting: this.nesting,
-      });
+        this.getComplexityReason(node),
+        node.startPosition.row,
+        node.startPosition.column
+      );
     }
 
     // Conditionally bump nesting, iterate children once, then restore.
@@ -278,6 +275,20 @@ export class RustMetricsAnalyzer {
       }
     }
     if (nests) { this.nesting--; }
+  }
+
+  /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   */
+  private addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
   }
 
   /**

@@ -224,15 +224,12 @@ export class PythonMetricsAnalyzer {
     // that tree-sitter includes as a child inside every lambda expression node.
     if (node.type === "lambda" && node.isNamed) {
       if (this.nesting > 0) {
-        const increment = 1 + this.nesting;
-        this.complexity += increment;
-        this.details.push({
-          increment,
-          reason: "lambda (nested)",
-          line: node.startPosition.row,
-          column: node.startPosition.column,
-          nesting: this.nesting,
-        });
+        this.addDetail(
+          1 + this.nesting,
+          "lambda (nested)",
+          node.startPosition.row,
+          node.startPosition.column
+        );
       }
       this.nesting++;
       for (let i = 0; i < node.childCount; i++) {
@@ -245,14 +242,12 @@ export class PythonMetricsAnalyzer {
 
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.complexity += increment;
-      this.details.push({
+      this.addDetail(
         increment,
-        reason: this.getComplexityReason(node),
-        line: node.startPosition.row,
-        column: node.startPosition.column,
-        nesting: this.nesting,
-      });
+        this.getComplexityReason(node),
+        node.startPosition.row,
+        node.startPosition.column
+      );
     }
 
     // Conditionally bump nesting, iterate children once, then restore.
@@ -263,6 +258,20 @@ export class PythonMetricsAnalyzer {
       this.visit(child);
     }
     if (nests) { this.nesting--; }
+  }
+
+  /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   */
+  private addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
   }
 
   /**

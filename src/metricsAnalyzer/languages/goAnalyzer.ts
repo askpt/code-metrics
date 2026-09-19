@@ -329,16 +329,12 @@ export class GoMetricsAnalyzer {
   private visit(node: Parser.SyntaxNode): void {
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      const reason = this.getComplexityReason(node);
-      this.complexity += increment;
-
-      this.details.push({
+      this.addDetail(
         increment,
-        reason,
-        line: node.startPosition.row,
-        column: node.startPosition.column,
-        nesting: this.nesting,
-      });
+        this.getComplexityReason(node),
+        node.startPosition.row,
+        node.startPosition.column
+      );
     }
 
     // Conditionally bump nesting, iterate children once, then restore.
@@ -367,6 +363,20 @@ export class GoMetricsAnalyzer {
   }
 
   /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   */
+  private addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
+  }
+
+  /**
    * Visits the alternative branch of a Go `if_statement` (the else / else-if part).
    *
    * In Go's AST there is no wrapping `else_clause` node; the alternative is either
@@ -385,14 +395,7 @@ export class GoMetricsAnalyzer {
     const reason = isElseIf ? "else if clause" : "else clause";
 
     // Flat +1 for else/else-if — no nesting penalty.
-    this.complexity += 1;
-    this.details.push({
-      increment: 1,
-      reason,
-      line: node.startPosition.row,
-      column: node.startPosition.column,
-      nesting: this.nesting,
-    });
+    this.addDetail(1, reason, node.startPosition.row, node.startPosition.column);
 
     if (isElseIf) {
       // else-if: visit the inner if_statement's children at the CURRENT nesting level
