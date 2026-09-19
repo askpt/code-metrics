@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild, ComplexityAccumulator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -88,12 +88,8 @@ export class GoMetricsAnalyzer {
     "func_literal",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current function being analyzed */
-  private details: GoMetricsDetail[] = [];
+  /** Accumulates nesting level, running complexity total, and details for the current function */
+  private acc = new ComplexityAccumulator();
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for Go */
@@ -189,9 +185,7 @@ export class GoMetricsAnalyzer {
    */
   private analyzeFunction(node: Parser.SyntaxNode): GoFunctionMetrics | null {
     // Reset state for new function
-    this.nesting = 0;
-    this.complexity = 0;
-    this.details = [];
+    this.acc.reset();
 
     // Get function name
     const functionName = this.getFunctionName(node);
@@ -207,8 +201,8 @@ export class GoMetricsAnalyzer {
 
     return {
       name: functionName,
-      complexity: this.complexity,
-      details: this.details,
+      complexity: this.acc.complexity,
+      details: this.acc.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -329,7 +323,7 @@ export class GoMetricsAnalyzer {
   private visit(node: Parser.SyntaxNode): void {
     const increment = this.getComplexityIncrement(node);
     if (increment > 0) {
-      this.addDetail(
+      this.acc.addDetail(
         increment,
         this.getComplexityReason(node),
         node.startPosition.row,
@@ -339,7 +333,7 @@ export class GoMetricsAnalyzer {
 
     // Conditionally bump nesting, iterate children once, then restore.
     const nests = this.increasesNesting(node);
-    if (nests) { this.nesting++; }
+    if (nests) { this.acc.nesting++; }
 
     // In Go, if_statement carries its else/else-if branch as the "alternative" field
     // (a direct if_statement or block child, with no wrapping else_clause node).
@@ -359,21 +353,7 @@ export class GoMetricsAnalyzer {
       }
     }
 
-    if (nests) { this.nesting--; }
-  }
-
-  /**
-   * Records a complexity-contributing detail and adds its increment to the running total.
-   */
-  private addDetail(increment: number, reason: string, line: number, column: number): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
+    if (nests) { this.acc.nesting--; }
   }
 
   /**
@@ -395,7 +375,7 @@ export class GoMetricsAnalyzer {
     const reason = isElseIf ? "else if clause" : "else clause";
 
     // Flat +1 for else/else-if — no nesting penalty.
-    this.addDetail(1, reason, node.startPosition.row, node.startPosition.column);
+    this.acc.addDetail(1, reason, node.startPosition.row, node.startPosition.column);
 
     if (isElseIf) {
       // else-if: visit the inner if_statement's children at the CURRENT nesting level
@@ -442,7 +422,7 @@ export class GoMetricsAnalyzer {
       case "expression_switch_statement":
       case "type_switch_statement":
       case "select_statement":
-        return 1 + this.nesting;
+        return 1 + this.acc.nesting;
 
       // Logical operators (+1 flat per distinct sequence — no nesting penalty)
       case "binary_expression": {
@@ -462,17 +442,17 @@ export class GoMetricsAnalyzer {
 
       // Func literals (closures) - add +1 + nesting when nested
       case "func_literal":
-        return this.nesting > 0 ? 1 + this.nesting : 0;
+        return this.acc.nesting > 0 ? 1 + this.acc.nesting : 0;
 
       // Break/continue statements (+1 + nesting when nested)
       case "break_statement":
       case "continue_statement":
         // Check if it has a label (labeled break/continue add complexity)
         if (hasLabelChild(node, "label_name")) {
-          return 1 + this.nesting;
+          return 1 + this.acc.nesting;
         }
         // Non-labeled break/continue in nested structures (+1 + nesting)
-        return this.nesting > 0 ? 1 + this.nesting : 0;
+        return this.acc.nesting > 0 ? 1 + this.acc.nesting : 0;
 
       // Goto statements (+1 flat)
       case "goto_statement":

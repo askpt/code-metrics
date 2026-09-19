@@ -10,7 +10,7 @@
  */
 
 import Parser from "tree-sitter";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, hasLabelChild, ComplexityAccumulator } from "./complexityHelpers";
 const Rust = require("tree-sitter-rust"); // noqa
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
@@ -88,12 +88,8 @@ export class RustMetricsAnalyzer {
     "closure_expression",
   ]);
 
-  /** Current nesting level during analysis */
-  private nesting = 0;
-  /** Current complexity score during analysis */
-  private complexity = 0;
-  /** Array of complexity details for the current function being analyzed */
-  private details: RustMetricsDetail[] = [];
+  /** Accumulates nesting level, running complexity total, and details for the current function */
+  private acc = new ComplexityAccumulator();
   /** The source code text being analyzed */
   private sourceText: string;
   /** Tree-sitter parser instance configured for Rust */
@@ -218,9 +214,7 @@ export class RustMetricsAnalyzer {
    */
   private analyzeFunction(node: Parser.SyntaxNode): RustFunctionMetrics | null {
     // Reset state for new function
-    this.nesting = 0;
-    this.complexity = 0;
-    this.details = [];
+    this.acc.reset();
 
     const functionName = this.getFunctionName(node);
 
@@ -235,8 +229,8 @@ export class RustMetricsAnalyzer {
 
     return {
       name: functionName,
-      complexity: this.complexity,
-      details: this.details,
+      complexity: this.acc.complexity,
+      details: this.acc.details,
       startLine: node.startPosition.row,
       endLine: node.endPosition.row,
       startColumn: node.startPosition.column,
@@ -256,7 +250,7 @@ export class RustMetricsAnalyzer {
     if (baseIncrement > 0) {
       const nestingPenalty = this.getNestingPenalty(node);
       const increment = baseIncrement + nestingPenalty;
-      this.addDetail(
+      this.acc.addDetail(
         increment,
         this.getComplexityReason(node),
         node.startPosition.row,
@@ -267,28 +261,14 @@ export class RustMetricsAnalyzer {
     // Conditionally bump nesting, iterate children once, then restore.
     // shouldSkipChildStructuralIncrement handles else-if chains to avoid double-counting.
     const nests = this.increasesNesting(node);
-    if (nests) { this.nesting++; }
+    if (nests) { this.acc.nesting++; }
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
       if (!this.isFunctionDeclaration(child)) {
         this.visit(child, this.shouldSkipChildStructuralIncrement(node, child));
       }
     }
-    if (nests) { this.nesting--; }
-  }
-
-  /**
-   * Records a complexity-contributing detail and adds its increment to the running total.
-   */
-  private addDetail(increment: number, reason: string, line: number, column: number): void {
-    this.complexity += increment;
-    this.details.push({
-      increment,
-      reason,
-      line,
-      column,
-      nesting: this.nesting,
-    });
+    if (nests) { this.acc.nesting--; }
   }
 
   /**
@@ -296,7 +276,7 @@ export class RustMetricsAnalyzer {
    * Else/else-if clauses are counted as a flat +1 without nesting penalty.
    */
   private getNestingPenalty(node: Parser.SyntaxNode): number {
-    return node.type === "else_clause" ? 0 : this.nesting;
+    return node.type === "else_clause" ? 0 : this.acc.nesting;
   }
 
   /**
@@ -349,7 +329,7 @@ export class RustMetricsAnalyzer {
       }
 
       case "closure_expression":
-        return this.nesting > 0 ? 1 : 0;
+        return this.acc.nesting > 0 ? 1 : 0;
 
       case "break_expression":
       case "continue_expression": {
