@@ -327,14 +327,12 @@ export class JsLikeMetricsAnalyzer {
     if (!skipSelfIncrement) {
       const increment = this.getComplexityIncrement(node);
       if (increment > 0) {
-        this.details.push({
+        this.addDetail(
           increment,
-          reason: this.getComplexityReason(node),
-          line: node.startPosition.row,
-          column: node.startPosition.column,
-          nesting: this.nesting,
-        });
-        this.complexity += increment;
+          this.getComplexityReason(node),
+          node.startPosition.row,
+          node.startPosition.column
+        );
       }
     }
 
@@ -350,15 +348,12 @@ export class JsLikeMetricsAnalyzer {
       // complexity inside the nested body (ternaries, loops, etc.) counts toward
       // the enclosing function rather than being silently discarded.
       if (this.isNestedFunction(child)) {
-        const increment = 1 + this.nesting;
-        this.complexity += increment;
-        this.details.push({
-          increment,
-          reason: this.getFunctionReason(child.type),
-          line: child.startPosition.row,
-          column: child.startPosition.column,
-          nesting: this.nesting,
-        });
+        this.addDetail(
+          1 + this.nesting,
+          this.getFunctionReason(child.type),
+          child.startPosition.row,
+          child.startPosition.column
+        );
         this.nesting++;
         for (let i = 0; i < child.childCount; i++) {
           this.analyzeNode(child.child(i)!);
@@ -379,6 +374,20 @@ export class JsLikeMetricsAnalyzer {
     if (nestingIncreased) {
       this.nesting--;
     }
+  }
+
+  /**
+   * Records a complexity-contributing detail and adds its increment to the running total.
+   */
+  private addDetail(increment: number, reason: string, line: number, column: number): void {
+    this.complexity += increment;
+    this.details.push({
+      increment,
+      reason,
+      line,
+      column,
+      nesting: this.nesting,
+    });
   }
 
   /**
