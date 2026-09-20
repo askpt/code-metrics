@@ -27,7 +27,7 @@ export interface UnifiedMetricsDetail {
   reason: string;
   /** Line number where this complexity-contributing construct is located (1-based) */
   line: number;
-  /** Column number where this complexity-contributing construct starts (0-based) */
+  /** Column number where this complexity-contributing construct starts (1-based) */
   column: number;
   /** Nesting level of this construct (0 for top-level) */
   nesting: number;
