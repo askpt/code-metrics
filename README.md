@@ -8,7 +8,6 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 
 - **Real-time Analysis**: Analyzes code metrics as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
-- **Problems Pane Diagnostics**: Surfaces high-complexity functions as warnings/errors in the Problems pane
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
 - **Multi-language Support**: Currently supports C#, Go, Java, JavaScript, JSX, Python, Rust, TypeScript, and TSX
 - **Configurable Thresholds**: Customize warning and error complexity thresholds
@@ -48,7 +47,6 @@ This extension contributes the following settings:
 
 - `codeMetrics.enabled`: Enable or disable the code metrics extension (default: `true`)
 - `codeMetrics.showCodeLens`: Show code metrics information as CodeLens above functions (default: `true`)
-- `codeMetrics.showDiagnostics`: Show cognitive complexity diagnostics in the Problems pane (default: `true`)
 - `codeMetrics.warningThreshold`: Metrics threshold for showing warning status with yellow indicator (default: `10`)
 - `codeMetrics.errorThreshold`: Metrics threshold for showing error status with red indicator (default: `15`)
 - `codeMetrics.excludePatterns`: Glob patterns for files to exclude from metrics analysis (default: excludes node_modules, dist, build, out, minified files, and test files)
