@@ -193,6 +193,9 @@ export class JavaMetricsAnalyzer {
     const nameNode = node.childForFieldName("name");
     const methodName = nameNode
       ? this.sourceText.substring(nameNode.startIndex, nameNode.endIndex)
+      // Unreachable: method_declaration/constructor_declaration/compact_constructor_declaration
+      // (the only node types dispatched here) always carry a "name" field in tree-sitter-java.
+      /* c8 ignore next */
       : "<anonymous>";
 
     const className = findEnclosingTypeName(node, JavaMetricsAnalyzer.TYPE_DECLARATION_TYPES, this.sourceText);
