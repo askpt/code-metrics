@@ -307,6 +307,96 @@ public class Test {
     });
   });
 
+  suite("Labeled break/continue", () => {
+    test("should not count unlabeled break statements", () => {
+      const source = `
+public class Test {
+  public void loop() {
+    for (int i = 0; i < 10; i++) {
+      if (i == 5) {
+        break;
+      }
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      // for(1) + if(1+1) = 1 + 2 = 3; break is unlabeled, contributes 0
+      assert.strictEqual(results[0].complexity, 3);
+      const labeledBreak = results[0].details.find(
+        (d) => d.reason === "labeled break statement"
+      );
+      assert.strictEqual(labeledBreak, undefined, "Should not detect unlabeled break as labeled");
+    });
+
+    test("should not count unlabeled continue statements", () => {
+      const source = `
+public class Test {
+  public void loop() {
+    for (int i = 0; i < 10; i++) {
+      if (i == 5) {
+        continue;
+      }
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      // for(1) + if(1+1) = 1 + 2 = 3; continue is unlabeled, contributes 0
+      assert.strictEqual(results[0].complexity, 3);
+      const labeledContinue = results[0].details.find(
+        (d) => d.reason === "labeled continue statement"
+      );
+      assert.strictEqual(labeledContinue, undefined, "Should not detect unlabeled continue as labeled");
+    });
+
+    test("should count labeled break statements", () => {
+      const source = `
+public class Test {
+  public void loop() {
+    outer:
+    for (int i = 0; i < 10; i++) {
+      for (int j = 0; j < 10; j++) {
+        if (j == 5) {
+          break outer;
+        }
+      }
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      // for(1) + for(1+1) + if(1+2) + labeled break(1) = 1 + 2 + 3 + 1 = 7
+      assert.strictEqual(results[0].complexity, 7);
+      const labeledBreak = results[0].details.find(
+        (d) => d.reason === "labeled break statement"
+      );
+      assert.ok(labeledBreak, "Should detect labeled break");
+      assert.strictEqual(labeledBreak!.increment, 1);
+    });
+
+    test("should count labeled continue statements", () => {
+      const source = `
+public class Test {
+  public void loop() {
+    outer:
+    for (int i = 0; i < 10; i++) {
+      for (int j = 0; j < 10; j++) {
+        if (j == 5) {
+          continue outer;
+        }
+      }
+    }
+  }
+}`;
+      const results = JavaMetricsAnalyzer.analyzeFile(source);
+      // for(1) + for(1+1) + if(1+2) + labeled continue(1) = 1 + 2 + 3 + 1 = 7
+      assert.strictEqual(results[0].complexity, 7);
+      const labeledContinue = results[0].details.find(
+        (d) => d.reason === "labeled continue statement"
+      );
+      assert.ok(labeledContinue, "Should detect labeled continue");
+      assert.strictEqual(labeledContinue!.increment, 1);
+    });
+  });
+
   suite("Position Information", () => {
     test("should report correct start and end lines", () => {
       const source = `public class Test {
