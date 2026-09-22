@@ -11,7 +11,7 @@
 
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
-import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName, ComplexityAccumulator } from "./complexityHelpers";
+import { isOutermostInSameOperatorChain, getBinaryLogicalOperator, findEnclosingTypeName, hasLabelChild, ComplexityAccumulator } from "./complexityHelpers";
 
 // Module-level singleton: parser initialization is expensive, so we reuse one instance per language.
 const _parser = new Parser();
@@ -322,6 +322,10 @@ export class JavaMetricsAnalyzer {
         return 0;
       }
 
+      case "break_statement":
+      case "continue_statement":
+        return hasLabelChild(node, "identifier") ? 1 : 0;
+
       default:
         return 0;
     }
@@ -358,6 +362,10 @@ export class JavaMetricsAnalyzer {
         const op = getBinaryLogicalOperator(node);
         return `binary ${op} operator`;
       }
+      case "break_statement":
+        return "labeled break statement";
+      case "continue_statement":
+        return "labeled continue statement";
       /* c8 ignore next 2 */
       default:
         return "unknown complexity source";
