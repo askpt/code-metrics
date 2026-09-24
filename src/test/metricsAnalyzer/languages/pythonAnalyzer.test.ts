@@ -332,6 +332,48 @@ def second():
     });
   });
 
+  suite("Match Statements", () => {
+    test("should analyze function with a match statement", () => {
+      const sourceCode = `
+def handle(x):
+    match x:
+        case 1:
+            return "one"
+        case _:
+            return "other"
+`;
+      // match statement: 1 + 0 nesting = 1
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "handle");
+      assert.strictEqual(results[0].complexity, 1);
+      assert.strictEqual(results[0].details.length, 1);
+      assert.strictEqual(results[0].details[0].reason, "match statement");
+    });
+
+    test("should apply nesting penalty to a match statement nested inside an if", () => {
+      const sourceCode = `
+def handle(flag, x):
+    if flag:
+        match x:
+            case 1:
+                return "one"
+            case _:
+                return "other"
+    return None
+`;
+      // if(1) + match(1 + 1 nesting) = 3
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "handle");
+      assert.strictEqual(results[0].complexity, 3);
+      assert.strictEqual(results[0].details[0].reason, "if statement");
+      assert.strictEqual(results[0].details[1].reason, "match statement");
+    });
+  });
+
   suite("Static Factory Method", () => {
     test("should analyze file using static method", () => {
       const sourceCode = `
