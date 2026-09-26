@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.9.3](https://github.com/askpt/code-metrics/compare/v0.9.2...v0.9.3) (2026-09-26)
+
+
+### 🐛 Bug Fixes
+
+* count labeled break/continue statements in Java complexity analysis ([#670](https://github.com/askpt/code-metrics/issues/670)) ([dd0a7c3](https://github.com/askpt/code-metrics/commit/dd0a7c3baa6a107cab2204ce3b3a7f2bdcb52e0b))
+* dispose CodeLens provider event emitter on deactivation ([#634](https://github.com/askpt/code-metrics/issues/634)) ([2b8c019](https://github.com/askpt/code-metrics/commit/2b8c0196e454ff1332b65446d05b01058d1a2665))
+* freeze excludePatterns array returned by ConfigurationManager.get() ([#624](https://github.com/askpt/code-metrics/issues/624)) ([328451d](https://github.com/askpt/code-metrics/commit/328451dd6e84c87cd9cea9922aad2db5c3a19c17))
+* labeled break/continue in Go should be flat +1, not nesting-scaled ([#680](https://github.com/askpt/code-metrics/issues/680)) ([7279f86](https://github.com/askpt/code-metrics/commit/7279f86990e4fcc481de416c2b60dc2113c0cc96))
+* score C# else/else-if clauses as flat +1, not nesting-scaled ([#681](https://github.com/askpt/code-metrics/issues/681)) ([1c67019](https://github.com/askpt/code-metrics/commit/1c67019c244c3c1fa99b77f009acdd51b363ace3))
+* score Python boolean and/or operators as flat +1, not nesting-scaled ([#689](https://github.com/askpt/code-metrics/issues/689)) ([0c2130a](https://github.com/askpt/code-metrics/commit/0c2130a7351350da87268b982687115780c7b690))
+* validate that complexity thresholds are positive numbers ([#632](https://github.com/askpt/code-metrics/issues/632)) ([afdb7ec](https://github.com/askpt/code-metrics/commit/afdb7ec4630afba5eb514e0567d938c5b9168792))
+
+
+### 🚀 Performance
+
+* avoid array allocation in Java else-branch lookup ([#648](https://github.com/askpt/code-metrics/issues/648)) ([d36a992](https://github.com/askpt/code-metrics/commit/d36a992e95f95e9fd9f39263db8b265c702cfc80))
+* use O(1) Set lookup for C# preprocessor directive detection in visit() ([#630](https://github.com/askpt/code-metrics/issues/630)) ([7c12843](https://github.com/askpt/code-metrics/commit/7c12843eb01ee7827c800804f1d11a70dd063bbb))
+
+
+### 🔄 Refactoring
+
+* extract magic number for config-change refresh delay ([#621](https://github.com/askpt/code-metrics/issues/621)) ([2fb1001](https://github.com/askpt/code-metrics/commit/2fb1001c3b1d03e662ddb9a7f499439bc40e907c))
+* extract shared addDetail helper across analyzers ([#656](https://github.com/askpt/code-metrics/issues/656)) ([686076a](https://github.com/askpt/code-metrics/commit/686076aceff447cb99eba5761fe538fc294cb3fc))
+* extract shared ComplexityAccumulator across analyzers ([#657](https://github.com/askpt/code-metrics/issues/657)) ([60f6b05](https://github.com/askpt/code-metrics/commit/60f6b05ca96fc3627abe1584a2776dcb6d15e994))
+* extract shared getBinaryLogicalOperator helper ([#597](https://github.com/askpt/code-metrics/issues/597)) ([ebe1a46](https://github.com/askpt/code-metrics/commit/ebe1a46b790c9fcf79f4a551dade05121a4c4a07))
+* extract shared hasLabelChild helper for labeled break/continue detection ([#650](https://github.com/askpt/code-metrics/issues/650)) ([afaab35](https://github.com/askpt/code-metrics/commit/afaab3577c0ca52ef060af8f2d928187cc7ffb4e))
+* freeze DEFAULT_CONFIG to prevent shared-state mutation ([#584](https://github.com/askpt/code-metrics/issues/584)) ([3d30dc8](https://github.com/askpt/code-metrics/commit/3d30dc8ff17fc36cee4e58dca4e51ea705c4da1b))
+* share findEnclosingTypeName helper between C# and Java analyzers ([#654](https://github.com/askpt/code-metrics/issues/654)) ([8eba5d1](https://github.com/askpt/code-metrics/commit/8eba5d1f2539a2006f64f0bb4c0961ce7ac43657))
+* use Set-based lookup for Java type-declaration node types ([#649](https://github.com/askpt/code-metrics/issues/649)) ([4b3b50d](https://github.com/askpt/code-metrics/commit/4b3b50d17370b301a8610ebab30138e8aaa2e82b))
+
 ## [0.9.2](https://github.com/askpt/code-metrics/compare/v0.9.1...v0.9.2) (2026-08-29)
 
 
