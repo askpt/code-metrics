@@ -184,7 +184,7 @@ When adding features, update:
 3. **Testing**: New features should include appropriate tests
 4. **Breaking Changes**: Require discussion and careful consideration
 
-Agent-assisted reviews follow the repo-local [`code-review` skill](.agents/skills/code-review/SKILL.md), which encodes the checks above plus this project's specific ones (Cognitive Complexity scoring fidelity, cross-analyzer parity, c8-gated unit tests, setting/README/package.json sync).
+Agent-assisted reviews follow the repo-local [`code-review` skill](.github/skills/code-review/SKILL.md), which encodes the checks above plus this project's specific ones (Cognitive Complexity scoring fidelity, cross-analyzer parity, c8-gated unit tests, setting/README/package.json sync).
 
 ## 📋 Project Structure
 

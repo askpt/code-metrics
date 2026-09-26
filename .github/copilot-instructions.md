@@ -114,10 +114,12 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 ### Directory Structure
 
 ```
-├── .agents/skills/              # Repository-local agent skills
-│   ├── code-review/            # Repo-specific PR/diff review (rules, verification, report format)
-│   └── vscode-ext-commands/    # Command contribution guidelines (installed from awesome-copilot)
+├── .agents/skills -> ../.github/skills  # Symlink so agents discover the same skills
 ├── .github/                     # GitHub workflows and configuration
+│   ├── skills/                 # Repository-local agent skills (single source of truth)
+│   │   ├── agentic-workflows/  # gh-aw workflow design/create/debug/upgrade routing
+│   │   ├── code-review/        # Repo-specific PR/diff review (rules, verification, report format)
+│   │   └── vscode-ext-commands/ # Command contribution guidelines (installed from awesome-copilot)
 │   ├── workflows/
 │   │   ├── ci.yml              # Multi-OS CI (Ubuntu, macOS, Windows)
 │   │   ├── release.yml         # Automated releases with release-please
