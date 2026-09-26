@@ -1,0 +1,57 @@
+diff --git a/src/metricsAnalyzer/languages/rustAnalyzer.ts b/src/metricsAnalyzer/languages/rustAnalyzer.ts
+index a043dbc..e3535eb 100644
+--- a/src/metricsAnalyzer/languages/rustAnalyzer.ts
++++ b/src/metricsAnalyzer/languages/rustAnalyzer.ts
+@@ -273,10 +273,15 @@ export class RustMetricsAnalyzer {
+ 
+   /**
+    * Returns the nesting penalty for a node's structural increment.
+-   * Else/else-if clauses are counted as a flat +1 without nesting penalty.
++   * Else/else-if clauses and boolean-operator runs are counted as a flat +1
++   * without nesting penalty (SonarSource appendix B: sequences of like binary
++   * logical operators are not nesting increments).
+    */
+   private getNestingPenalty(node: Parser.SyntaxNode): number {
+-    return node.type === "else_clause" ? 0 : this.acc.nesting;
++    if (node.type === "else_clause" || node.type === "binary_expression") {
++      return 0;
++    }
++    return this.acc.nesting;
+   }
+ 
+   /**
+diff --git a/src/unit/unit.test.ts b/src/unit/unit.test.ts
+index 623c172..b5650c4 100644
+--- a/src/unit/unit.test.ts
++++ b/src/unit/unit.test.ts
+@@ -3802,6 +3802,30 @@ fn sum_positives(items: &[i32]) -> i32 {
+     });
+   });
+ 
++  describe("Rust: boolean operator runs are flat +1 regardless of nesting", () => {
++    it("should score && inside a nested if as +1, not 1 + nesting", () => {
++      const sourceCode = `
++fn check(a: bool, b: bool) -> bool {
++    if a {
++        if a && b {
++            return true;
++        }
++    }
++    false
++}
++`;
++      const results = RustMetricsAnalyzer.analyzeFile(sourceCode);
++      assert.strictEqual(results.length, 1, "one function expected");
++      assert.strictEqual(results[0].complexity, 4, "if(1) + nested if(2) + &&(1)");
++      assert.deepStrictEqual(
++        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
++        ["if expression", "if expression", "binary && operator"]
++      );
++      const andDetail = results[0].details.find((d: UnifiedMetricsDetail) => d.reason === "binary && operator")!;
++      assert.strictEqual(andDetail.increment, 1, "boolean operator run is flat +1");
++    });
++  });
++
+   // CSharp preprocessor-block coverage
+   // These tests exercise heuristic paths in the C# analyzer that handle method bodies
+   // fragmented by #if/#else preprocessor directives (tree-sitter emits ERROR nodes for

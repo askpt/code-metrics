@@ -1,0 +1,39 @@
+diff --git a/package-lock.json b/package-lock.json
+index 02e682c..c6f9116 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -10,7 +10,7 @@
+       "dependencies": {
+         "tree-sitter": "0.21.1",
+         "tree-sitter-c-sharp": "0.23.1",
+-        "tree-sitter-go": "0.21.2",
++        "tree-sitter-go": "0.21.3",
+         "tree-sitter-java": "0.23.5",
+         "tree-sitter-javascript": "0.21.4",
+         "tree-sitter-python": "0.21.0",
+@@ -6507,9 +6507,9 @@
+       }
+     },
+     "node_modules/tree-sitter-go": {
+-      "version": "0.21.2",
+-      "resolved": "https://registry.npmjs.org/tree-sitter-go/-/tree-sitter-go-0.21.2.tgz",
+-      "integrity": "sha512-aMFwjsB948nWhURiIxExK8QX29JYKs96P/IfXVvluVMRJZpL04SREHsdOZHYqJr1whkb7zr3/gWHqqvlkczmvw==",
++      "version": "0.21.3",
++      "resolved": "https://registry.npmjs.org/tree-sitter-go/-/tree-sitter-go-0.21.3.tgz",
++      "integrity": "sha512-FIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTUREFIXTU==",
+       "hasInstallScript": true,
+       "license": "MIT",
+       "dependencies": {
+diff --git a/package.json b/package.json
+index 9f17deb..90215e8 100644
+--- a/package.json
++++ b/package.json
+@@ -129,7 +129,7 @@
+   "dependencies": {
+     "tree-sitter": "0.21.1",
+     "tree-sitter-c-sharp": "0.23.1",
+-    "tree-sitter-go": "0.21.2",
++    "tree-sitter-go": "0.21.3",
+     "tree-sitter-java": "0.23.5",
+     "tree-sitter-javascript": "0.21.4",
+     "tree-sitter-python": "0.21.0",

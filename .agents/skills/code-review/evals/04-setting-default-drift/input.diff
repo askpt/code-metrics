@@ -1,0 +1,13 @@
+diff --git a/src/configuration.ts b/src/configuration.ts
+index 17913c8..bd2dad9 100644
+--- a/src/configuration.ts
++++ b/src/configuration.ts
+@@ -37,7 +37,7 @@ export interface CodeMetricsConfig {
+ export const DEFAULT_CONFIG: CodeMetricsConfig = Object.freeze({
+   enabled: true,
+   showCodeLens: true,
+-  warningThreshold: 10,
++  warningThreshold: 8,
+   errorThreshold: 15,
+   excludePatterns: Object.freeze([
+     "**/node_modules/**",
