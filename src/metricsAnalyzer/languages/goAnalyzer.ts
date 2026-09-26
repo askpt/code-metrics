@@ -407,7 +407,7 @@ export class GoMetricsAnalyzer {
    * - Recover calls (similar to catch): +1 flat
    * - Logical operators (&&, ||): +1 flat per distinct sequence (no nesting penalty)
    * - Nested closures (func literals in nested context): +1 + nesting level
-   * - Labeled break/continue statements: +1 + nesting level
+   * - Labeled break/continue statements: +1 flat
    * - Non-labeled break/continue when nested: +1 + nesting level
    * - Goto statements: +1 flat
    *
