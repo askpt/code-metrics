@@ -8,6 +8,7 @@ A Visual Studio Code extension that calculates and displays **Cognitive Complexi
 
 - **Real-time Analysis**: Analyzes code metrics as you write code
 - **CodeLens Integration**: Shows complexity scores directly above functions
+- **Detailed Breakdown**: Click a CodeLens entry to view a per-construct complexity breakdown in the Output panel
 - **Color-coded Indicators**: Visual feedback with green/yellow/red status based on configurable thresholds
 - **Multi-language Support**: Currently supports C#, Go, Java, JavaScript, JSX, Python, Rust, TypeScript, and TSX
 - **Configurable Thresholds**: Customize warning and error complexity thresholds
@@ -68,6 +69,7 @@ Install from the [VS Code Extension Marketplace](https://marketplace.visualstudi
    - **Green**: Below warning threshold (good)
    - **Yellow**: Above warning threshold (review recommended)  
    - **Red**: Above error threshold (refactoring recommended)
+5. Click on a CodeLens entry to see a detailed breakdown of complexity contributors in the "Code Metrics Details" output channel
 
 ## Development Setup
 
