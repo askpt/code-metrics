@@ -866,19 +866,33 @@ suite("Metrics Code Lens Provider Tests", () => {
         ];
       };
       try {
-        await provider.provideCodeLenses(documentA, mockToken);
-        await provider.provideCodeLenses(documentB, mockToken);
+        const initialLensesA = await provider.provideCodeLenses(
+          documentA,
+          mockToken
+        );
+        const initialLensesB = await provider.provideCodeLenses(
+          documentB,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 2);
 
         // Prune only documentA's cache entries.
         provider.pruneAnalysisCacheForDocument(documentA.uri.toString());
 
         // documentA must be re-analyzed (cache miss); documentB must stay cached (cache hit).
-        await provider.provideCodeLenses(documentA, mockToken);
+        const refreshedLensesA = await provider.provideCodeLenses(
+          documentA,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 3);
+        assert.notStrictEqual(refreshedLensesA, initialLensesA);
 
-        await provider.provideCodeLenses(documentB, mockToken);
+        const cachedLensesB = await provider.provideCodeLenses(
+          documentB,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 3);
+        assert.strictEqual(cachedLensesB, initialLensesB);
       } finally {
         MetricsAnalyzerFactory.analyzeFile = originalAnalyzeFile;
         ConfigurationManager.getConfiguration = originalGetConfiguration;
@@ -923,18 +937,32 @@ suite("Metrics Code Lens Provider Tests", () => {
         ];
       };
       try {
-        await provider.provideCodeLenses(shortUriDocument, mockToken);
-        await provider.provideCodeLenses(longUriDocument, mockToken);
+        const initialShortLenses = await provider.provideCodeLenses(
+          shortUriDocument,
+          mockToken
+        );
+        const initialLongLenses = await provider.provideCodeLenses(
+          longUriDocument,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 2);
 
         // Pruning the short URI must not evict the longer URI whose string starts with it.
         provider.pruneAnalysisCacheForDocument(shortUriDocument.uri.toString());
 
-        await provider.provideCodeLenses(shortUriDocument, mockToken);
+        const refreshedShortLenses = await provider.provideCodeLenses(
+          shortUriDocument,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 3);
+        assert.notStrictEqual(refreshedShortLenses, initialShortLenses);
 
-        await provider.provideCodeLenses(longUriDocument, mockToken);
+        const cachedLongLenses = await provider.provideCodeLenses(
+          longUriDocument,
+          mockToken
+        );
         assert.strictEqual(analyzeCallCount, 3);
+        assert.strictEqual(cachedLongLenses, initialLongLenses);
       } finally {
         MetricsAnalyzerFactory.analyzeFile = originalAnalyzeFile;
         ConfigurationManager.getConfiguration = originalGetConfiguration;
