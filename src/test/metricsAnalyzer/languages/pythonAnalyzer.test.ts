@@ -186,6 +186,19 @@ def check(a, b, c):
       const results = analyzer.analyzeFunctions(sourceCode);
       assert.strictEqual(results[0].complexity, 2);
     });
+
+    test("should not apply a nesting penalty to a boolean operator nested inside an if", () => {
+      const sourceCode = `
+def check(a, b):
+    if a > 0:
+        return a and b
+    return False
+`;
+      // Logical-operator sequences are flat (+1, no nesting penalty), matching every
+      // other analyzer in this repo and the SonarSource spec: if(1) + and(1) = 2.
+      const results = analyzer.analyzeFunctions(sourceCode);
+      assert.strictEqual(results[0].complexity, 2);
+    });
   });
 
   suite("Conditional Expressions", () => {
@@ -382,12 +395,12 @@ def check(a, b):
         return True
     return False
 `;
-      // if(1) + and(1+1 nesting) = 3
+      // if(1) + and(1, flat) = 2
       const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
 
       assert.strictEqual(results.length, 1);
       assert.strictEqual(results[0].name, "check");
-      assert.strictEqual(results[0].complexity, 3);
+      assert.strictEqual(results[0].complexity, 2);
     });
   });
 });
