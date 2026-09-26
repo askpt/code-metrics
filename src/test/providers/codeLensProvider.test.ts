@@ -827,6 +827,147 @@ suite("Metrics Code Lens Provider Tests", () => {
         ConfigurationManager.getConfiguration = originalGetConfiguration;
       }
     });
+
+    test("should evict cached analysis only for the pruned document", async () => {
+      const sourceText = "function cached(value) { return value; }";
+      const documentA = createMockDocument(
+        "typescript",
+        sourceText,
+        "/test/a.ts"
+      );
+      const documentB = createMockDocument(
+        "typescript",
+        sourceText,
+        "/test/b.ts"
+      );
+
+      const originalGetConfiguration = ConfigurationManager.getConfiguration;
+      const originalAnalyzeFile = MetricsAnalyzerFactory.analyzeFile;
+      ConfigurationManager.getConfiguration = () => ({
+        enabled: true,
+        showCodeLens: true,
+        warningThreshold: 10,
+        errorThreshold: 15,
+        excludePatterns: [],
+      });
+      let analyzeCallCount = 0;
+      MetricsAnalyzerFactory.analyzeFile = (): UnifiedFunctionMetrics[] => {
+        analyzeCallCount++;
+        return [
+          {
+            name: "cached",
+            complexity: 1,
+            details: [],
+            startLine: 0,
+            endLine: 0,
+            startColumn: 0,
+            endColumn: sourceText.length,
+          },
+        ];
+      };
+      try {
+        const initialLensesA = await provider.provideCodeLenses(
+          documentA,
+          mockToken
+        );
+        const initialLensesB = await provider.provideCodeLenses(
+          documentB,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 2);
+
+        // Prune only documentA's cache entries.
+        provider.pruneAnalysisCacheForDocument(documentA.uri.toString());
+
+        // documentA must be re-analyzed (cache miss); documentB must stay cached (cache hit).
+        const refreshedLensesA = await provider.provideCodeLenses(
+          documentA,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 3);
+        assert.notStrictEqual(refreshedLensesA, initialLensesA);
+
+        const cachedLensesB = await provider.provideCodeLenses(
+          documentB,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 3);
+        assert.strictEqual(cachedLensesB, initialLensesB);
+      } finally {
+        MetricsAnalyzerFactory.analyzeFile = originalAnalyzeFile;
+        ConfigurationManager.getConfiguration = originalGetConfiguration;
+      }
+    });
+
+    test("should not evict a document whose URI is a prefix of another cached URI", async () => {
+      const sourceText = "function cached(value) { return value; }";
+      const shortUriDocument = createMockDocument(
+        "typescript",
+        sourceText,
+        "/test/a.ts"
+      );
+      const longUriDocument = createMockDocument(
+        "typescript",
+        sourceText,
+        "/test/a.ts.bak"
+      );
+
+      const originalGetConfiguration = ConfigurationManager.getConfiguration;
+      const originalAnalyzeFile = MetricsAnalyzerFactory.analyzeFile;
+      ConfigurationManager.getConfiguration = () => ({
+        enabled: true,
+        showCodeLens: true,
+        warningThreshold: 10,
+        errorThreshold: 15,
+        excludePatterns: [],
+      });
+      let analyzeCallCount = 0;
+      MetricsAnalyzerFactory.analyzeFile = (): UnifiedFunctionMetrics[] => {
+        analyzeCallCount++;
+        return [
+          {
+            name: "cached",
+            complexity: 1,
+            details: [],
+            startLine: 0,
+            endLine: 0,
+            startColumn: 0,
+            endColumn: sourceText.length,
+          },
+        ];
+      };
+      try {
+        const initialShortLenses = await provider.provideCodeLenses(
+          shortUriDocument,
+          mockToken
+        );
+        const initialLongLenses = await provider.provideCodeLenses(
+          longUriDocument,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 2);
+
+        // Pruning the short URI must not evict the longer URI whose string starts with it.
+        provider.pruneAnalysisCacheForDocument(shortUriDocument.uri.toString());
+
+        const refreshedShortLenses = await provider.provideCodeLenses(
+          shortUriDocument,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 3);
+        assert.notStrictEqual(refreshedShortLenses, initialShortLenses);
+
+        const cachedLongLenses = await provider.provideCodeLenses(
+          longUriDocument,
+          mockToken
+        );
+        assert.strictEqual(analyzeCallCount, 3);
+        assert.strictEqual(cachedLongLenses, initialLongLenses);
+      } finally {
+        MetricsAnalyzerFactory.analyzeFile = originalAnalyzeFile;
+        ConfigurationManager.getConfiguration = originalGetConfiguration;
+      }
+    });
   });
 
   suite("Code Lens Resolution", () => {
