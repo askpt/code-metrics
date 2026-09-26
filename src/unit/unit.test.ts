@@ -498,6 +498,120 @@ func Complex(x, y int) int {
       assert.strictEqual(results[0].details[0].reason, "if statement");
     });
 
+    it("should count else clause as flat +1 with no nesting penalty", () => {
+      const sourceCode = `
+        public class Test {
+          public string Classify(int x) {
+            if (x > 0) {
+              return "positive";
+            } else {
+              return "non-positive";
+            }
+          }
+        }
+      `;
+      const analyzer = new CSharpMetricsAnalyzer();
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 2); // if(+1) + else(+1)
+      assert.strictEqual(results[0].details.length, 2);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else clause"]);
+      // else clause must have no nesting penalty
+      const elseDetail = results[0].details.find((d: UnifiedMetricsDetail) => d.reason === "else clause");
+      assert.ok(elseDetail);
+      assert.strictEqual(elseDetail.increment, 1);
+    });
+
+    it("should count else-if chain with flat increments and correct nesting", () => {
+      const sourceCode = `
+        public class Test {
+          public string Grade(int score) {
+            if (score >= 90) {
+              return "A";
+            } else if (score >= 80) {
+              return "B";
+            } else if (score >= 70) {
+              return "C";
+            } else {
+              return "F";
+            }
+          }
+        }
+      `;
+      const analyzer = new CSharpMetricsAnalyzer();
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      // if(+1) + else-if(+1) + else-if(+1) + else(+1) = 4
+      assert.strictEqual(results[0].complexity, 4);
+      const reasons = results[0].details.map((d: UnifiedMetricsDetail) => d.reason);
+      assert.deepStrictEqual(reasons, ["if statement", "else if clause", "else if clause", "else clause"]);
+      // All increments must be 1 (flat — no nesting penalty for else/else-if)
+      for (const d of results[0].details) {
+        assert.strictEqual(d.increment, 1, `${d.reason} should be flat +1`);
+      }
+    });
+
+    it("should use the alternative field for commented else-if branches and preserve source order", () => {
+      const sourceCode = `
+        public class Test {
+          public int Complex(int x, int y) {
+            if (x > 0) {
+              if (y > 0) { return x + y; }
+            } else /* comment */ if (x < 0) {
+              return x - y;
+            }
+            return 0;
+          }
+        }
+      `;
+      const analyzer = new CSharpMetricsAnalyzer();
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 4);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if statement", "if statement", "else if clause"]
+      );
+    });
+
+    it("should apply correct nesting to statements inside else-if body", () => {
+      const sourceCode = `
+        public class Test {
+          public int Complex(int x, int y) {
+            if (x > 0) {
+              if (y > 0) { return x + y; }
+            } else if (x < 0) {
+              if (y < 0) { return x - y; }
+            }
+            return 0;
+          }
+        }
+      `;
+      const analyzer = new CSharpMetricsAnalyzer();
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      // if x>0 (+1, nesting=0), if y>0 (+2, nesting=1), else-if x<0 (+1 flat, nesting=0),
+      // if y<0 (+2, nesting=1 — the else-if itself was already counted, so it should not
+      // add another hidden nesting level).
+      assert.strictEqual(results[0].complexity, 6);
+      const elseIfDetail = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "else if clause"
+      );
+      assert.ok(elseIfDetail);
+      assert.strictEqual(elseIfDetail.increment, 1, "else if clause should be flat +1");
+      const innerIfInElse = results[0].details.find(
+        (d: UnifiedMetricsDetail) => d.reason === "if statement" && d.line > elseIfDetail!.line
+      );
+      assert.ok(innerIfInElse, "if inside else-if body should be found");
+      assert.strictEqual(innerIfInElse.nesting, 1);
+      assert.strictEqual(innerIfInElse.increment, 2);
+    });
+
     it("should analyze nested complexity correctly", () => {
       const analyzer = new CSharpMetricsAnalyzer();
       const results = analyzer.analyzeFunctions(
