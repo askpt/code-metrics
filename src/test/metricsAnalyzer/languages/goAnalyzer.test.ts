@@ -462,12 +462,13 @@ outer:
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + for(2) + if(3) + labeled break(4) = 10
-      assert.strictEqual(results[0].complexity, 10);
+      // for(1) + for(2) + if(3) + labeled break(flat +1) = 7
+      assert.strictEqual(results[0].complexity, 7);
       const labeledBreak = results[0].details.find(
         (d) => d.reason === "labeled break statement"
       );
       assert.ok(labeledBreak, "Should detect labeled break");
+      assert.strictEqual(labeledBreak?.increment, 1, "Labeled break should be a flat +1, not nesting-scaled");
     });
 
     test("should handle labeled continue statements", () => {
@@ -488,12 +489,13 @@ outer:
 
       const results = analyzer.analyzeFunctions(sourceCode);
 
-      // for(1) + for(2) + if(3) + labeled continue(4) = 10
-      assert.strictEqual(results[0].complexity, 10);
+      // for(1) + for(2) + if(3) + labeled continue(flat +1) = 7
+      assert.strictEqual(results[0].complexity, 7);
       const labeledContinue = results[0].details.find(
         (d) => d.reason === "labeled continue statement"
       );
       assert.ok(labeledContinue, "Should detect labeled continue");
+      assert.strictEqual(labeledContinue?.increment, 1, "Labeled continue should be a flat +1, not nesting-scaled");
     });
 
     test("should handle break in nested context", () => {
