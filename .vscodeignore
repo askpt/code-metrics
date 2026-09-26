@@ -1,11 +1,45 @@
+# Editor, dev container and local tooling configuration
 .vscode/**
 .vscode-test/**
-src/**
+**/.vscode-test.*
+.devcontainer/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
+
+# GitHub configuration, CI workflows and agent skills
+.github/**
+.agents/**
+skills-lock.json
+
+# TypeScript sources and build/lint configuration (only the compiled out/ is shipped)
+src/**
+**/*.ts
+**/*.map
 **/tsconfig.json
 **/eslint.config.mjs
-**/*.map
-**/*.ts
-**/.vscode-test.*
+
+# Tests, test runner, fixtures and coverage output
+out/test/**
+out/unit/**
+scripts/**
+samples/**
+.c8rc.json
+coverage/**
+
+# tree-sitter build inputs. The extension only loads the prebuilt N-API binaries
+# from prebuilds/ via node-gyp-build, so grammar sources, C/C++ sources, gyp files,
+# WASM builds and highlight queries are never read at runtime.
+node_modules/**/*.c
+node_modules/**/*.cc
+node_modules/**/*.h
+node_modules/**/*.gyp
+node_modules/**/*.gypi
+node_modules/**/*.wasm
+node_modules/**/*.scm
+node_modules/**/grammar.js
+node_modules/**/grammar.json
+node_modules/**/tree-sitter.json
+node_modules/**/binding_test.js
+node_modules/tree-sitter/vendor/**
+node_modules/tree-sitter-typescript/common/**
