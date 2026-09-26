@@ -407,7 +407,7 @@ export class GoMetricsAnalyzer {
    * - Recover calls (similar to catch): +1 flat
    * - Logical operators (&&, ||): +1 flat per distinct sequence (no nesting penalty)
    * - Nested closures (func literals in nested context): +1 + nesting level
-   * - Labeled break/continue statements: +1 + nesting level
+   * - Labeled break/continue statements: +1 flat
    * - Non-labeled break/continue when nested: +1 + nesting level
    * - Goto statements: +1 flat
    *
@@ -444,12 +444,14 @@ export class GoMetricsAnalyzer {
       case "func_literal":
         return this.acc.nesting > 0 ? 1 + this.acc.nesting : 0;
 
-      // Break/continue statements (+1 + nesting when nested)
+      // Break/continue statements
       case "break_statement":
       case "continue_statement":
-        // Check if it has a label (labeled break/continue add complexity)
+        // Labeled break/continue are flat +1, matching goto_statement below and
+        // the Java/JS/TS/Rust analyzers (jump-to-label is nesting-neutral per the
+        // SonarSource spec, unlike structural nesting constructs).
         if (hasLabelChild(node, "label_name")) {
-          return 1 + this.acc.nesting;
+          return 1;
         }
         // Non-labeled break/continue in nested structures (+1 + nesting)
         return this.acc.nesting > 0 ? 1 + this.acc.nesting : 0;
