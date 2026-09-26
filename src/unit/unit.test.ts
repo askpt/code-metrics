@@ -554,6 +554,30 @@ func Complex(x, y int) int {
       }
     });
 
+    it("should use the alternative field for commented else-if branches and preserve source order", () => {
+      const sourceCode = `
+        public class Test {
+          public int Complex(int x, int y) {
+            if (x > 0) {
+              if (y > 0) { return x + y; }
+            } else /* comment */ if (x < 0) {
+              return x - y;
+            }
+            return 0;
+          }
+        }
+      `;
+      const analyzer = new CSharpMetricsAnalyzer();
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].complexity, 4);
+      assert.deepStrictEqual(
+        results[0].details.map((d: UnifiedMetricsDetail) => d.reason),
+        ["if statement", "if statement", "else if clause"]
+      );
+    });
+
     it("should apply correct nesting to statements inside else-if body", () => {
       const sourceCode = `
         public class Test {
@@ -572,9 +596,9 @@ func Complex(x, y int) int {
 
       assert.strictEqual(results.length, 1);
       // if x>0 (+1, nesting=0), if y>0 (+2, nesting=1), else-if x<0 (+1 flat, nesting=0),
-      // if y<0 (+3, nesting=2 — the else-if's nested if_statement still bumps nesting like
-      // any other if_statement, matching the existing Java analyzer's behavior).
-      assert.strictEqual(results[0].complexity, 7);
+      // if y<0 (+2, nesting=1 — the else-if itself was already counted, so it should not
+      // add another hidden nesting level).
+      assert.strictEqual(results[0].complexity, 6);
       const elseIfDetail = results[0].details.find(
         (d: UnifiedMetricsDetail) => d.reason === "else if clause"
       );
@@ -584,8 +608,8 @@ func Complex(x, y int) int {
         (d: UnifiedMetricsDetail) => d.reason === "if statement" && d.line > elseIfDetail!.line
       );
       assert.ok(innerIfInElse, "if inside else-if body should be found");
-      assert.strictEqual(innerIfInElse.nesting, 2);
-      assert.strictEqual(innerIfInElse.increment, 3);
+      assert.strictEqual(innerIfInElse.nesting, 1);
+      assert.strictEqual(innerIfInElse.increment, 2);
     });
 
     it("should analyze nested complexity correctly", () => {
