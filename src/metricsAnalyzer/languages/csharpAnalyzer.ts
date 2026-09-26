@@ -142,6 +142,14 @@ export class CSharpMetricsAnalyzer {
     "preproc_arg",
   ]);
 
+  /**
+   * Named-child index of the else branch within an `if_statement` node.
+   * tree-sitter-c-sharp named children for `if_statement`: 0 = condition, 1 = then-block,
+   * 2 = else branch when present (either a nested `if_statement` for `else if`, or a `block`/
+   * statement for a plain `else`).
+   */
+  private static readonly ELSE_BRANCH_INDEX = 2;
+
   /** Depth of preprocessor block nesting (preproc_if / preproc_else etc.) during traversal */
   private preprocessorDepth = 0;
   /** Accumulates nesting level, running complexity total, and details for the current function */
@@ -454,9 +462,14 @@ export class CSharpMetricsAnalyzer {
    * It skips nested function declarations to avoid double-counting.
    *
    * @param node - The current syntax node being visited
+   * @param skipSelfIncrement - When true, skips this node's own structural increment
+   * (used for else-if nodes that are already counted by the parent if_statement).
    */
-  private visit(node: Parser.SyntaxNode): void {
-    const increment = this.getComplexityIncrement(node);
+  private visit(node: Parser.SyntaxNode, skipSelfIncrement = false): void {
+    const increment =
+      skipSelfIncrement && node.type === "if_statement"
+        ? 0
+        : this.getComplexityIncrement(node);
     if (increment > 0) {
       this.acc.addDetail(
         increment,
@@ -466,7 +479,25 @@ export class CSharpMetricsAnalyzer {
       );
     }
 
+    // Compute elseBranchNode once for if_statement nodes and reuse it below for
+    // both the else-detail reason string and the children-loop skip-increment check.
+    const elseBranchNode =
+      node.type === "if_statement" ? this.getElseBranchNode(node) : null;
+
+    if (elseBranchNode !== null) {
+      // In C#'s AST an if_statement with an else clause always has exactly this structure:
+      //   [0] "if" keyword, [1] "(" , [2] condition, [3] ")" , [4] then-body, [5] "else" keyword, [6] else-body
+      // child(5) is an O(1) indexed lookup — no allocation, no linear scan.
+      const elseToken = node.child(5);
+      if (elseToken && elseToken.type === "else") {
+        const reason = elseBranchNode.type === "if_statement" ? "else if clause" : "else clause";
+        this.acc.addDetail(1, reason, elseToken.startPosition.row, elseToken.startPosition.column);
+      }
+    }
+
     // Conditionally bump nesting, iterate children once, then restore.
+    // When nesting, if_statement's else branch skips the inner if's own increment
+    // to avoid double-counting (the else-clause +1 already accounts for it).
     const nests = this.increasesNesting(node);
     const isPreproc = CSharpMetricsAnalyzer.PREPROC_TYPES.has(node.type);
     if (nests) { this.acc.nesting++; }
@@ -474,11 +505,27 @@ export class CSharpMetricsAnalyzer {
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
       if (!this.isFunctionDeclaration(child)) {
-        this.visit(child);
+        this.visit(child, elseBranchNode !== null && child === elseBranchNode);
       }
     }
     if (nests) { this.acc.nesting--; }
     if (isPreproc) { this.preprocessorDepth--; }
+  }
+
+  /**
+   * Returns the optional else branch node for an if_statement.
+   * For tree-sitter-c-sharp named children: index 0 = condition, 1 = then branch,
+   * 2 = else branch when present.
+   *
+   * Uses `namedChildCount`/`namedChild(i)` (O(1) per access) rather than
+   * `node.namedChildren` (which allocates a full array on every call) — every
+   * `if_statement` visited pays this cost, so avoiding the allocation matters
+   * for large files with many conditionals.
+   */
+  private getElseBranchNode(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
+    return node.namedChildCount > CSharpMetricsAnalyzer.ELSE_BRANCH_INDEX
+      ? node.namedChild(CSharpMetricsAnalyzer.ELSE_BRANCH_INDEX)
+      : null;
   }
 
   /**
