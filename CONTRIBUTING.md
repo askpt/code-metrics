@@ -71,6 +71,12 @@ For a quick start, you can use GitHub Codespaces:
 
 4. **Debug the Extension**
    - Press `F5` in VS Code to launch Extension Development Host
+   - On VS Code 1.139.x the default `Run Extension` configuration fails with
+     "Extension host did not start in 10 seconds" because of a bug in the built-in JavaScript
+     debugger ([microsoft/vscode-js-debug#2416](https://github.com/microsoft/vscode-js-debug/issues/2416),
+     fixed in VS Code 1.140). Select the `Run Extension (IPv4 attach)` configuration instead;
+     ignore the "Could not connect to debug target at http://localhost:9333" notification it
+     shows after ~10 seconds — the debugger is attached and working.
    - Test your changes with sample files in the `samples/` directory
 
 ### Code Standards

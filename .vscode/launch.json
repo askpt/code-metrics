@@ -16,6 +16,56 @@
 				"${workspaceFolder}/out/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}"
+		},
+		// Workaround for VS Code 1.139 (bundled js-debug 1.117): "Run Extension" attaches to
+		// localhost, which js-debug probes over IPv4 and IPv6 at once. The Extension Host only
+		// listens on 127.0.0.1, and the refused IPv6 probe aborts the IPv4 one, so the attach
+		// never succeeds and the Extension Development Host stays paused on its first line
+		// ("Extension host did not start in 10 seconds"). See microsoft/vscode-js-debug#2416.
+		// Fixed in js-debug 1.140 (VS Code 1.140); until then use "Run Extension (IPv4 attach)".
+		// VS Code still runs its own (broken) localhost probe for the launched window, so a
+		// "Could not connect to debug target at http://localhost:9333" notification appears
+		// after ~10 seconds; it is harmless, the IPv4 attach below is the active debugger.
+		{
+			"name": "Extension Host (paused on 9333)",
+			"presentation": {
+				"hidden": true
+			},
+			"type": "extensionHost",
+			"request": "launch",
+			"noDebug": true,
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--inspect-brk-extensions=9333"
+			]
+		},
+		{
+			"name": "Attach to Extension Host (127.0.0.1:9333)",
+			"presentation": {
+				"hidden": true
+			},
+			"type": "node",
+			"request": "attach",
+			"address": "127.0.0.1",
+			"port": 9333,
+			"timeout": 30000,
+			// The Extension Host waits on its first line so breakpoints can be set before
+			// activation; this resumes it once the debugger is attached.
+			"continueOnAttach": true,
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			]
+		}
+	],
+	"compounds": [
+		{
+			"name": "Run Extension (IPv4 attach)",
+			"configurations": [
+				"Extension Host (paused on 9333)",
+				"Attach to Extension Host (127.0.0.1:9333)"
+			],
+			"preLaunchTask": "npm: watch",
+			"stopAll": true
 		}
 	]
 }
