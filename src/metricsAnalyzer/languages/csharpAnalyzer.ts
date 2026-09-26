@@ -454,9 +454,20 @@ export class CSharpMetricsAnalyzer {
    * It skips nested function declarations to avoid double-counting.
    *
    * @param node - The current syntax node being visited
+   * @param skipSelfIncrement - When true, skips this node's own structural increment
+   * (used for else-if nodes that are already counted by the parent if_statement).
+   * @param skipNestingIncrement - When true, keeps traversal at the current nesting level
+   * (used for else-if nodes whose structural nesting was already accounted for by the parent).
    */
-  private visit(node: Parser.SyntaxNode): void {
-    const increment = this.getComplexityIncrement(node);
+  private visit(
+    node: Parser.SyntaxNode,
+    skipSelfIncrement = false,
+    skipNestingIncrement = false
+  ): void {
+    const increment =
+      skipSelfIncrement && node.type === "if_statement"
+        ? 0
+        : this.getComplexityIncrement(node);
     if (increment > 0) {
       this.acc.addDetail(
         increment,
@@ -466,19 +477,75 @@ export class CSharpMetricsAnalyzer {
       );
     }
 
+    // Compute elseBranchNode once for if_statement nodes and reuse it during child traversal.
+    const elseBranchNode =
+      node.type === "if_statement" ? this.getElseBranchNode(node) : null;
+
     // Conditionally bump nesting, iterate children once, then restore.
-    const nests = this.increasesNesting(node);
+    // When nesting, if_statement's else branch skips the inner if's own increment
+    // to avoid double-counting (the else-clause +1 already accounts for it).
+    const nests = !skipNestingIncrement && this.increasesNesting(node);
     const isPreproc = CSharpMetricsAnalyzer.PREPROC_TYPES.has(node.type);
     if (nests) { this.acc.nesting++; }
     if (isPreproc) { this.preprocessorDepth++; }
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i)!;
       if (!this.isFunctionDeclaration(child)) {
-        this.visit(child);
+        if (elseBranchNode !== null && child === elseBranchNode) {
+          this.visitElseBranch(child);
+        } else {
+          this.visit(child);
+        }
       }
     }
     if (nests) { this.acc.nesting--; }
     if (isPreproc) { this.preprocessorDepth--; }
+  }
+
+  /**
+   * Visits the alternative branch of a C# `if_statement` (the else / else-if part).
+   *
+   * The branch itself is exposed by tree-sitter via the `alternative` field. For
+   * `else if`, we record the flat +1 at the `else` keyword, then traverse the nested
+   * `if_statement` without adding a second structural increment or nesting level.
+   */
+  private visitElseBranch(elseBranchNode: Parser.SyntaxNode): void {
+    const elseToken = this.getElseKeywordNode(elseBranchNode);
+    const detailNode = elseToken ?? elseBranchNode;
+    const reason = elseBranchNode.type === "if_statement" ? "else if clause" : "else clause";
+    this.acc.addDetail(1, reason, detailNode.startPosition.row, detailNode.startPosition.column);
+
+    if (elseBranchNode.type === "if_statement") {
+      this.visit(elseBranchNode, true, true);
+    } else {
+      this.visit(elseBranchNode);
+    }
+  }
+
+  /**
+   * Returns the optional else branch node for an if_statement using the grammar field,
+   * which remains correct even when comments or other extras appear between `else` and
+   * the branch itself.
+   */
+  private getElseBranchNode(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
+    return node.childForFieldName("alternative");
+  }
+
+  /**
+   * Finds the `else` keyword immediately preceding an alternative branch.
+   *
+   * Walking sibling links avoids brittle positional child lookups and still handles
+   * comments or preprocessor extras between `else` and the branch node.
+   */
+  private getElseKeywordNode(elseBranchNode: Parser.SyntaxNode): Parser.SyntaxNode | null {
+    let sibling = elseBranchNode.previousSibling;
+    while (sibling !== null) {
+      if (sibling.type === "else") {
+        return sibling;
+      }
+      sibling = sibling.previousSibling;
+    }
+    return null;
   }
 
   /**
