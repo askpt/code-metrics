@@ -114,6 +114,9 @@ This is **automatically validated** by GitHub Actions. See `.github/workflows/va
 ### Directory Structure
 
 ```
+├── .agents/skills/              # Repository-local agent skills
+│   ├── code-review/            # Repo-specific PR/diff review (rules, verification, report format)
+│   └── vscode-ext-commands/    # Command contribution guidelines (installed from awesome-copilot)
 ├── .github/                     # GitHub workflows and configuration
 │   ├── workflows/
 │   │   ├── ci.yml              # Multi-OS CI (Ubuntu, macOS, Windows)

@@ -1,0 +1,16 @@
+diff --git a/src/metricsAnalyzer/languages/goAnalyzer.ts b/src/metricsAnalyzer/languages/goAnalyzer.ts
+index e4b7344..b2f3952 100644
+--- a/src/metricsAnalyzer/languages/goAnalyzer.ts
++++ b/src/metricsAnalyzer/languages/goAnalyzer.ts
+@@ -374,8 +374,9 @@ export class GoMetricsAnalyzer {
+     const isElseIf = node.type === "if_statement";
+     const reason = isElseIf ? "else if clause" : "else clause";
+ 
+-    // Flat +1 for else/else-if — no nesting penalty.
+-    this.acc.addDetail(1, reason, node.startPosition.row, node.startPosition.column);
++    // Score else/else-if like the other structural branches so the increment
++    // formula is uniform across getComplexityIncrement and visitAlternative.
++    this.acc.addDetail(1 + this.acc.nesting, reason, node.startPosition.row, node.startPosition.column);
+ 
+     if (isElseIf) {
+       // else-if: visit the inner if_statement's children at the CURRENT nesting level
