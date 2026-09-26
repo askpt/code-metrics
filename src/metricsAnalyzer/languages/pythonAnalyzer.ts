@@ -261,7 +261,7 @@ export class PythonMetricsAnalyzer {
    * - Structural increments (1 + nesting): all node types in NESTING_TYPES
    *   (if, for, while, except, match, comprehensions)
    * - Flat increments (+1 only): elif, else, conditional expression
-   * - Boolean operators (and/or): 1 + nesting penalty
+   * - Boolean operators (and/or): +1 per distinct same-operator sequence
    *
    * @param node - The syntax node to evaluate
    * @returns The complexity increment (0 or positive integer)
@@ -280,14 +280,15 @@ export class PythonMetricsAnalyzer {
       case "conditional_expression":
         return 1;
 
-      // Boolean operators: +1 per distinct same-operator sequence, plus nesting penalty
+      // Boolean operators: +1 per distinct same-operator sequence (flat, no nesting penalty —
+      // matches every other analyzer's logical-operator handling and the SonarSource spec).
       case "boolean_operator": {
         const op = this.getBooleanOperator(node);
         if (op === "and" || op === "or") {
           // Only count the outermost node in a same-operator chain.
           // e.g. `a and b and c` has two boolean_operators, but counts once.
           if (isOutermostInSameOperatorChain(node, op, "boolean_operator", (n) => this.getBooleanOperator(n))) {
-            return 1 + this.acc.nesting;
+            return 1;
           }
           return 0; // inner node of a same-operator chain — already counted by parent
         }

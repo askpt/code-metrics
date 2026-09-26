@@ -1337,9 +1337,9 @@ def check(a, b, c):
 `;
       const results = PythonMetricsAnalyzer.analyzeFile(sourceCode);
       assert.strictEqual(results.length, 1);
-      // if: +1 (nesting=0); children visited at nesting=1
-      // or boolean_operator: +1+1=2 (nesting=1); and boolean_operator: +1+1=2 (nesting=1) → total 5
-      assert.strictEqual(results[0].complexity, 5);
+      // if: +1 (nesting=0); `and` and `or` are different operators, so each counts
+      // separately (flat +1 each, no nesting penalty) → total 3
+      assert.strictEqual(results[0].complexity, 3);
     });
 
     it("should count except clause", () => {
