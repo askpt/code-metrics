@@ -261,7 +261,7 @@ export class PythonMetricsAnalyzer {
    * - Structural increments (1 + nesting): all node types in NESTING_TYPES
    *   (if, for, while, except, match, comprehensions)
    * - Flat increments (+1 only): elif, else, conditional expression
-   * - Boolean operators (and/or): 1 + nesting penalty
+   * - Boolean operators (and/or): +1 per distinct same-operator sequence
    *
    * @param node - The syntax node to evaluate
    * @returns The complexity increment (0 or positive integer)
