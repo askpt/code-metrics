@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/askpt/code-metrics/compare/v0.9.3...v0.9.4) (2026-09-26)
+
+
+### 🐛 Bug Fixes
+
+* exclude dev tooling, tests and tree-sitter sources from the VSIX ([#691](https://github.com/askpt/code-metrics/issues/691)) ([a54acb2](https://github.com/askpt/code-metrics/commit/a54acb2c6e5054c33a747b744ee935fbdf908f85))
+
 ## [0.9.3](https://github.com/askpt/code-metrics/compare/v0.9.2...v0.9.3) (2026-09-26)
 
 
