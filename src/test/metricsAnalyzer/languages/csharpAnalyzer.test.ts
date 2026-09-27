@@ -430,6 +430,63 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1);
     });
 
+    test("should qualify an operator overload with the enclosing class and symbol", () => {
+      const sourceCode = `
+                public class Vector {
+                    public static Vector operator +(Vector a, Vector b) {
+                        if (a == null) {
+                            return b;
+                        }
+                        return a;
+                    }
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Vector.operator+");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    test("should qualify an implicit conversion operator with its target type", () => {
+      const sourceCode = `
+                public class Meters {
+                    public static implicit operator double(Meters m) {
+                        if (m == null) {
+                            return 0;
+                        }
+                        return 0;
+                    }
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Meters.implicit operator double");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
+    test("should qualify an explicit conversion operator with its target type", () => {
+      const sourceCode = `
+                public class Meters {
+                    public static explicit operator int(Meters m) {
+                        if (m == null) {
+                            return 0;
+                        }
+                        return 0;
+                    }
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      assert.strictEqual(results.length, 1);
+      assert.strictEqual(results[0].name, "Meters.explicit operator int");
+      assert.strictEqual(results[0].complexity, 1);
+    });
+
     test("should analyze property accessors", () => {
       const sourceCode = `
                 public class Test {
