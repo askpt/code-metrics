@@ -167,6 +167,24 @@ suite("CSharp Metrics Analyzer Tests", () => {
       assert.strictEqual(results[0].complexity, 1);
       assert.strictEqual(results[0].details[0].reason, "switch expression");
     });
+
+    test("should apply nesting penalty to constructs nested inside a switch expression", () => {
+      const sourceCode = `
+                public class Test {
+                    public string NestedInSwitchExpression(int value) {
+                        return value switch {
+                            1 => Compute(() => value),
+                            _ => "other"
+                        };
+                    }
+                }
+            `;
+
+      const results = analyzer.analyzeFunctions(sourceCode);
+
+      // Expected: switch expression (1) + lambda nested inside it (+1+1=2) = 3
+      assert.strictEqual(results[0].complexity, 3);
+    });
   });
 
   suite("Exception Handling", () => {

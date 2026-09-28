@@ -119,6 +119,7 @@ export class CSharpMetricsAnalyzer {
     "for_statement",
     "foreach_statement",
     "switch_statement",
+    "switch_expression",
     "try_statement",
     "catch_clause",
     "lambda_expression",
