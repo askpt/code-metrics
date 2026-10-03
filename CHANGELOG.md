@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.5](https://github.com/askpt/code-metrics/compare/v0.9.4...v0.9.5) (2026-09-30)
+
+
+### 🐛 Bug Fixes
+
+* apply nesting penalty to constructs inside C# switch expressions ([#697](https://github.com/askpt/code-metrics/issues/697)) ([62aaea3](https://github.com/askpt/code-metrics/commit/62aaea3907144820cf8b2682bb9ca0e878c68b30))
+
 ## [0.9.4](https://github.com/askpt/code-metrics/compare/v0.9.3...v0.9.4) (2026-09-26)
 
 
