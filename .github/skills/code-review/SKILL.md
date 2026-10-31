@@ -27,11 +27,11 @@ Report-only by default; post to GitHub only when explicitly asked.
 
 ## Inputs
 
-| Input | Required | Description |
-|-------|----------|-------------|
-| Target | No | PR number or URL. Absent → local branch diff against `origin/main` plus untracked files. |
-| Mode | No | `report` (default) or `post`. Use `post` only when the user explicitly asks to submit or post the review. |
-| Everything else | — | Discover it with `git`/`gh`: base branch, changed files, PR class, author, CI status. Never ask the user for something a command can answer. |
+| Input           | Required | Description                                                                                                                                  |
+| --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Target          | No       | PR number or URL. Absent → local branch diff against `origin/main` plus untracked files.                                                     |
+| Mode            | No       | `report` (default) or `post`. Use `post` only when the user explicitly asks to submit or post the review.                                    |
+| Everything else | —        | Discover it with `git`/`gh`: base branch, changed files, PR class, author, CI status. Never ask the user for something a command can answer. |
 
 ## Workflow
 
@@ -52,12 +52,12 @@ BASE=$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)
 
 ### Step 2: Fast-path bot PRs
 
-| Class (how to detect) | Check only this | Then |
-|-----------------------|-----------------|------|
+| Class (how to detect)                                                               | Check only this                                                                                                                                                                                                                                                         | Then                                            |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | dependabot — `author.login` is `dependabot[bot]`, title `build(deps…)` / `ci(deps)` | `package.json` and `package-lock.json` agree on the new version; a `tree-sitter*` bump updates the matching `allowScripts` key `name@version` (npm 12 skips the native build otherwise); a pinned action SHA keeps its `# vX.Y.Z` comment; `statusCheckRollup` is green | Verdict from these checks only. Skip Steps 3–5. |
-| release-please — title `chore(main): release x.y.z` | `package.json` version, `.github/.release-please-manifest.json` and the top `CHANGELOG.md` entry agree; **no other file** changed | `COMMENT`; never edit its files |
-| `[repo-assist]` prefix | Full review, plus: the linked issue exists and the PR body's claims match the diff | Steps 3–6 |
-| human | Full review | Steps 3–6 |
+| release-please — title `chore(main): release x.y.z`                                 | `package.json` version, `.github/.release-please-manifest.json` and the top `CHANGELOG.md` entry agree; **no other file** changed                                                                                                                                       | `COMMENT`; never edit its files                 |
+| `[repo-assist]` prefix                                                              | Full review, plus: the linked issue exists and the PR body's claims match the diff                                                                                                                                                                                      | Steps 3–6                                       |
+| human                                                                               | Full review                                                                                                                                                                                                                                                             | Steps 3–6                                       |
 
 Never write code-quality findings on a version bump; stop after the row's checks.
 
@@ -80,7 +80,7 @@ npm run test:unit             # c8 gate: lines 95 / statements 95 / branches 88 
     `sandbox_extension_issue_file_to_process … Operation not permitted` / `Exit code: SIGSEGV`
     before any test runs (sandbox blocks Electron) → environment failure: record
     `skipped (<reason>)` and mark the verdict `UNVERIFIED`. Then read the affected
-    `src/test/**` file and *predict* which assertion the diff breaks, labelled as predicted.
+    `src/test/**` file and _predict_ which assertion the diff breaks, labelled as predicted.
 - A `test:unit` failure containing `does not meet global threshold` is a **coverage-gate breach**
   (🔴), distinct from a failing assertion. Quote the line.
 - If `~/.npm` is not writable (sandbox), retry once with `npm_config_cache="$TMPDIR/npm-cache"`.
@@ -92,16 +92,16 @@ npm run test:unit             # c8 gate: lines 95 / statements 95 / branches 88 
 Read every hunk. For each rule, look for its trigger, then apply the check.
 `references/review-checklist.md` has the grep commands and worked examples for each rule.
 
-| # | Trigger in diff | Check | Sev |
-|---|-----------------|-------|-----|
-| R1 | `src/metricsAnalyzer/languages/*Analyzer.ts` | Increments follow `references/cognitive-complexity-rules.md`: structural constructs `1 + nesting`; `else`/`else if`, ternary, boolean-operator *runs* and labeled jumps flat `+1`; an else-if body is visited without a second nesting bump; same-operator chains counted once via `isOutermostInSameOperatorChain`; new nesting constructs added to `NESTING_TYPES` | 🔴 |
-| R2 | Any change to how one analyzer scores a construct | Probe that construct in all seven analyzers (Step 5). Disagreement **introduced** by the diff → 🟠. Pre-existing disagreement left untouched → 🟡 informational, named as follow-up, never blocking | 🟠/🟡 |
-| R3 | Runtime behavior change under `src/**` | For `src/metricsAnalyzer/**` and `src/lruCache.ts`: an exact-complexity assertion (`assert.strictEqual(result.complexity, N)` plus `details` reasons) is added in `src/unit/unit.test.ts` — tests only in `src/test/**` do not count toward the c8 gate. For `src/extension.ts`, `src/configuration.ts`, `src/providers/**` (c8-excluded, need the `vscode` module): the test belongs in `src/test/**` instead. A new `/* c8 ignore */` carries a comment saying why the branch is unreachable | 🟠 |
-| R4 | `src/extension.ts`, `src/providers/**` | Every `vscode.*` registration and `EventEmitter` is pushed to `context.subscriptions` or disposed in `dispose()`; caches use `LruCache`, never an unbounded `Map` | 🔴 |
-| R5 | A `codeMetrics.*` setting or its default | Identical in `package.json` `contributes.configuration`, `src/configuration.ts` (default and validation) and the README "Extension Settings" list. The `package.json` value is what users get at runtime; `DEFAULT_CONFIG` is only a fallback, so a change made there alone does nothing and breaks `src/test/configuration.test.ts` | 🟠 |
-| R6 | `CHANGELOG.md`, `.github/.release-please-manifest.json`, `.github/workflows/*.lock.yml` | Hand edits outside a release-please PR are wrong: the first two come from release-please, `.lock.yml` from `gh aw compile` of its sibling `.md`. A `.lock.yml` change without its `.md` (or the reverse) is drift | 🟠 |
-| R7 | PR title | Type matches content: `fix:` changes runtime behavior in `src/` and adds a regression test; `feat:` adds a user-visible capability and updates README; `refactor:`/`perf:` leave exact-complexity assertions unchanged; `test:`/`docs:`/`ci:`/`build:`/`chore:` touch no `src/` runtime file. `feat` bumps minor, `fix`/`perf` patch, `!` major; `docs`/`test`/`ci`/`build`/`style` are hidden from the changelog | 🟠 |
-| R8 | Any TypeScript | Generic correctness with the local traps: `line`/`column` are 0-based; `node.children` allocates in hot loops (use `childCount`/`child(i)`); `substring` where `node.type` suffices; eslint `eqeqeq`, `curly`, `semi` are **warn-only** so CI stays green — you are the gate; glob or regex built from user settings must escape metacharacters | 🟡 |
+| #   | Trigger in diff                                                                         | Check                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Sev   |
+| --- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| R1  | `src/metricsAnalyzer/languages/*Analyzer.ts`                                            | Increments follow `references/cognitive-complexity-rules.md`: structural constructs `1 + nesting`; `else`/`else if`, ternary, boolean-operator _runs_ and labeled jumps flat `+1`; an else-if body is visited without a second nesting bump; same-operator chains counted once via `isOutermostInSameOperatorChain`; new nesting constructs added to `NESTING_TYPES`                                                                                                                           | 🔴    |
+| R2  | Any change to how one analyzer scores a construct                                       | Probe that construct in all seven analyzers (Step 5). Disagreement **introduced** by the diff → 🟠. Pre-existing disagreement left untouched → 🟡 informational, named as follow-up, never blocking                                                                                                                                                                                                                                                                                            | 🟠/🟡 |
+| R3  | Runtime behavior change under `src/**`                                                  | For `src/metricsAnalyzer/**` and `src/lruCache.ts`: an exact-complexity assertion (`assert.strictEqual(result.complexity, N)` plus `details` reasons) is added in `src/unit/unit.test.ts` — tests only in `src/test/**` do not count toward the c8 gate. For `src/extension.ts`, `src/configuration.ts`, `src/providers/**` (c8-excluded, need the `vscode` module): the test belongs in `src/test/**` instead. A new `/* c8 ignore */` carries a comment saying why the branch is unreachable | 🟠    |
+| R4  | `src/extension.ts`, `src/providers/**`                                                  | Every `vscode.*` registration and `EventEmitter` is pushed to `context.subscriptions` or disposed in `dispose()`; caches use `LruCache`, never an unbounded `Map`                                                                                                                                                                                                                                                                                                                              | 🔴    |
+| R5  | A `codeMetrics.*` setting or its default                                                | Identical in `package.json` `contributes.configuration`, `src/configuration.ts` (default and validation) and the README "Extension Settings" list. The `package.json` value is what users get at runtime; `DEFAULT_CONFIG` is only a fallback, so a change made there alone does nothing and breaks `src/test/configuration.test.ts`                                                                                                                                                           | 🟠    |
+| R6  | `CHANGELOG.md`, `.github/.release-please-manifest.json`, `.github/workflows/*.lock.yml` | Hand edits outside a release-please PR are wrong: the first two come from release-please, `.lock.yml` from `gh aw compile` of its sibling `.md`. A `.lock.yml` change without its `.md` (or the reverse) is drift                                                                                                                                                                                                                                                                              | 🟠    |
+| R7  | PR title                                                                                | Type matches content: `fix:` changes runtime behavior in `src/` and adds a regression test; `feat:` adds a user-visible capability and updates README; `refactor:`/`perf:` leave exact-complexity assertions unchanged; `test:`/`docs:`/`ci:`/`build:`/`chore:` touch no `src/` runtime file. `feat` bumps minor, `fix`/`perf` patch, `!` major; `docs`/`test`/`ci`/`build`/`style` are hidden from the changelog                                                                              | 🟠    |
+| R8  | Any TypeScript                                                                          | Generic correctness with the local traps: `line`/`column` are 0-based; `node.children` allocates in hot loops (use `childCount`/`child(i)`); `substring` where `node.type` suffices; eslint `eqeqeq`, `curly`, `semi` are **warn-only** so CI stays green — you are the gate; glob or regex built from user settings must escape metacharacters                                                                                                                                                | 🟡    |
 
 ### Step 5: Cross-analyzer parity probe (only when R2 fires)
 
@@ -170,13 +170,13 @@ PR's.
 
 ## Common Pitfalls
 
-| Pitfall | Solution |
-|---------|----------|
+| Pitfall                                                                                                                                                | Solution                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Demanding spec purity where the repo has a deliberate convention (nested lambdas `+1 + nesting`, Go `recover()` flat `+1`, C# preprocessor heuristics) | Compare against the convention table in `references/cognitive-complexity-rules.md`; flag divergence, not convention |
-| Counting `src/test/**` integration tests as coverage | Only `src/unit/unit.test.ts` runs under c8 |
-| Treating eslint warnings as a pass | The ruleset is warn-only and CI stays green; list the rule ids as 🟡 |
-| Blaming the PR for `Skipping VS Code integration tests`, `EPERM … /tmp/vscode-test`, or a `SIGSEGV` before mocha starts | Those are the sandbox; mark `UNVERIFIED`, predict from `src/test/**`, do not request changes for it |
-| Asking which branch or PR to review | `gh pr view` / `git merge-base` answer it; ask only if both fail |
-| Ten findings on a dependabot bump | Step 2 fast path; stop after its checks |
-| Suggesting edits to `CHANGELOG.md` or a `.lock.yml` | They are generated; request the source change instead |
-| Blocking a fix because sibling analyzers still have the old bug | Pre-existing drift is 🟡 follow-up; only drift the diff introduces is 🟠 |
+| Counting `src/test/**` integration tests as coverage                                                                                                   | Only `src/unit/unit.test.ts` runs under c8                                                                          |
+| Treating eslint warnings as a pass                                                                                                                     | The ruleset is warn-only and CI stays green; list the rule ids as 🟡                                                |
+| Blaming the PR for `Skipping VS Code integration tests`, `EPERM … /tmp/vscode-test`, or a `SIGSEGV` before mocha starts                                | Those are the sandbox; mark `UNVERIFIED`, predict from `src/test/**`, do not request changes for it                 |
+| Asking which branch or PR to review                                                                                                                    | `gh pr view` / `git merge-base` answer it; ask only if both fail                                                    |
+| Ten findings on a dependabot bump                                                                                                                      | Step 2 fast path; stop after its checks                                                                             |
+| Suggesting edits to `CHANGELOG.md` or a `.lock.yml`                                                                                                    | They are generated; request the source change instead                                                               |
+| Blocking a fix because sibling analyzers still have the old bug                                                                                        | Pre-existing drift is 🟡 follow-up; only drift the diff introduces is 🟠                                            |
